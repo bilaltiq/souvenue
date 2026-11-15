@@ -38,7 +38,7 @@ to Vercel's environment variable form.
 | Variable | Value | Scope |
 | --- | --- | --- |
 | `DATABASE_URL` | Your Postgres pooler URI with `sslmode=require` | Production |
-| `ENCORE_DEMO_CHECKINS` | `0` | Production |
+| `SOUVENUE_DEMO_CHECKINS` | `0` | Production |
 
 For previews, use a separate test database and a separate Preview-scoped
 `DATABASE_URL`. Do not point untrusted pull-request previews at the production

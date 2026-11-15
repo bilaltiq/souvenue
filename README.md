@@ -45,13 +45,13 @@ Artist browsing and search, show pages, photo feeds and carousels, profiles and 
 ## Development settings
 
 - `PORT` changes the port from 4173.
-- `ENCORE_DB` chooses a different SQLite file.
-- `ENCORE_DEMO_CHECKINS=0` disables simulated check-ins. The legacy ENCORE variable names are used by the current code.
+- `SOUVENUE_DB` chooses a different SQLite file.
+- `SOUVENUE_DEMO_CHECKINS=0` disables simulated check-ins. The legacy souvenue variable names are used by the current code.
 
 For example, on macOS/Linux:
 
 ```sh
-ENCORE_DEMO_CHECKINS=0 python3 server.py
+SOUVENUE_DEMO_CHECKINS=0 python3 server.py
 ```
 
 ## Launch status

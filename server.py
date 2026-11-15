@@ -9,7 +9,7 @@ ATTENDANCE_POINTS=100
 GPS_RADIUS_METERS=500
 GPS_MAX_ACCURACY_METERS=100
 def hosted():return bool(os.environ.get('VERCEL') or os.environ.get('DATABASE_URL'))
-def demo_checkins_enabled():return not hosted() and os.environ.get("ENCORE_DEMO_CHECKINS","1")=="1"
+def demo_checkins_enabled():return not hosted() and os.environ.get("SOUVENUE_DEMO_CHECKINS","1")=="1"
 MAX_PHOTO_BYTES=2_000_000 if hosted() else 25_000_000
 MAX_POST_PHOTO_BYTES=2_800_000 if hosted() else 100_000_000
 MAX_FEED_REQUEST_BYTES=4*((MAX_POST_PHOTO_BYTES+2)//3)+100_000
@@ -21,7 +21,7 @@ def photo_too_large(photo):return photo_bytes(photo)>MAX_PHOTO_BYTES
 GENERAL_TOPICS={'lounge','meetups','merch','bst','box-office','questions','outfits','views','stories','travel','city-crowds'}
 POST_TAGS=('Merch','BST','Box Office','Questions','Outfits','Views','Stories')
 ROOT=Path(__file__).parent
-DB=Path(os.environ.get('ENCORE_DB',str(ROOT/'demo.sqlite3')))
+DB=Path(os.environ.get('SOUVENUE_DB',str(ROOT/'demo.sqlite3')))
 class LocalConnection(sqlite3.Connection):
  def __exit__(self,*args):
   try:return super().__exit__(*args)
@@ -90,7 +90,7 @@ def seed_more_communities(c):
   group=venues.setdefault(event['venue_key'],{'event':event,'count':0});group['count']+=1
  for key,group in sorted(venues.items(),key=lambda pair:(-pair[1]['count'],pair[1]['event']['venue']))[:30]:
   event=group['event'];add('venue-'+key,event['venue']+' · '+event['city'],'Meet venue regulars and share entrances, transport, seating tips, and memories from '+event['venue']+'.','venues')
- topics=[('meetups','Concert buddies','Find people to share your next night out.'),('meetups','Going solo','Meet other solo concertgoers and make plans.'),('merch','Merch stand discoveries','Talk displays, designs, and concert keepsakes.'),('merch','Collectors corner','Share your favorite music and tour collectibles.'),('bst','Buy, sell & trade','Discuss swaps and connect with fellow fans.'),('bst','Trade wishlists','Share what you collect and what you would love to trade.'),('box-office','Box office talk','Compare box office experiences and ask ticket questions.'),('box-office','Last-minute plans','Talk day-of-show plans with the crowd.'),('questions','First concert questions','No question is too small when it is your first show.'),('questions','Ask the crowd','Get advice from people who love live music.'),('outfits','Concert outfit ideas','Share the look you are planning for your next show.'),('outfits','Make it yourself','Talk custom shirts, bracelets, and creative concert looks.'),('views','Seat views & sightlines','Compare the view from different sections.'),('views','Photo & camera tips','Swap tips for capturing your favorite moments.'),('stories','You had to be there','Tell the concert story you keep coming back to.'),('stories','Favorite live moments','Share the encore, surprise guest, or song that stayed with you.'),('travel','Getting to the show','Talk transport, parking, and travel plans.'),('travel','Concert road trips','Plan nights out beyond your own city.'),('city-crowds','Local music discoveries','Share the local shows and scenes you love.')]
+ topics=[('meetups','Concert buddies','Find people to share your next night out.'),('meetups','Going solo','Meet other solo concertgoers and make plans.'),('merch','Merch stand discoveries','Talk displays, designs, and concert keepsakes.'),('merch','Collectors corner','Share your favorite music and tour collectibles.'),('bst','Buy, sell & trade','Discuss swaps and connect with fellow fans.'),('bst','Trade wishlists','Share what you collect and what you would love to trade.'),('box-office','Box office talk','Compare box office experiences and ask ticket questions.'),('box-office','Last-minute plans','Talk day-of-show plans with the crowd.'),('questions','First concert questions','No question is too small when it is your first show.'),('questions','Ask the crowd','Get advice from people who love live music.'),('outfits','Concert outfit ideas','Share the look you are planning for your next show.'),('outfits','Make it yourself','Talk custom shirts, bracelets, and creative concert looks.'),('views','Seat views & sightlines','Compare the view from different sections.'),('views','Photo & camera tips','Swap tips for capturing your favorite moments.'),('stories','You had to be there','Tell the concert story you keep coming back to.'),('stories','Favorite live moments','Share the final song, surprise guest, or moment that stayed with you.'),('travel','Getting to the show','Talk transport, parking, and travel plans.'),('travel','Concert road trips','Plan nights out beyond your own city.'),('city-crowds','Local music discoveries','Share the local shows and scenes you love.')]
  for index,(subcategory,name,description) in enumerate(topics):add('general-'+subcategory+'-'+str(index),name,description,'general',subcategory)
 
 def source_snapshots():
@@ -481,4 +481,4 @@ class Handler(BaseHTTPRequestHandler):
     return self.reply(404,{'error':'Not found'})
   except (ValueError,TypeError):return self.reply(400,{'error':'Invalid request.'})
 if __name__=='__main__':
- initialize();port=int(os.environ.get('PORT',4173));print(f'Encore is ready at http://127.0.0.1:{port}',flush=True);ThreadingHTTPServer(('127.0.0.1',port),Handler).serve_forever()
+ initialize();port=int(os.environ.get('PORT',4173));print(f'Souvenue is ready at http://127.0.0.1:{port}',flush=True);ThreadingHTTPServer(('127.0.0.1',port),Handler).serve_forever()

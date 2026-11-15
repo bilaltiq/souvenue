@@ -42,7 +42,7 @@ class Flow(unittest.TestCase):
     opening=datetime.fromisoformat(event['gps_checkin']['opens_at']).timestamp();closing=datetime.fromisoformat(event['gps_checkin']['closes_at']).timestamp()
     self.assertFalse(server.gps_policy(event,opening-1)['available']);self.assertTrue(server.gps_policy(event,opening)['available']);self.assertFalse(server.gps_policy(event,closing+1)['available'])
     self.assertFalse(server.gps_policy({**event,'venue':'Unknown','venue_key':'unknown'},now)['configured'])
-    with patch.dict(server.os.environ,{'ENCORE_DEMO_CHECKINS':'0'}):
+    with patch.dict(server.os.environ,{'SOUVENUE_DEMO_CHECKINS':'0'}):
      self.assertEqual(Response('POST','/api/checkin',{'event':'gps-next-night'},cookie).status,403)
      self.assertFalse(Response('GET','/api/state',cookie=cookie).data['demo_checkins_enabled'])
     with server.db() as c:

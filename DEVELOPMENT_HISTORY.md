@@ -1,8 +1,8 @@
-# Encore — local concert community prototype
+# Souvenue — local concert community prototype
 
 ## Artist pages and sourced tour dates
 
-The home page now opens artist pages before individual shows. Olivia Rodrigo’s artist page lists upcoming dates, venues, cities, and venue-local times from Ticketmaster’s public artist listings, imported October 30, 2026. Search by city or venue and filter tour dates versus other appearances. Every show opens its own public discussions, Photos (including Merch stand), and separately gated attendee chat. Source links open Ticketmaster or the partner site supplied by Ticketmaster. No purchases are made inside Encore.
+The home page now opens artist pages before individual shows. Olivia Rodrigo’s artist page lists upcoming dates, venues, cities, and venue-local times from Ticketmaster’s public artist listings, imported October 30, 2026. Search by city or venue and filter tour dates versus other appearances. Every show opens its own public discussions, Photos (including Merch stand), and separately gated attendee chat. Source links open Ticketmaster or the partner site supplied by Ticketmaster. No purchases are made inside Souvenue.
 
 The import read all four source pages: 79 listings normalized to 70 distinct concert records after excluding premium/service packages and duplicate concert listings. As of October 30, 2026, 69 are upcoming (68 tour dates and one other appearance) in 20 cities. Upcoming includes today’s dates. Past dates are hidden as the server’s America/New_York calendar date advances. Dates and times shown for each concert use that venue’s time zone. The imported snapshot is not a guarantee of current availability or future schedule completeness. Original source listings remain the authority.
 
@@ -13,7 +13,7 @@ To refresh intentionally, run `python3 import_ticketmaster.py` in this folder wh
 
 ## Open the app
 
-1. Open the `encore` folder and double-click **START.command**. Keep the terminal window open.
+1. Open the `souvenue` folder and double-click **START.command**. Keep the terminal window open.
 2. Visit **http://127.0.0.1:4173** in a browser on this Mac.
 3. Choose an artist, then a date to browse a show. For the original test shows, choose **Demo studio**, then **Simulate tap**.
 4. Your tap automatically records attendance and unlocks the matching chat. If signed out, create a demo account with a display name and a new password of at least eight characters. The app keeps the event destination and completes the check-in after sign-in.
@@ -62,7 +62,7 @@ Run `python3 test_app.py` from this folder. It also checks imported event isolat
 
 The app uses responsive HTML/CSS/JavaScript and Python's standard library. Google Fonts is optional; system fonts provide an offline fallback.
 
-Artist search on the home page filters available artists by name, including partial and case-insensitive matches. It searches the six artists currently imported in Encore, not Ticketmaster’s full catalog. Unlocked attendee-chat tabs have a glowing star and an Unlocked label; their conversation panel gets a highlighted welcome area. Reduced-motion preferences disable decorative animations.
+Artist search on the home page filters available artists by name, including partial and case-insensitive matches. It searches the six artists currently imported in Souvenue, not Ticketmaster’s full catalog. Unlocked attendee-chat tabs have a glowing star and an Unlocked label; their conversation panel gets a highlighted welcome area. Reduced-motion preferences disable decorative animations.
 
 ## Show-night topic tags
 
@@ -72,7 +72,7 @@ Public Show night discussions and each separate attendee chat have All posts plu
 
 Ticketmaster public snapshots now cover Olivia Rodrigo (69 upcoming shows), Noah Kahan (43), sombr (52), Phoebe Bridgers (14), Gracie Abrams (64), and Charli XCX (7). Counts include today and sourced festival/other appearances, after filtering add-ons and duplicate listings; they describe this snapshot, not a guarantee of every announced date. All six artists are searchable and have dedicated pages with date, venue, city, venue-local time, source links, and per-show communities. Every artist has its own correct Ticketmaster artist source link and tour label. No screens or screen recordings were used to validate this update.
 
-Additional artist snapshots live in imports/. Refresh one artist with `python3 import_ticketmaster.py --artist noah-kahan` (or sombr, phoebe-bridgers, gracie-abrams, charli-xcx, olivia-rodrigo). Use `python3 import_ticketmaster.py --all` to refresh all six. Restart the server afterward. Existing Olivia show URLs and original test-event URLs are preserved. Importing one artist no longer unlists another artist’s events. For shared festival listings, artists have independent Encore communities keyed by artist plus source event ID. Imports do not change existing posts, attendance, accounts, or sessions.
+Additional artist snapshots live in imports/. Refresh one artist with `python3 import_ticketmaster.py --artist noah-kahan` (or sombr, phoebe-bridgers, gracie-abrams, charli-xcx, olivia-rodrigo). Use `python3 import_ticketmaster.py --all` to refresh all six. Restart the server afterward. Existing Olivia show URLs and original test-event URLs are preserved. Importing one artist no longer unlists another artist’s events. For shared festival listings, artists have independent souvenue communities keyed by artist plus source event ID. Imports do not change existing posts, attendance, accounts, or sessions.
 
 ## Personal photo feeds
 
@@ -160,6 +160,6 @@ Show pages now offer an explicit “Check in with location” action. The browse
 
 Location check-in requires a finite reading no older than 60 seconds, accuracy of 100 metres or better, and distance plus reported uncertainty within 500 metres of the venue. A show with a known time opens four hours before and closes eight hours after that time, in the venue time zone. Date-only listings open from 06:00 on the show date through 06:00 the next day in the venue time zone. Missing venue coordinates/time zones/dates and cancelled/postponed shows fail closed. Current source data configures GPS for 434 of 445 imported shows; remaining shows show why location is unavailable. Refresh venue coordinates independently with import_venue_locations.py.
 
-A successful GPS check-in uses the existing 4.5-second unlock, attendee access, points, and neon history. Repeat check-ins add no points. Manual concert logs remain independent and do not unlock attendee chats. NFC /tap links and the demo studio remain for hardware development; real NFC tag verification has not been implemented. Development simulation is shown inside Development tools. Set ENCORE_DEMO_CHECKINS=0 to disable the simulation endpoint and automatic /tap simulation before any real release. This environment switch is enforced by the server, not just the UI.
+A successful GPS check-in uses the existing 4.5-second unlock, attendee access, points, and neon history. Repeat check-ins add no points. Manual concert logs remain independent and do not unlock attendee chats. NFC /tap links and the demo studio remain for hardware development; real NFC tag verification has not been implemented. Development simulation is shown inside Development tools. Set SOUVENUE_DEMO_CHECKINS=0 to disable the simulation endpoint and automatic /tap simulation before any real release. This environment switch is enforced by the server, not just the UI.
 
 Browser geolocation requires permission and a secure context. Localhost / 127.0.0.1 can be used for laptop testing; a phone accessing a non-localhost development server generally needs HTTPS. No site has been published as part of this change. Automated tests use synthetic locations, so actual device permission and GPS behavior still need testing at a venue. Browser-supplied coordinates can be spoofed: this is proximity screening for the prototype, not tamper-proof attendance verification. A real launch also needs hosted accounts/storage and removal of prototype administration paths.

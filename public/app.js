@@ -199,13 +199,53 @@ document.querySelector('#account').onclick=async()=>{if(state.user){await api('l
  try{paused=sessionStorage.getItem('souvenue-motion')==='paused'}catch(_){}
  document.body.classList.toggle('motion-paused',paused);
  const reveal='IntersectionObserver' in window?new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');reveal.unobserve(e.target)}}),{threshold:.08}):null;
+
+ function developLogo(stage,status,control){
+  const image=stage.querySelector('img'),canvas=stage.querySelector('canvas');
+  const context=canvas.getContext('2d');
+  if(!context){stage.classList.add('logo-complete');control.hidden=true;return}
+  const source=document.createElement('canvas'),sourceContext=source.getContext('2d');
+  if(!sourceContext){stage.classList.add('logo-complete');control.hidden=true;return}
+  let width=0,height=0,ratio=1,ready=false,complete=false,strokes=[],previous=null,resizeObserver;
+  const update=()=>{control.textContent=complete?'start again ↺':'reveal all ↗';control.setAttribute('aria-label',complete?'Reset the Souvenue logo development':'Reveal the complete Souvenue logo');stage.classList.toggle('logo-complete',complete);status.textContent=complete?'SOUVENUE / FULLY DEVELOPED':strokes.length?'SOUVENUE / DEVELOPING YOUR IMPRESSION':'MOVE YOUR CURSOR TO DEVELOP'};
+  function brush(x,y){
+   context.save();context.beginPath();context.arc(x*width,y*height,Math.min(width,height)*.14,0,Math.PI*2);context.clip();context.drawImage(source,0,0,width,height);context.restore();
+  }
+  function size(){
+   if(!image.naturalWidth)return;
+   const box=stage.getBoundingClientRect();if(!box.width||!box.height)return;
+   width=box.width;height=box.height;ratio=Math.min(window.devicePixelRatio||1,2);
+   canvas.width=source.width=Math.round(width*ratio);canvas.height=source.height=Math.round(height*ratio);
+   context.setTransform(ratio,0,0,ratio,0,0);sourceContext.setTransform(ratio,0,0,ratio,0,0);
+   const scale=Math.min(width*.84/image.naturalWidth,height*.78/image.naturalHeight),w=image.naturalWidth*scale,h=image.naturalHeight*scale;
+   sourceContext.clearRect(0,0,width,height);sourceContext.drawImage(image,(width-w)/2,(height-h)/2,w,h);
+   ready=true;if(complete)context.drawImage(source,0,0,width,height);else strokes.forEach(point=>brush(point.x,point.y));
+  }
+  function draw(event){
+   if(!ready||complete||paused)return;
+   const box=stage.getBoundingClientRect(),x=Math.max(0,Math.min(1,(event.clientX-box.left)/box.width)),y=Math.max(0,Math.min(1,(event.clientY-box.top)/box.height));
+   stage.style.setProperty('--px',x*100+'%');stage.style.setProperty('--py',y*100+'%');
+   if(previous){const dx=x-previous.x,dy=y-previous.y,steps=Math.ceil(Math.hypot(dx,dy)/.025);for(let i=1;i<steps;i++)brush(previous.x+dx*i/steps,previous.y+dy*i/steps)}
+   brush(x,y);if(!previous||Math.hypot(x-previous.x,y-previous.y)>.01){strokes.push({x,y});if(strokes.length>2500)strokes=strokes.filter((_,i)=>i%2===0)}previous={x,y};
+   stage.classList.add('logo-touched');if(status.textContent==='MOVE YOUR CURSOR TO DEVELOP')update();
+  }
+  stage.addEventListener('pointermove',event=>{if(event.pointerType!=='touch')draw(event)});
+  stage.addEventListener('pointerdown',draw);stage.addEventListener('pointerleave',()=>{previous=null});
+  control.addEventListener('click',()=>{if(!ready)return;complete=!complete;if(complete)context.drawImage(source,0,0,width,height);else{strokes=[];previous=null;context.clearRect(0,0,width,height);stage.classList.remove('logo-touched')}update()});
+  function loaded(){if(reduced.matches)complete=true;size();update()}
+  image.addEventListener('load',loaded,{once:true});
+  image.addEventListener('error',()=>{stage.classList.add('logo-unavailable');status.textContent='SOUVENUE / KEEP THE NIGHT ALIVE';control.hidden=true},{once:true});
+  if(image.complete&&image.naturalWidth)loaded();
+  if('ResizeObserver' in window){resizeObserver=new ResizeObserver(()=>{if(!stage.isConnected){resizeObserver.disconnect();return}size()});resizeObserver.observe(stage)}else window.addEventListener('resize',size);
+  reduced.addEventListener('change',event=>{if(event.matches&&stage.isConnected){complete=true;if(ready)context.drawImage(source,0,0,width,height);update()}});
+ }
+
  function edition(hero){
-  if(hero.dataset.edition)return;hero.dataset.edition='encore';
-  hero.innerHTML=`<div class="hero-copy"><p class="edition-label">FOR THE ONES WHO STAY FOR THE ENCORE</p><h1 class="editorial-title"><span>keep the</span><span><em>night</em> alive<span class="title-dot">.</span></span></h1><p class="hero-description">The set ends. The feeling doesn't.<br>Find your artist, meet your crowd, and keep something from the nights that made you.</p><div class="hero-actions"><a class="button" href="/artists">Find your next night <span aria-hidden="true">↗</span></a><a class="text-link" href="/concerts">Your concert collection <span aria-hidden="true">↗</span></a></div><p class="hero-footnote">LIVE MUSIC & THE PEOPLE IT BRINGS TOGETHER.</p></div><div class="hero-visual"><div class="visual-topline"><span>FIG. 01 — A NIGHT, PRESERVED</span><span>VOL. 001 / SOUVENUE</span></div><div class="print-stage" role="img" aria-label="Concert print with cyan record grooves, a pink ticket, and the words you had to be there"><svg viewBox="0 0 480 480" aria-hidden="true"><rect width="480" height="480" fill="#10152a"/><path d="M0 86H480M0 240H480M0 394H480M86 0V480M240 0V480M394 0V480" stroke="#26314b"/><g class="signal-ring" fill="none" stroke="#70caff"><circle cx="240" cy="240" r="182"/><circle cx="240" cy="240" r="167" stroke-width="12"/><circle cx="240" cy="240" r="147"/><circle cx="240" cy="240" r="135"/><circle cx="240" cy="240" r="119" stroke-width="9"/><circle cx="240" cy="240" r="99"/><circle cx="240" cy="240" r="81"/><circle cx="240" cy="240" r="63" stroke-width="6"/><path d="M240 58V422M58 240H422" stroke="#10152a" stroke-width="6"/></g><g transform="rotate(-15 320 145)"><path d="M270 74H404V109A12 12 0 0 0 404 133V168H270V133A12 12 0 0 0 270 109Z" fill="#ff74cb"/><path d="M365 74V168" stroke="#10152a" stroke-dasharray="3 4"/><text x="287" y="108" font-family="monospace" font-size="9" fill="#080b18">ADMIT ONE</text><text x="284" y="143" font-family="sans-serif" font-size="25" font-weight="800" fill="#080b18">TONIGHT.</text><path d="M378 93V151M383 93V151M389 93V151" stroke="#080b18" stroke-width="2"/></g><circle cx="240" cy="240" r="30" fill="#c4b6ef"/><circle cx="240" cy="240" r="5" fill="#10152a"/><g class="signal-mark" fill="#ff74cb"><path d="M240 208L244 232L266 224L248 240L266 256L244 248L240 272L236 248L214 256L232 240L214 224L236 232Z"/></g></svg><span class="print-corner" aria-hidden="true">SOUND / PEOPLE / MEMORY</span><div class="print-type" aria-hidden="true"><small>NO RECORDING COMES CLOSE.</small>you had to<br>be there.</div><span class="pointer-aperture" aria-hidden="true"></span></div><span class="visual-index" aria-hidden="true">S / 01</span><div class="visual-caption"><span>AN IMPRESSION OF A FEELING.</span><span>MOVE ACROSS THE PRINT ↗</span></div></div>`;
-  const stage=hero.querySelector('.print-stage');let frame;
-  stage.addEventListener('pointermove',e=>{if(paused||reduced.matches||e.pointerType==='touch')return;cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{const b=stage.getBoundingClientRect();stage.style.setProperty('--px',(e.clientX-b.left)+'px');stage.style.setProperty('--py',(e.clientY-b.top)+'px')})});
+  if(hero.dataset.edition)return;hero.dataset.edition='souvenue';
+  hero.innerHTML=`<div class="hero-copy"><p class="edition-label">FOR THE NIGHTS THAT STAY WITH YOU</p><h1 class="editorial-title"><span>keep the</span><span><em>night</em> alive<span class="title-dot">.</span></span></h1><p class="hero-description">The set ends. The feeling doesn't.<br>Find your artist, meet your crowd, and keep something from the nights that made you.</p><div class="hero-actions"><a class="button" href="/artists">Find your next night <span aria-hidden="true">↗</span></a><a class="text-link" href="/concerts">Your concert collection <span aria-hidden="true">↗</span></a></div><p class="hero-footnote">LIVE MUSIC & THE PEOPLE IT BRINGS TOGETHER.</p></div><div class="hero-visual"><div class="visual-topline"><span>FIG. 01 — THE SOUVENUE IMPRESSION</span><span>VOL. 001 / SOUVENUE</span></div><div class="print-stage logo-stage"><img class="logo-latent" src="/souvenue-wordmark-art.svg" alt="Souvenue hand-drawn logo"><canvas class="logo-developed" aria-hidden="true"></canvas><span class="logo-cursor" aria-hidden="true"></span><span class="logo-instruction" aria-hidden="true">move slowly. leave an impression.</span></div><div class="logo-controls"><span class="development-status">MOVE YOUR CURSOR TO DEVELOP</span><button class="develop-toggle" type="button" aria-label="Reveal the complete Souvenue logo">reveal all ↗</button></div><span class="visual-index" aria-hidden="true">S / 01</span><div class="visual-caption"><span>YOUR MOVEMENT. YOUR IMPRESSION.</span><span>DEVELOPED BY YOU ↗</span></div></div>`;
+  developLogo(hero.querySelector('.logo-stage'),hero.querySelector('.development-status'),hero.querySelector('.develop-toggle'));
   const strip=document.createElement('section');strip.className='sound-strip';strip.setAttribute('aria-label','Made of music, moments, and people');
-  const words='<span>THE FIRST NOTE</span><b aria-hidden="true">✳</b><span>THE PEOPLE BESIDE YOU</span><b aria-hidden="true">✳</b><span>THE LAST ENCORE</span><b aria-hidden="true">✳</b><span>THE WAY HOME</span><b aria-hidden="true">✳</b>';
+  const words='<span>THE FIRST NOTE</span><b aria-hidden="true">✳</b><span>THE PEOPLE BESIDE YOU</span><b aria-hidden="true">✳</b><span>THE LAST CHORUS</span><b aria-hidden="true">✳</b><span>THE WAY HOME</span><b aria-hidden="true">✳</b>';
   strip.innerHTML=`<span class="strip-label">KEEP A LITTLE OF IT.</span><div class="strip-window"><div class="strip-track"><div class="strip-group">${words}</div><div class="strip-group" aria-hidden="true">${words}</div></div></div><button class="motion-toggle" type="button">pause</button>`;hero.after(strip);
   const toggle=strip.querySelector('button'),sync=()=>{toggle.textContent=paused?'play':'pause';toggle.setAttribute('aria-pressed',String(paused));toggle.setAttribute('aria-label',(paused?'Play':'Pause')+' decorative animations')};sync();
   toggle.onclick=()=>{paused=!paused;document.body.classList.toggle('motion-paused',paused);try{sessionStorage.setItem('souvenue-motion',paused?'paused':'playing')}catch(_){}sync()};
