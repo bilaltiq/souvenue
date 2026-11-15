@@ -13,6 +13,21 @@ from test_app import Response
 
 
 class DeploymentTests(unittest.TestCase):
+    def test_page_navigation_without_public_files_in_function_bundle(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root/'templates').mkdir()
+            shell = (server.ROOT/'templates'/'index.html').read_bytes()
+            (root/'templates'/'index.html').write_bytes(shell)
+            with patch.object(server, 'ROOT', root), patch.object(server, 'hosted', return_value=True):
+                for path in ('/', '/artists', '/artist/olivia-rodrigo', '/event/example', '/feed', '/friends', '/communities', '/community/example', '/leaderboards', '/profile', '/log', '/concerts'):
+                    with self.subTest(path=path):
+                        response = Response('GET', path)
+                        self.assertEqual(response.status, 200)
+                        self.assertEqual(response.headers['Content-Type'], 'text/html')
+                        self.assertEqual(response.data, shell)
+                self.assertEqual(Response('GET', '/studio').status, 404)
+
     def test_sql_translation_preserves_literals_and_parameters(self):
         query = "SELECT user,created FROM posts WHERE user=? AND body='user? REAL' ORDER BY name COLLATE NOCASE"
         self.assertEqual(postgres_sql(query), 'SELECT "user",created FROM posts WHERE "user"=%s AND body=\'user? REAL\' ORDER BY LOWER(name)')
