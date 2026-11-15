@@ -1,0 +1,1732 @@
+{
+  "7127ccc43b9d6070fac59fdd120143e7": {
+    "venue": "3Arena",
+    "city": "Dublin",
+    "region": "",
+    "country": "IE",
+    "latitude": 53.347512,
+    "longitude": -6.228482,
+    "source_url": "https://www.ticketmaster.ie/3arena-tickets-dublin/venue/197033",
+    "source": "Ticketmaster"
+  },
+  "80cb393d4a73ee89df33d5ad6557f517": {
+    "venue": "Co-op Live",
+    "city": "Manchester",
+    "region": "",
+    "country": "GB",
+    "latitude": 53.48661136,
+    "longitude": -2.1995797,
+    "source_url": "https://www.ticketmaster.co.uk/coop-live-tickets-manchester/venue/451440",
+    "source": "Ticketmaster"
+  },
+  "98fc0d10fcbe26edbb8f5a4a69632658": {
+    "venue": "OVO Hydro",
+    "city": "Glasgow",
+    "region": "",
+    "country": "GB",
+    "latitude": 55.86087,
+    "longitude": -4.288154,
+    "source_url": "https://www.ticketmaster.co.uk/ovo-hydro-tickets-glasgow/venue/444745",
+    "source": "Ticketmaster"
+  },
+  "a1a4b4d0e1f5f0b7c0fa5333c738c9e6": {
+    "venue": "bp pulse LIVE",
+    "city": "Birmingham",
+    "region": "",
+    "country": "GB",
+    "latitude": 52.453057,
+    "longitude": -1.720073,
+    "source_url": "https://www.ticketmaster.co.uk/bp-pulse-live-tickets-birmingham/venue/289094",
+    "source": "Ticketmaster"
+  },
+  "6edebbb8723203c05513e0af84a1dd46": {
+    "venue": "The O2",
+    "city": "London",
+    "region": "",
+    "country": "GB",
+    "latitude": 51.501581,
+    "longitude": 0.005519,
+    "source_url": "https://www.ticketmaster.co.uk/the-o2-tickets-london/venue/435542",
+    "source": "Ticketmaster"
+  },
+  "044e7c38150eb3f81845fdf6689603d9": {
+    "venue": "ADIDAS ARENA",
+    "city": "Paris",
+    "region": "75",
+    "country": "FR",
+    "latitude": 48.899598,
+    "longitude": 2.360748,
+    "source_url": "https://www.ticketmaster.fr/fr/salle/adidas-arena-paris/idsite/20050",
+    "source": "Ticketmaster"
+  },
+  "c5450f4b42b16b258a7af158da2ad105": {
+    "venue": "Forest National - Legacy Lounge",
+    "city": "Forest (Brussels)",
+    "region": "",
+    "country": "BE",
+    "latitude": 50.80999,
+    "longitude": 4.32601,
+    "source_url": "https://www.ticketmaster.be/venue/forest-national-legacy-lounge-forest-brussels--tickets/lelounge07/107",
+    "source": "Ticketmaster"
+  },
+  "4678f3bff0ef3566c7b26276b0335532": {
+    "venue": "Vorst Nationaal/Forest National",
+    "city": "Forest (Brussels)",
+    "region": "",
+    "country": "BE",
+    "latitude": 50.80999,
+    "longitude": 4.32601,
+    "source_url": "https://www.ticketmaster.be/venue/vorst-nationaal-forest-national-forest-brussels--tickets/fna/107",
+    "source": "Ticketmaster"
+  },
+  "0dff0bcff5057bb5f3332a055ea9cb1b": {
+    "venue": "Ziggo Dome Club",
+    "city": "Amsterdam",
+    "region": "",
+    "country": "NL",
+    "latitude": 52.31778,
+    "longitude": 4.93636,
+    "source_url": "https://www.ticketmaster.nl/venue/ziggo-dome-club-amsterdam-tickets/memberzigg/107",
+    "source": "Ticketmaster"
+  },
+  "a7ad99b88a08366dacdc1f2fbcb57c38": {
+    "venue": "Royal Arena",
+    "city": "K\u00f8benhavn S",
+    "region": "",
+    "country": "DK",
+    "latitude": 55.62575,
+    "longitude": 12.5737,
+    "source_url": "https://www.ticketmaster.dk/venue/royal-arena-kobenhavn-s-billetter/rya/284",
+    "source": "Ticketmaster"
+  },
+  "ca0e6aacd1a201d96f2f61abe48a545e": {
+    "venue": "Victoria Park London",
+    "city": "London",
+    "region": "",
+    "country": "GB",
+    "latitude": 51.53929,
+    "longitude": -0.04047,
+    "source_url": "https://www.ticketmaster.co.uk/victoria-park-london-tickets-london/venue/451169",
+    "source": "Ticketmaster"
+  },
+  "f4a1d9606da1ee05f56e5941495ba0b3": {
+    "venue": "Sanford Stadium",
+    "city": "Athens",
+    "region": "GA",
+    "country": "US",
+    "latitude": 33.9490459,
+    "longitude": -83.375829,
+    "source_url": "https://www.ticketmaster.com/sanford-stadium-tickets-athens/venue/115675",
+    "source": "Ticketmaster"
+  },
+  "f6d0dc9fafff36e92763e1eb61060785": {
+    "venue": "Protective Stadium",
+    "city": "Birmingham",
+    "region": "AL",
+    "country": "US",
+    "latitude": 33.52736,
+    "longitude": -86.80729,
+    "source_url": "https://www.ticketmaster.com/protective-stadium-tickets-birmingham/venue/263230",
+    "source": "Ticketmaster"
+  },
+  "6d287793bee72647f29a7feeebcf4324": {
+    "venue": "Raymond James Stadium",
+    "city": "Tampa",
+    "region": "FL",
+    "country": "US",
+    "latitude": 27.975976,
+    "longitude": -82.503474,
+    "source_url": "https://www.ticketmaster.com/raymond-james-stadium-tickets-tampa/venue/106526",
+    "source": "Ticketmaster"
+  },
+  "3bad24fb118408638affa2fd4b25a1ca": {
+    "venue": "Nissan Stadium",
+    "city": "Nashville",
+    "region": "TN",
+    "country": "US",
+    "latitude": 36.166208,
+    "longitude": -86.771413,
+    "source_url": "https://www.ticketmaster.com/nissan-stadium-tickets-nashville/venue/221867",
+    "source": "Ticketmaster"
+  },
+  "f84b68ef09dd1ef5115f5db24bf795f0": {
+    "venue": "Bank of America Stadium",
+    "city": "Charlotte",
+    "region": "NC",
+    "country": "US",
+    "latitude": 35.225789,
+    "longitude": -80.852829,
+    "source_url": "https://www.ticketmaster.com/bank-of-america-stadium-tickets-charlotte/venue/368876",
+    "source": "Ticketmaster"
+  },
+  "2ef28473b45e2855f8eb12a9a6422b4e": {
+    "venue": "Gaylord Family Oklahoma Memorial Stadium",
+    "city": "Norman",
+    "region": "OK",
+    "country": "US",
+    "latitude": 35.2074757,
+    "longitude": -97.442256,
+    "source_url": "https://www.ticketmaster.com/gaylord-family-oklahoma-memorial-stadium-tickets-norman/venue/99106",
+    "source": "Ticketmaster"
+  },
+  "272ca0f108dcf2d960b9e4e4ae2ff888": {
+    "venue": "Reliant Stadium",
+    "city": "Houston",
+    "region": "TX",
+    "country": "US",
+    "latitude": 29.684885,
+    "longitude": -95.410875,
+    "source_url": "https://www.ticketmaster.com/reliant-stadium-tickets-houston/venue/475596",
+    "source": "Ticketmaster"
+  },
+  "e51a035a0ad3144a46a8fa38ef6b5f8c": {
+    "venue": "Darrell K Royal Texas Memorial Stadium",
+    "city": "Austin",
+    "region": "TX",
+    "country": "US",
+    "latitude": 30.283696,
+    "longitude": -97.734053,
+    "source_url": "https://www.ticketmaster.com/darrell-k-royal-texas-memorial-stadium-tickets-austin/venue/475910",
+    "source": "Ticketmaster"
+  },
+  "707e58667c6c546b91b3c814145f131b": {
+    "venue": "Levi's\u00ae Stadium",
+    "city": "Santa Clara",
+    "region": "CA",
+    "country": "US",
+    "latitude": 37.40367671,
+    "longitude": -121.97034311,
+    "source_url": "https://www.ticketmaster.com/levis-stadium-tickets-santa-clara/venue/229947",
+    "source": "Ticketmaster"
+  },
+  "b2616ffb16f796a2ad0e95f4e5935143": {
+    "venue": "Allegiant Stadium",
+    "city": "Las Vegas",
+    "region": "NV",
+    "country": "US",
+    "latitude": 36.0909,
+    "longitude": -115.1833,
+    "source_url": "https://www.ticketmaster.com/allegiant-stadium-tickets-las-vegas/venue/189482",
+    "source": "Ticketmaster"
+  },
+  "c1c790315bff7b63527c8a313a22485d": {
+    "venue": "Camp Randall Stadium",
+    "city": "Madison",
+    "region": "WI",
+    "country": "US",
+    "latitude": 43.0692846,
+    "longitude": -89.4106234,
+    "source_url": "https://www.ticketmaster.com/camp-randall-stadium-tickets-madison/venue/57469",
+    "source": "Ticketmaster"
+  },
+  "f30b293fd4a362417c59b660b2228e95": {
+    "venue": "Fenway Park",
+    "city": "Boston",
+    "region": "MA",
+    "country": "US",
+    "latitude": 42.3464072,
+    "longitude": -71.0986584,
+    "source_url": "https://www.ticketmaster.com/fenway-park-tickets-boston/venue/8839",
+    "source": "Ticketmaster"
+  },
+  "ad9525cd6b9d3d632f60a31bc7dbb49d": {
+    "venue": "Ohio Stadium",
+    "city": "Columbus",
+    "region": "OH",
+    "country": "US",
+    "latitude": 40.004003,
+    "longitude": -83.019363,
+    "source_url": "https://www.ticketmaster.com/ohio-stadium-tickets-columbus/venue/41028",
+    "source": "Ticketmaster"
+  },
+  "7ac8eec601a2aeed8b5f527e2058b069": {
+    "venue": "Ford Field",
+    "city": "Detroit",
+    "region": "MI",
+    "country": "US",
+    "latitude": 42.339924,
+    "longitude": -83.045543,
+    "source_url": "https://www.ticketmaster.com/ford-field-tickets-detroit/venue/65869",
+    "source": "Ticketmaster"
+  },
+  "64478bd2a714be995bbfcae529ca8fda": {
+    "venue": "Highmark Stadium",
+    "city": "Orchard Park",
+    "region": "NY",
+    "country": "US",
+    "latitude": 42.77389,
+    "longitude": -78.78694,
+    "source_url": "https://www.ticketmaster.com/highmark-stadium-tickets-orchard-park/venue/24759",
+    "source": "Ticketmaster"
+  },
+  "825b681bd9d96e1948772ead65d09ba6": {
+    "venue": "MetLife Stadium",
+    "city": "East Rutherford",
+    "region": "NJ",
+    "country": "US",
+    "latitude": 40.81359,
+    "longitude": -74.074493,
+    "source_url": "https://www.ticketmaster.com/metlife-stadium-tickets-east-rutherford/venue/1233",
+    "source": "Ticketmaster"
+  },
+  "df9a0e6f06d34e97ac3ada393df816fd": {
+    "venue": "AO Arena",
+    "city": "Manchester",
+    "region": "",
+    "country": "GB",
+    "latitude": 53.488164,
+    "longitude": -2.244066,
+    "source_url": "https://www.ticketmaster.co.uk/ao-arena-tickets-manchester/venue/254336",
+    "source": "Ticketmaster"
+  },
+  "02203ee495f6bc9dc2d8aff188ebc6b5": {
+    "venue": "LANXESS arena",
+    "city": "Cologne",
+    "region": "",
+    "country": "DE",
+    "latitude": 50.93855,
+    "longitude": 6.97988,
+    "source_url": "https://www.ticketmaster.de/venue/lanxess-arena-koln-tickets/koelanxess/753",
+    "source": "Ticketmaster"
+  },
+  "bfd1b222aa3b9ee1c90331a8dd3244a5": {
+    "venue": "Avicii Arena",
+    "city": "Stockholm",
+    "region": "",
+    "country": "SE",
+    "latitude": 59.29416,
+    "longitude": 18.08081,
+    "source_url": "https://www.ticketmaster.se/venue/avicii-arena-stockholm-biljetter/glb/612",
+    "source": "Ticketmaster"
+  },
+  "2b6650d32ffdf47dd8e5d1188d590aaa": {
+    "venue": "Olympiahalle",
+    "city": "Munich",
+    "region": "",
+    "country": "DE",
+    "latitude": 48.17388,
+    "longitude": 11.54549,
+    "source_url": "https://www.ticketmaster.de/venue/olympiahalle-munchen-tickets/mueolympha/753",
+    "source": "Ticketmaster"
+  },
+  "8389f95f1658d1c2e8459250377e06a1": {
+    "venue": "ACCOR ARENA",
+    "city": "Paris",
+    "region": "75",
+    "country": "FR",
+    "latitude": 48.83929,
+    "longitude": 2.377418,
+    "source_url": "https://www.ticketmaster.fr/fr/salle/accor-arena/idsite/1",
+    "source": "Ticketmaster"
+  },
+  "b6e1028944e6e57728751e4a9692c60e": {
+    "venue": "Parc Jean Drapeau",
+    "city": "Montreal",
+    "region": "QC",
+    "country": "CA",
+    "latitude": 45.506426,
+    "longitude": -73.526001,
+    "source_url": "https://www.ticketmaster.ca/parc-jean-drapeau-tickets-montreal/venue/402025",
+    "source": "Ticketmaster"
+  },
+  "523c59b1add1e63ba41c835d844c3c77": {
+    "venue": "Waldb\u00fchne",
+    "city": "Berlin",
+    "region": "",
+    "country": "DE",
+    "latitude": 52.51318,
+    "longitude": 13.22987,
+    "source_url": "https://www.ticketmaster.de/venue/waldbuhne-berlin-tickets/berwaldbue/753",
+    "source": "Ticketmaster"
+  },
+  "d77449ccb4f5e6022a560391b3d06462": {
+    "venue": "Ippodromo SNAI San Siro",
+    "city": "Milano",
+    "region": "",
+    "country": "IT",
+    "latitude": 0,
+    "longitude": 0,
+    "source_url": "http://www.mticket.it",
+    "source": "Ticketmaster"
+  },
+  "03f253964028800247126ef6230d6d12": {
+    "venue": "Plaza de Espa\u00f1a",
+    "city": "Sevilla",
+    "region": "",
+    "country": "ES",
+    "latitude": 37.37681,
+    "longitude": -5.98764,
+    "source_url": "https://www.ticketmaster.es/venue/plaza-de-espana-sevilla-entradas/plespifsev/112",
+    "source": "Ticketmaster"
+  },
+  "c6ce45c212d2f0af5bb5bd4a0104e85c": {
+    "venue": "Barclays Hampden",
+    "city": "Glasgow",
+    "region": "",
+    "country": "GB",
+    "latitude": 55.825241,
+    "longitude": -4.253201,
+    "source_url": "https://www.ticketmaster.co.uk/barclays-hampden-tickets-glasgow/venue/443454",
+    "source": "Ticketmaster"
+  },
+  "63f44afa4a6e86d78c6b5eabc19ebb67": {
+    "venue": "Aviva Stadium",
+    "city": "Dublin",
+    "region": "",
+    "country": "IE",
+    "latitude": 53.335237,
+    "longitude": -6.228468,
+    "source_url": "https://www.ticketmaster.ie/aviva-stadium-tickets-dublin/venue/198267",
+    "source": "Ticketmaster"
+  },
+  "38d79cc74c91822b4721adcbcbcab2b6": {
+    "venue": "Wembley Stadium",
+    "city": "London",
+    "region": "",
+    "country": "GB",
+    "latitude": 51.557807,
+    "longitude": -0.279581,
+    "source_url": "https://www.ticketmaster.co.uk/wembley-stadium-tickets-london/venue/287574",
+    "source": "Ticketmaster"
+  },
+  "76c9ad2a463e1edae51b78f501363683": {
+    "venue": "Ziggo Dome",
+    "city": "Amsterdam",
+    "region": "",
+    "country": "NL",
+    "latitude": 52.31395,
+    "longitude": 4.93837,
+    "source_url": "https://www.ticketmaster.nl/venue/ziggo-dome-amsterdam-tickets/ziggo/107",
+    "source": "Ticketmaster"
+  },
+  "651160d2c6ecccfcb0580ddeb25a45f1": {
+    "venue": "Xfinity Mobile Arena",
+    "city": "Philadelphia",
+    "region": "PA",
+    "country": "US",
+    "latitude": 39.904551,
+    "longitude": -75.1736273,
+    "source_url": "https://www.ticketmaster.com/xfinity-mobile-arena-tickets-philadelphia/venue/393379",
+    "source": "Ticketmaster"
+  },
+  "888e700bac312291d15f940b4b20761b": {
+    "venue": "State Farm Arena",
+    "city": "Atlanta",
+    "region": "GA",
+    "country": "US",
+    "latitude": 33.757796,
+    "longitude": -84.394569,
+    "source_url": "https://www.ticketmaster.com/state-farm-arena-tickets-atlanta/venue/114689",
+    "source": "Ticketmaster"
+  },
+  "9778172e9d92d5b6192ce76c8dda5c1e": {
+    "venue": "Kia Center",
+    "city": "Orlando",
+    "region": "FL",
+    "country": "US",
+    "latitude": 28.539293,
+    "longitude": -81.383957,
+    "source_url": "https://www.ticketmaster.com/kia-center-tickets-orlando/venue/279548",
+    "source": "Ticketmaster"
+  },
+  "9d43565d87e25f4532febf597b376af7": {
+    "venue": "Amerant Bank Arena ",
+    "city": "Sunrise",
+    "region": "FL",
+    "country": "US",
+    "latitude": 26.155362,
+    "longitude": -80.33023,
+    "source_url": "https://www.ticketmaster.com/amerant-bank-arena-tickets-sunrise/venue/107150",
+    "source": "Ticketmaster"
+  },
+  "9dd4ea3d09dbcfcd9312822ea349421c": {
+    "venue": "Bridgestone Arena",
+    "city": "Nashville",
+    "region": "TN",
+    "country": "US",
+    "latitude": 36.159949,
+    "longitude": -86.77857,
+    "source_url": "https://www.ticketmaster.com/bridgestone-arena-tickets-nashville/venue/221417",
+    "source": "Ticketmaster"
+  },
+  "6ac471c55a39b5d63a045f24a2ee5f15": {
+    "venue": "Intuit Dome",
+    "city": "Inglewood",
+    "region": "CA",
+    "country": "US",
+    "latitude": 33.94432,
+    "longitude": -118.34285,
+    "source_url": "https://www.ticketmaster.com/intuit-dome-tickets-inglewood/venue/74834",
+    "source": "Ticketmaster"
+  },
+  "aab1ca6666608802f9c392f61ac991f2": {
+    "venue": "Climate Pledge Arena",
+    "city": "Seattle",
+    "region": "WA",
+    "country": "US",
+    "latitude": 47.6221261,
+    "longitude": -122.35401604,
+    "source_url": "https://www.ticketmaster.com/climate-pledge-arena-tickets-seattle/venue/123894",
+    "source": "Ticketmaster"
+  },
+  "1ce8b7e54e26131b37d19c21c1e10c60": {
+    "venue": "Oakland Arena",
+    "city": "Oakland",
+    "region": "CA",
+    "country": "US",
+    "latitude": 37.7515541,
+    "longitude": -122.2015715,
+    "source_url": "https://www.ticketmaster.com/oakland-arena-tickets-oakland/venue/229399",
+    "source": "Ticketmaster"
+  },
+  "b2b871de2926cb0315c71b79eca9a3c8": {
+    "venue": "Golden 1 Center",
+    "city": "Sacramento",
+    "region": "CA",
+    "country": "US",
+    "latitude": 38.580372,
+    "longitude": -121.500231,
+    "source_url": "https://www.ticketmaster.com/golden-1-center-tickets-sacramento/venue/229976",
+    "source": "Ticketmaster"
+  },
+  "54a17b131522cd1918c106e51629c76e": {
+    "venue": "T-Mobile Arena",
+    "city": "Las Vegas",
+    "region": "NV",
+    "country": "US",
+    "latitude": 36.102807,
+    "longitude": -115.178313,
+    "source_url": "https://www.ticketmaster.com/tmobile-arena-tickets-las-vegas/venue/376926",
+    "source": "Ticketmaster"
+  },
+  "65664f833a594f5585e606ce6466de60": {
+    "venue": "Barclays Center",
+    "city": "Brooklyn",
+    "region": "NY",
+    "country": "US",
+    "latitude": 40.68285,
+    "longitude": -73.97519,
+    "source_url": "https://www.ticketmaster.com/barclays-center-tickets-brooklyn/venue/393376",
+    "source": "Ticketmaster"
+  },
+  "5db3a92b631cdd04cb243c4a333c9e5a": {
+    "venue": "Rogers Arena",
+    "city": "Vancouver",
+    "region": "BC",
+    "country": "CA",
+    "latitude": 49.2776612,
+    "longitude": -123.1081074,
+    "source_url": "https://www.ticketmaster.ca/rogers-arena-tickets-vancouver/venue/139269",
+    "source": "Ticketmaster"
+  },
+  "b0e2e94c45bfd29a95a16ea2d94b5050": {
+    "venue": "PLENITUDE ARENA",
+    "city": "Nanterre",
+    "region": "92",
+    "country": "FR",
+    "latitude": 48.896789,
+    "longitude": 2.223104,
+    "source_url": "https://www.ticketmaster.fr/fr/salle/plenitude-arena/idsite/17592",
+    "source": "Ticketmaster"
+  },
+  "57d8ab010bfc33d627f0ae38a58c6478": {
+    "venue": "Unipol Dome",
+    "city": "Milano",
+    "region": "",
+    "country": "IT",
+    "latitude": 45.4415,
+    "longitude": 9.252462,
+    "source_url": "https://www.ticketmaster.com/gracie-abrams-tickets/artist/2763148?global=true&page=3",
+    "source": "Ticketmaster"
+  },
+  "10ca3a8116faf4bfb736028cb5c360f4": {
+    "venue": "Palau Sant Jordi",
+    "city": "Barcelona",
+    "region": "",
+    "country": "ES",
+    "latitude": 41.36337,
+    "longitude": 2.15259,
+    "source_url": "https://www.ticketmaster.es/venue/palau-sant-jordi-barcelona-entradas/plsjordbcn/112",
+    "source": "Ticketmaster"
+  },
+  "f2b041b6f33dfe9ceb97a03edea900a8": {
+    "venue": "Gainbridge Fieldhouse",
+    "city": "Indianapolis",
+    "region": "IN",
+    "country": "US",
+    "latitude": 39.764064,
+    "longitude": -86.155507,
+    "source_url": "https://www.ticketmaster.com/gainbridge-fieldhouse-tickets-indianapolis/venue/41417",
+    "source": "Ticketmaster"
+  },
+  "f26c913152152b3577e71d9c55eef7d6": {
+    "venue": "Little Caesars Arena",
+    "city": "Detroit",
+    "region": "MI",
+    "country": "US",
+    "latitude": 42.341089,
+    "longitude": -83.055434,
+    "source_url": "https://www.ticketmaster.com/little-caesars-arena-tickets-detroit/venue/66238",
+    "source": "Ticketmaster"
+  },
+  "0b37b93921eb232e107f6d79e95ef30a": {
+    "venue": "Nationwide Arena",
+    "city": "Columbus",
+    "region": "OH",
+    "country": "US",
+    "latitude": 39.96939661,
+    "longitude": -83.00636203,
+    "source_url": "https://www.ticketmaster.com/nationwide-arena-tickets-columbus/venue/41498",
+    "source": "Ticketmaster"
+  },
+  "ad262227e0f8e7a9409e9ea5e4f2e314": {
+    "venue": "Capital One Arena",
+    "city": "Washington",
+    "region": "DC",
+    "country": "US",
+    "latitude": 38.897412,
+    "longitude": -77.020029,
+    "source_url": "https://www.ticketmaster.com/capital-one-arena-tickets-washington/venue/172453",
+    "source": "Ticketmaster"
+  },
+  "1657f52e592076be7f76aa4c10d49495": {
+    "venue": "PPG Paints Arena",
+    "city": "Pittsburgh",
+    "region": "PA",
+    "country": "US",
+    "latitude": 40.4388401,
+    "longitude": -79.9908551,
+    "source_url": "https://www.ticketmaster.com/ppg-paints-arena-tickets-pittsburgh/venue/180938",
+    "source": "Ticketmaster"
+  },
+  "c139786df1372575c3acbb84116651fa": {
+    "venue": "Rocket Arena",
+    "city": "Cleveland",
+    "region": "OH",
+    "country": "US",
+    "latitude": 41.492401,
+    "longitude": -81.671204,
+    "source_url": "https://www.ticketmaster.com/sombr-tickets/artist/3144534?global=true&page=0",
+    "source": "Ticketmaster"
+  },
+  "8239f74e6958b7c1ad41ded691529738": {
+    "venue": "KeyBank Center",
+    "city": "Buffalo",
+    "region": "NY",
+    "country": "US",
+    "latitude": 42.874941,
+    "longitude": -78.8762239,
+    "source_url": "https://www.ticketmaster.com/keybank-center-tickets-buffalo/venue/153",
+    "source": "Ticketmaster"
+  },
+  "17b908944136401acb29a8ea7c885ca2": {
+    "venue": "TD Garden",
+    "city": "Boston",
+    "region": "MA",
+    "country": "US",
+    "latitude": 42.365841,
+    "longitude": -71.060724,
+    "source_url": "https://www.ticketmaster.com/td-garden-tickets-boston/venue/8337",
+    "source": "Ticketmaster"
+  },
+  "56ae8b6d690b5631464c6ba7d8279eb2": {
+    "venue": "Prudential Center",
+    "city": "Newark",
+    "region": "NJ",
+    "country": "US",
+    "latitude": 40.73340555,
+    "longitude": -74.17121214,
+    "source_url": "https://www.ticketmaster.com/prudential-center-tickets-newark/venue/16847",
+    "source": "Ticketmaster"
+  },
+  "3484f33352ac0ff29834a4e6fef6fdb8": {
+    "venue": "Madison Square Garden",
+    "city": "New York",
+    "region": "NY",
+    "country": "US",
+    "latitude": 40.7497062,
+    "longitude": -73.9916006,
+    "source_url": "https://www.ticketmaster.com/madison-square-garden-tickets-new-york/venue/483329",
+    "source": "Ticketmaster"
+  },
+  "46f3d0bbb52fed6362f9e89ab3a6f066": {
+    "venue": "Scotiabank Arena",
+    "city": "Toronto",
+    "region": "ON",
+    "country": "CA",
+    "latitude": 43.6439254,
+    "longitude": -79.3783234,
+    "source_url": "https://www.ticketmaster.ca/scotiabank-arena-tickets-toronto/venue/131157",
+    "source": "Ticketmaster"
+  },
+  "8d9baae2cb23a2e9aad64335bd92a786": {
+    "venue": "Pepsi Center",
+    "city": "M\u00e9xico",
+    "region": "CDMX",
+    "country": "MX",
+    "latitude": 19.3934097,
+    "longitude": -99.1758118,
+    "source_url": "https://www.ticketmaster.com.mx/pepsi-center-tickets-mexico/venue/164952",
+    "source": "Ticketmaster"
+  },
+  "8b55a925897438fdf2e101a5d6efd7bf": {
+    "venue": "Spark Arena",
+    "city": "Auckland",
+    "region": "NZ",
+    "country": "NZ",
+    "latitude": -36.847021,
+    "longitude": 174.77687,
+    "source_url": "https://www.ticketmaster.co.nz/spark-arena-tickets-auckland/venue/294951",
+    "source": "Ticketmaster"
+  },
+  "15ff8a745df1456e8dd902dac6bbb17d": {
+    "venue": "Unity Arena",
+    "city": "Fornebu",
+    "region": "",
+    "country": "NO",
+    "latitude": 59.9022,
+    "longitude": 10.62254,
+    "source_url": "https://www.ticketmaster.no/venue/unity-arena-fornebu-billetter/tar1/29",
+    "source": "Ticketmaster"
+  },
+  "02ee641df0bf31c8fe1bb2259152d7c2": {
+    "venue": "Unity Arena Shuttlebuss",
+    "city": "Oslo",
+    "region": "",
+    "country": "NO",
+    "latitude": 59.90755,
+    "longitude": 10.74723,
+    "source_url": "https://www.ticketmaster.no/venue/unity-arena-shuttlebuss-oslo-billetter/tar9/29",
+    "source": "Ticketmaster"
+  },
+  "431a81ad9d0a32f35263c26170fe926b": {
+    "venue": "Veikkaus Arena",
+    "city": "Helsinki",
+    "region": "",
+    "country": "FI",
+    "latitude": 60.20479,
+    "longitude": 24.92991,
+    "source_url": "https://www.ticketmaster.fi/venue/veikkaus-arena-helsinki-lippuja/har/316",
+    "source": "Ticketmaster"
+  },
+  "6dc15290ba2184f074736cfb6c1c5d88": {
+    "venue": "Barclays Arena",
+    "city": "Hamburg",
+    "region": "",
+    "country": "DE",
+    "latitude": 53.58894,
+    "longitude": 9.899,
+    "source_url": "https://www.ticketmaster.de/venue/barclays-arena-hamburg-tickets/hambarclay/753",
+    "source": "Ticketmaster"
+  },
+  "51c000c05a2c73f3c88254b8319a5ad1": {
+    "venue": "AFAS Dome",
+    "city": "Merksem (Antwerpen)",
+    "region": "",
+    "country": "BE",
+    "latitude": 51.23024,
+    "longitude": 4.44176,
+    "source_url": "https://www.ticketmaster.be/venue/afas-dome-merksem-antwerpen--tickets/sportpalei/107",
+    "source": "Ticketmaster"
+  },
+  "b19e2298fda4580c4de63cab90fa20ee": {
+    "venue": "Uber Arena",
+    "city": "Berlin",
+    "region": "",
+    "country": "DE",
+    "latitude": 52.50573,
+    "longitude": 13.44314,
+    "source_url": "https://www.ticketmaster.de/venue/uber-arena-berlin-tickets/bermercede/701",
+    "source": "Ticketmaster"
+  },
+  "00e84dfcae7a7e67d35949a2c51159ef": {
+    "venue": "O2 Arena",
+    "city": "Praha 9",
+    "region": "",
+    "country": "CZ",
+    "latitude": 50.10479,
+    "longitude": 14.49377,
+    "source_url": "https://www.ticketmaster.cz/venue/o2-arena-praha-9-vstupenky/o2arena/105",
+    "source": "Ticketmaster"
+  },
+  "1daff53e4e383f2a09e130b3a09391ec": {
+    "venue": "Hallenstadion",
+    "city": "Z\u00fcrich",
+    "region": "",
+    "country": "CH",
+    "latitude": 47.41161,
+    "longitude": 8.55166,
+    "source_url": "https://www.ticketmaster.ch/venue/hallenstadion-zurich-tickets/hallenszur/108",
+    "source": "Ticketmaster"
+  },
+  "1015cf73fc6a068ff22e5136c295c85b": {
+    "venue": "Wiener Stadthalle - Halle D",
+    "city": "Vienna",
+    "region": "",
+    "country": "AT",
+    "latitude": 48.20201,
+    "longitude": 16.33146,
+    "source_url": "https://www.ticketmaster.at/venue/wiener-stadthalle-halle-d-wien-tickets/winstadthd/105",
+    "source": "Ticketmaster"
+  },
+  "96627d5814d1fcc7a1484d488418d10c": {
+    "venue": "Malahide Castle",
+    "city": "Co. Dublin",
+    "region": "D",
+    "country": "IE",
+    "latitude": 53.444934,
+    "longitude": -6.164569,
+    "source_url": "https://www.ticketmaster.ie/malahide-castle-tickets-co-dublin/venue/197670",
+    "source": "Ticketmaster"
+  },
+  "856d55c113db435e836dcb900939701e": {
+    "venue": "Ormeau Park",
+    "city": "Belfast",
+    "region": "",
+    "country": "GB",
+    "latitude": 54.5849646,
+    "longitude": -5.9148486,
+    "source_url": "https://www.ticketmaster.co.uk/ormeau-park-tickets-belfast/venue/461698",
+    "source": "Ticketmaster"
+  },
+  "47b4590f2e4c200a71b00a7d9146c191": {
+    "venue": "Bellahouston Park",
+    "city": "Glasgow",
+    "region": "",
+    "country": "GB",
+    "latitude": 55.847332,
+    "longitude": -4.313765,
+    "source_url": "https://www.ticketmaster.co.uk/bellahouston-park-tickets-glasgow/venue/443500",
+    "source": "Ticketmaster"
+  },
+  "8ce07cce998e2ab60847f818d6f45b06": {
+    "venue": "Festivalpark Werchter",
+    "city": "Werchter",
+    "region": "",
+    "country": "BE",
+    "latitude": 50.97278,
+    "longitude": 4.70007,
+    "source_url": "https://www.ticketmaster.be/venue/festivalpark-werchter-werchter-tickets/wer/105",
+    "source": "Ticketmaster"
+  },
+  "265c2a237d6cdc6411a76c30dd4e9a86": {
+    "venue": "Olympiastadion Berlin",
+    "city": "Berlin",
+    "region": "",
+    "country": "DE",
+    "latitude": 52.51452,
+    "longitude": 13.24326,
+    "source_url": "https://www.ticketmaster.de/venue/olympiastadion-berlin-berlin-tickets/berolympia/701",
+    "source": "Ticketmaster"
+  },
+  "0f747d8025761f7944a14807a2be9d55": {
+    "venue": "Ball Arena",
+    "city": "Denver",
+    "region": "CO",
+    "country": "US",
+    "latitude": 39.74724,
+    "longitude": -105.010166,
+    "source_url": "https://www.ticketmaster.com/ball-arena-tickets-denver/venue/246112",
+    "source": "Ticketmaster"
+  },
+  "cfed0c770ead11bcc7b31c15efe68d62": {
+    "venue": "Desert Diamond Arena",
+    "city": "Glendale",
+    "region": "AZ",
+    "country": "US",
+    "latitude": 33.531484,
+    "longitude": -112.26167,
+    "source_url": "https://www.ticketmaster.com/desert-diamond-arena-tickets-glendale/venue/204917",
+    "source": "Ticketmaster"
+  },
+  "0e7050de73cf3881a96ed3b3052f80e3": {
+    "venue": "Kia Forum",
+    "city": "Inglewood",
+    "region": "CA",
+    "country": "US",
+    "latitude": 33.9583,
+    "longitude": -118.341868,
+    "source_url": "https://www.ticketmaster.com/kia-forum-tickets-inglewood/venue/73750",
+    "source": "Ticketmaster"
+  },
+  "71856d3783f6786f3681006a3faf0c9a": {
+    "venue": "Moda Center",
+    "city": "Portland",
+    "region": "OR",
+    "country": "US",
+    "latitude": 45.53118896,
+    "longitude": -122.66645813,
+    "source_url": "https://www.ticketmaster.com/moda-center-tickets-portland/venue/123078",
+    "source": "Ticketmaster"
+  },
+  "5335386c42d4f4a404cd439303516473": {
+    "venue": "Moody Center ATX",
+    "city": "Austin",
+    "region": "TX",
+    "country": "US",
+    "latitude": 30.280735,
+    "longitude": -97.730837,
+    "source_url": "https://www.ticketmaster.com/moody-center-atx-tickets-austin/venue/476228",
+    "source": "Ticketmaster"
+  },
+  "3b489130f496120f97107c1229773769": {
+    "venue": "United Center",
+    "city": "Chicago",
+    "region": "IL",
+    "country": "US",
+    "latitude": 41.88124412,
+    "longitude": -87.67427375,
+    "source_url": "https://www.ticketmaster.com/united-center-tickets-chicago/venue/32882",
+    "source": "Ticketmaster"
+  },
+  "d03d1f6f6607ddbfc01b43c826d7600a": {
+    "venue": "Spectrum Center",
+    "city": "Charlotte",
+    "region": "NC",
+    "country": "US",
+    "latitude": 35.225222,
+    "longitude": -80.839921,
+    "source_url": "https://www.ticketmaster.com/spectrum-center-tickets-charlotte/venue/369357",
+    "source": "Ticketmaster"
+  },
+  "be9c89254455db65d9257079b18bbf89": {
+    "venue": "Centre Bell",
+    "city": "Montreal",
+    "region": "QC",
+    "country": "CA",
+    "latitude": 45.496129,
+    "longitude": -73.570472,
+    "source_url": "https://www.ticketmaster.ca/centre-bell-tickets-montreal/venue/401966",
+    "source": "Ticketmaster"
+  },
+  "e2f370f5cbf936086b4af2151b5f08dd": {
+    "venue": "Rotterdam Ahoy",
+    "city": "Rotterdam",
+    "region": "",
+    "country": "NL",
+    "latitude": 51.88314,
+    "longitude": 4.48817,
+    "source_url": "https://www.ticketmaster.nl/venue/rotterdam-ahoy-rotterdam-tickets/ahoy/112",
+    "source": "Ticketmaster"
+  },
+  "84298a8e0300cd5c4dbda6f3dbc9dbde": {
+    "venue": "Utilita Arena Cardiff",
+    "city": "Cardiff",
+    "region": "",
+    "country": "GB",
+    "latitude": 51.478931,
+    "longitude": -3.171771,
+    "source_url": "https://www.ticketmaster.co.uk/utilita-arena-cardiff-tickets-cardiff/venue/442466",
+    "source": "Ticketmaster"
+  },
+  "f52ab6de67dd1d12b311f3bedf64ab07": {
+    "venue": "Fryshuset",
+    "city": "Stockholm",
+    "region": "",
+    "country": "SE",
+    "latitude": 59.33233,
+    "longitude": 18.06293,
+    "source_url": "https://www.ticketmaster.se/venue/fryshuset-stockholm-biljetter/af1/596",
+    "source": "Ticketmaster"
+  },
+  "f80f4874df9fa961e76921da56eae9c8": {
+    "venue": "Oslo Spektrum",
+    "city": "Oslo",
+    "region": "",
+    "country": "NO",
+    "latitude": 59.9126,
+    "longitude": 10.7548,
+    "source_url": "https://www.ticketmaster.no/venue/oslo-spektrum-oslo-billetter/osp/102",
+    "source": "Ticketmaster"
+  },
+  "1dc42529e32277cb6864bc252a09fe82": {
+    "venue": "ZENITH PARIS - LA VILLETTE",
+    "city": "Paris",
+    "region": "75",
+    "country": "FR",
+    "latitude": 48.886149,
+    "longitude": 2.382936,
+    "source_url": "https://www.ticketmaster.fr/fr/salle/zenith-paris-la-villette-paris/idsite/25",
+    "source": "Ticketmaster"
+  },
+  "98036850643fbd4f2807af19d4d7523b": {
+    "venue": "AFAS Live Loge",
+    "city": "Amsterdam",
+    "region": "",
+    "country": "NL",
+    "latitude": 52.31236,
+    "longitude": 4.94415,
+    "source_url": "https://www.ticketmaster.nl/venue/afas-live-loge-amsterdam-tickets/afasloge/107",
+    "source": "Ticketmaster"
+  },
+  "d2d606b4c61ddfd9a906e3e7fb34e58b": {
+    "venue": "AFAS Live",
+    "city": "Amsterdam",
+    "region": "",
+    "country": "NL",
+    "latitude": 52.31236,
+    "longitude": 4.94415,
+    "source_url": "https://www.ticketmaster.nl/venue/afas-live-amsterdam-tickets/afas/107",
+    "source": "Ticketmaster"
+  },
+  "085ad74272dd5e8e8cbcd54b65fb0282": {
+    "venue": "Tempodrom",
+    "city": "Berlin",
+    "region": "",
+    "country": "DE",
+    "latitude": 52.50152,
+    "longitude": 13.38175,
+    "source_url": "https://www.ticketmaster.de/venue/tempodrom-berlin-tickets/bertempodr/701",
+    "source": "Ticketmaster"
+  },
+  "7810b42e7fe3ae3019c899a81e2a39ba": {
+    "venue": "Mitsubishi Electric HALLE",
+    "city": "D\u00fcsseldorf",
+    "region": "",
+    "country": "DE",
+    "latitude": 51.20639,
+    "longitude": 6.80892,
+    "source_url": "https://www.ticketmaster.de/venue/mitsubishi-electric-halle-dusseldorf-tickets/duephilips/753",
+    "source": "Ticketmaster"
+  },
+  "4ab7073fd0d5dcdc920aa23effa572ef": {
+    "venue": "Megaland",
+    "city": "Landgraaf",
+    "region": "",
+    "country": "NL",
+    "latitude": 50.88219,
+    "longitude": 6.02,
+    "source_url": "https://www.ticketmaster.nl/venue/megaland-landgraaf-tickets/megal/105",
+    "source": "Ticketmaster"
+  },
+  "fb6e90be45adde79cc1d99b8a0181758": {
+    "venue": "State Farm Stadium",
+    "city": "Glendale",
+    "region": "AZ",
+    "country": "US",
+    "latitude": 33.527308,
+    "longitude": -112.262258,
+    "source_url": "https://www.ticketmaster.com/state-farm-stadium-tickets-glendale/venue/205074",
+    "source": "Ticketmaster"
+  },
+  "2da817b9a8f9068fe34e68c1e4b6544f": {
+    "venue": "AT&T Stadium",
+    "city": "Arlington",
+    "region": "TX",
+    "country": "US",
+    "latitude": 32.74790427,
+    "longitude": -97.09345578,
+    "source_url": "https://www.ticketmaster.com/att-stadium-tickets-arlington/venue/99096",
+    "source": "Ticketmaster"
+  },
+  "c4794a98274f3743f913e5a17cc50a54": {
+    "venue": "Rose Bowl",
+    "city": "Pasadena",
+    "region": "CA",
+    "country": "US",
+    "latitude": 34.16146505,
+    "longitude": -118.16751312,
+    "source_url": "https://www.ticketmaster.com/rose-bowl-tickets-pasadena/venue/90162",
+    "source": "Ticketmaster"
+  },
+  "ce35d89753ac0a29fe1fee38786e860b": {
+    "venue": "Mercedes-Benz Stadium",
+    "city": "Atlanta",
+    "region": "GA",
+    "country": "US",
+    "latitude": 33.755389,
+    "longitude": -84.400823,
+    "source_url": "https://www.ticketmaster.com/mercedesbenz-stadium-tickets-atlanta/venue/115751",
+    "source": "Ticketmaster"
+  },
+  "6e46e8e87a100e47c09f2de00d900370": {
+    "venue": "Soldier Field",
+    "city": "Chicago",
+    "region": "IL",
+    "country": "US",
+    "latitude": 41.86205404,
+    "longitude": -87.61682143,
+    "source_url": "https://www.ticketmaster.com/soldier-field-tickets-chicago/venue/32827",
+    "source": "Ticketmaster"
+  },
+  "978dee8a237c901d97a249295ce1e81c": {
+    "venue": "Marvel Stadium",
+    "city": "Docklands",
+    "region": "VIC",
+    "country": "AU",
+    "latitude": -37.816518,
+    "longitude": 144.94554,
+    "source_url": "https://www.ticketmaster.com.au/marvel-stadium-tickets-docklands/venue/303717",
+    "source": "Ticketmaster"
+  },
+  "2b20118fdbc544bdab1194e1cd0b0fbc": {
+    "venue": "Accor Stadium",
+    "city": "Sydney Olympic Park",
+    "region": "NSW",
+    "country": "AU",
+    "latitude": -33.848603,
+    "longitude": 151.061717,
+    "source_url": "https://www.ticketmaster.com.au/accor-stadium-tickets-sydney-olympic-park/venue/304356",
+    "source": "Ticketmaster"
+  },
+  "7385a13d93e669fcc65668ef1754dc3f": {
+    "venue": "Rogers Stadium",
+    "city": "Toronto",
+    "region": "ON",
+    "country": "CA",
+    "latitude": 43.75246382,
+    "longitude": -79.4729932,
+    "source_url": "https://www.ticketmaster.ca/rogers-stadium-tickets-toronto/venue/132627",
+    "source": "Ticketmaster"
+  },
+  "27a1f212b5d9452315c5a7110138e6e7": {
+    "venue": "Flughafen Tempelhof",
+    "city": "Berlin",
+    "region": "",
+    "country": "DE",
+    "latitude": 52.48256,
+    "longitude": 13.38896,
+    "source_url": "https://www.ticketmaster.de/venue/flughafen-tempelhof-berlin-tickets/berflugtem/705",
+    "source": "Ticketmaster"
+  },
+  "113e9539c1174b441726f258d7f85519": {
+    "venue": "Estadio Riyadh Air Metropolitano",
+    "city": "Madrid",
+    "region": "",
+    "country": "ES",
+    "latitude": 40.43624,
+    "longitude": -3.59947,
+    "source_url": "https://www.ticketmaster.es/venue/estadio-riyadh-air-metropolitano-madrid-entradas/civitasmad/112",
+    "source": "Ticketmaster"
+  },
+  "14a57d5dfb0c9df5f657940d4fc46f17": {
+    "venue": "Circo Massimo",
+    "city": "Roma",
+    "region": "",
+    "country": "IT",
+    "latitude": 41.886133,
+    "longitude": 12.482945,
+    "source_url": "https://www.ticketmaster.com/harry-styles-tickets/artist/2366444?global=true&page=2",
+    "source": "Ticketmaster"
+  },
+  "8c93eae4c60ce79166702b4797ca00ce": {
+    "venue": "Croke Park",
+    "city": "Dublin",
+    "region": "",
+    "country": "IE",
+    "latitude": 53.36086568,
+    "longitude": -6.25101015,
+    "source_url": "https://www.ticketmaster.ie/croke-park-tickets-dublin/venue/196746",
+    "source": "Ticketmaster"
+  },
+  "a176f6ab180102a45378d63cd5ff33d6": {
+    "venue": "OVO Arena Wembley",
+    "city": "London",
+    "region": "",
+    "country": "GB",
+    "latitude": 51.557918,
+    "longitude": -0.283527,
+    "source_url": "https://www.ticketmaster.co.uk/ovo-arena-wembley-tickets-london/venue/451730",
+    "source": "Ticketmaster"
+  },
+  "3f87c45e95a96310c60bc0197def93c7": {
+    "venue": "The Bomb Factory",
+    "city": "Dallas",
+    "region": "TX",
+    "country": "US",
+    "latitude": 32.7827,
+    "longitude": -96.775803,
+    "source_url": "https://www.ticketmaster.com/lizzy-mcalpine-tickets/artist/2782189?global=true&page=0",
+    "source": "Ticketmaster"
+  },
+  "dc62801ca7aaa50318ce5e83b0b2993d": {
+    "venue": "713 Music Hall",
+    "city": "Houston",
+    "region": "TX",
+    "country": "US",
+    "latitude": 29.76539,
+    "longitude": -95.36416,
+    "source_url": "https://www.ticketmaster.com/713-music-hall-tickets-houston/venue/476244",
+    "source": "Ticketmaster"
+  },
+  "ded6dfba82fe5570e9dba3b6c29d8943": {
+    "venue": "Fox Theatre - Atlanta",
+    "city": "Atlanta",
+    "region": "GA",
+    "country": "US",
+    "latitude": 33.7714,
+    "longitude": -84.377403,
+    "source_url": "https://www.ticketmaster.com/lizzy-mcalpine-tickets/artist/2782189?global=true&page=0",
+    "source": "Ticketmaster"
+  },
+  "7f97caf52ca8eaa435598befb3fb580d": {
+    "venue": "DPAC",
+    "city": "Durham",
+    "region": "NC",
+    "country": "US",
+    "latitude": 35.9933059,
+    "longitude": -78.902225,
+    "source_url": "https://www.ticketmaster.com/dpac-tickets-durham/venue/369510",
+    "source": "Ticketmaster"
+  },
+  "b010831cefd1a957122eb8438a67cbfe": {
+    "venue": "Fox Theatre Detroit",
+    "city": "Detroit",
+    "region": "MI",
+    "country": "US",
+    "latitude": 42.338548,
+    "longitude": -83.05207,
+    "source_url": "https://www.ticketmaster.com/fox-theatre-detroit-tickets-detroit/venue/65547",
+    "source": "Ticketmaster"
+  },
+  "0228b0532ea37458097655ecdbd6c427": {
+    "venue": "Clowes Memorial Hall",
+    "city": "Indianapolis",
+    "region": "IN",
+    "country": "US",
+    "latitude": 39.838628,
+    "longitude": -86.171994,
+    "source_url": "https://www.ticketmaster.com/clowes-memorial-hall-tickets-indianapolis/venue/41111",
+    "source": "Ticketmaster"
+  },
+  "3f1bf13d96f87b038da749e9e4c9e4c6": {
+    "venue": "Riverside Theater - WI",
+    "city": "Milwaukee",
+    "region": "WI",
+    "country": "US",
+    "latitude": 43.036999,
+    "longitude": -87.916901,
+    "source_url": "https://www.ticketmaster.com/lizzy-mcalpine-tickets/artist/2782189?global=true&page=0",
+    "source": "Ticketmaster"
+  },
+  "642420b97c4264ad2c313a8b5fd70765": {
+    "venue": "State Theatre",
+    "city": "Minneapolis",
+    "region": "MN",
+    "country": "US",
+    "latitude": 44.9768315,
+    "longitude": -93.2766876,
+    "source_url": "https://www.ticketmaster.com/state-theatre-tickets-minneapolis/venue/49293",
+    "source": "Ticketmaster"
+  },
+  "e06f6adff2b8d68835ff906c4e4ffe0c": {
+    "venue": "Stifel Theatre",
+    "city": "Saint Louis",
+    "region": "MO",
+    "country": "US",
+    "latitude": 38.62807989,
+    "longitude": -90.20122536,
+    "source_url": "https://www.ticketmaster.com/stifel-theatre-tickets-saint-louis/venue/50474",
+    "source": "Ticketmaster"
+  },
+  "8e506511a94471e1798b2ebb37d9b721": {
+    "venue": "The Midland Theatre - MO",
+    "city": "Kansas City",
+    "region": "MO",
+    "country": "US",
+    "latitude": 39.104301,
+    "longitude": -94.591904,
+    "source_url": "https://www.ticketmaster.com/lizzy-mcalpine-tickets/artist/2782189?global=true&page=0",
+    "source": "Ticketmaster"
+  },
+  "c6b2c51509eb4622d4fb60a8435c240e": {
+    "venue": "Thelma Gaylord Performing Arts Theatre",
+    "city": "Oklahoma City",
+    "region": "OK",
+    "country": "US",
+    "latitude": 35.471401,
+    "longitude": -97.519096,
+    "source_url": "https://www.ticketmaster.com/lizzy-mcalpine-tickets/artist/2782189?global=true&page=0",
+    "source": "Ticketmaster"
+  },
+  "bcd2a5a9d085478f599433b7ded8a15d": {
+    "venue": "Agganis Arena",
+    "city": "Boston",
+    "region": "MA",
+    "country": "US",
+    "latitude": 42.3514544,
+    "longitude": -71.1176226,
+    "source_url": "https://www.ticketmaster.com/agganis-arena-tickets-boston/venue/8886",
+    "source": "Ticketmaster"
+  },
+  "a4007d79e438395c709b9ae856449805": {
+    "venue": "Merriweather Post Pavilion",
+    "city": "Columbia",
+    "region": "MD",
+    "country": "US",
+    "latitude": 39.209019,
+    "longitude": -76.862583,
+    "source_url": "https://www.ticketmaster.com/merriweather-post-pavilion-tickets-columbia/venue/172218",
+    "source": "Ticketmaster"
+  },
+  "8b5813dd4c55ebd715a08fdb9ce93a9d": {
+    "venue": "Red Rocks Amphitheatre",
+    "city": "Morrison",
+    "region": "CO",
+    "country": "US",
+    "latitude": 39.598999,
+    "longitude": -105.228104,
+    "source_url": "https://www.ticketmaster.com/lizzy-mcalpine-tickets/artist/2782189?global=true&page=1",
+    "source": "Ticketmaster"
+  },
+  "f864454e58231cdeb3c1b206a7b6c53c": {
+    "venue": "The Rady Shell at Jacobs Park",
+    "city": "San Diego",
+    "region": "CA",
+    "country": "US",
+    "latitude": 32.70602,
+    "longitude": -117.16343,
+    "source_url": "https://www.ticketmaster.com/the-rady-shell-at-jacobs-park-tickets-san-diego/venue/82837",
+    "source": "Ticketmaster"
+  },
+  "0c9183e1e89a88c07912065ce49f203f": {
+    "venue": "Chase Center",
+    "city": "San Francisco",
+    "region": "CA",
+    "country": "US",
+    "latitude": 37.76797,
+    "longitude": -122.387464,
+    "source_url": "https://www.ticketmaster.com/chase-center-tickets-san-francisco/venue/230012",
+    "source": "Ticketmaster"
+  },
+  "e7f275660ac67c41db40becf77a9211b": {
+    "venue": "Thebarton Theatre",
+    "city": "Torrensville",
+    "region": "SA",
+    "country": "AU",
+    "latitude": -34.923168,
+    "longitude": 138.568989,
+    "source_url": "https://www.ticketmaster.com.au/thebarton-theatre-tickets-torrensville/venue/157514",
+    "source": "Ticketmaster"
+  },
+  "fd9ba121ba0b96d41319bb57abfb6d3d": {
+    "venue": "Riverstage ",
+    "city": "Brisbane",
+    "region": "QLD",
+    "country": "AU",
+    "latitude": -27.47894,
+    "longitude": 153.030025,
+    "source_url": "https://www.ticketmaster.com.au/riverstage-tickets-brisbane/venue/155825",
+    "source": "Ticketmaster"
+  },
+  "7c410c7900e84beb1867a6de290e78a9": {
+    "venue": "L'OLYMPIA",
+    "city": "Paris",
+    "region": "75",
+    "country": "FR",
+    "latitude": 48.869986,
+    "longitude": 2.328411,
+    "source_url": "https://www.ticketmaster.fr/fr/salle/l-olympia/idsite/34",
+    "source": "Ticketmaster"
+  },
+  "b9fcaeb49904be2f2ce836050730feb6": {
+    "venue": "SaSaZu",
+    "city": "Praha 7",
+    "region": "",
+    "country": "CZ",
+    "latitude": 50.09938,
+    "longitude": 14.44477,
+    "source_url": "https://www.ticketmaster.cz/venue/sasazu-praha-7-vstupenky/sasazu/104",
+    "source": "Ticketmaster"
+  },
+  "4590c6bd7e68b1ad5a430a2acebff50a": {
+    "venue": "Klub Stodo\u0142a",
+    "city": "Warsaw",
+    "region": "",
+    "country": "PL",
+    "latitude": 52.21159,
+    "longitude": 21.01023,
+    "source_url": "https://www.ticketmaster.pl/venue/klub-stodoa-warszawa--bilety/stodola/105",
+    "source": "Ticketmaster"
+  },
+  "147dbb5a6a8a9611da010ace03aa6590": {
+    "venue": "Sentrum Scene",
+    "city": "Oslo",
+    "region": "",
+    "country": "NO",
+    "latitude": 59.91552,
+    "longitude": 10.7518,
+    "source_url": "https://www.ticketmaster.no/venue/sentrum-scene-oslo-billetter/oss/37",
+    "source": "Ticketmaster"
+  },
+  "366e8bdc6a1f60207863802fa1e908d7": {
+    "venue": "O2 Academy Brixton",
+    "city": "London",
+    "region": "",
+    "country": "GB",
+    "latitude": 51.465355,
+    "longitude": -0.115176,
+    "source_url": "https://www.ticketmaster.co.uk/o2-academy-brixton-tickets-london/venue/507981",
+    "source": "Ticketmaster"
+  },
+  "979a727883fb70ca862a2993d35018d2": {
+    "venue": "O2 Academy Birmingham",
+    "city": "Birmingham",
+    "region": "",
+    "country": "GB",
+    "latitude": 52.473277,
+    "longitude": -1.900215,
+    "source_url": "https://www.ticketmaster.co.uk/o2-academy-birmingham-tickets-birmingham/venue/508927",
+    "source": "Ticketmaster"
+  },
+  "d8cabf855682d7f980d106c7866a6bc0": {
+    "venue": "O2 Academy Glasgow",
+    "city": "Glasgow",
+    "region": "",
+    "country": "GB",
+    "latitude": 55.8504496,
+    "longitude": -4.2587809,
+    "source_url": "https://www.ticketmaster.co.uk/o2-academy-glasgow-tickets-glasgow/venue/509730",
+    "source": "Ticketmaster"
+  },
+  "36762f9dd96d8b67fd64cf8101b7fae6": {
+    "venue": "Allstate Arena",
+    "city": "Rosemont",
+    "region": "IL",
+    "country": "US",
+    "latitude": 42.00499247,
+    "longitude": -87.88750024,
+    "source_url": "https://www.ticketmaster.com/allstate-arena-tickets-rosemont/venue/32958",
+    "source": "Ticketmaster"
+  },
+  "e67aecb419e8d299a84ce6412a771ec1": {
+    "venue": "Halle 622",
+    "city": "Z\u00fcrich",
+    "region": "",
+    "country": "CH",
+    "latitude": 47.41363,
+    "longitude": 8.54147,
+    "source_url": "https://www.ticketmaster.ch/venue/halle-622-zurich-tickets/halle62oer/103",
+    "source": "Ticketmaster"
+  },
+  "431c5a288f16f28aee8dd9874508d414": {
+    "venue": "Alcatraz",
+    "city": "Milano",
+    "region": "",
+    "country": "IT",
+    "latitude": 45.494744,
+    "longitude": 9.182377,
+    "source_url": "https://www.ticketmaster.it",
+    "source": "Ticketmaster"
+  },
+  "44a5daed22fee7d8b4067a48f8b40ef0": {
+    "venue": "TonHalle",
+    "city": "Munich",
+    "region": "",
+    "country": "DE",
+    "latitude": 48.12444,
+    "longitude": 11.60731,
+    "source_url": "https://www.ticketmaster.de/venue/tonhalle-munchen-tickets/muetonhall/753",
+    "source": "Ticketmaster"
+  },
+  "64007bc72337b61f7a2b5c52caa8ff9b": {
+    "venue": "Columbiahalle",
+    "city": "Berlin",
+    "region": "",
+    "country": "DE",
+    "latitude": 52.48461,
+    "longitude": 13.3914,
+    "source_url": "https://www.ticketmaster.de/venue/columbiahalle-berlin-tickets/bercolumbi/753",
+    "source": "Ticketmaster"
+  },
+  "4fe565c010ebaeb71755035771bb6acb": {
+    "venue": "Sporthalle Hamburg",
+    "city": "Hamburg",
+    "region": "",
+    "country": "DE",
+    "latitude": 53.60241,
+    "longitude": 9.9992,
+    "source_url": "https://www.ticketmaster.de/venue/sporthalle-hamburg-hamburg-tickets/hamsportha/712",
+    "source": "Ticketmaster"
+  },
+  "ddfdfc0b46fcf816d6f6661f029954b9": {
+    "venue": "Stadthalle Offenbach",
+    "city": "Offenbach am Main",
+    "region": "",
+    "country": "DE",
+    "latitude": 50.08271,
+    "longitude": 8.77709,
+    "source_url": "https://www.ticketmaster.de/venue/stadthalle-offenbach-offenbach-am-main-tickets/oamstadth/755",
+    "source": "Ticketmaster"
+  },
+  "54e710fa6f499deabd482d88b2106b02": {
+    "venue": "Alexandra Palace",
+    "city": "London",
+    "region": "",
+    "country": "GB",
+    "latitude": 51.594595,
+    "longitude": -0.130275,
+    "source_url": "https://www.ticketmaster.co.uk/alexandra-palace-tickets-london/venue/253961",
+    "source": "Ticketmaster"
+  },
+  "1d6bb750eb37be479e5e5db30aa0e513": {
+    "venue": "Auditorio Nacional",
+    "city": "Ciudad de M\u00e9xico",
+    "region": "CDMX",
+    "country": "MX",
+    "latitude": 19.424648,
+    "longitude": -99.19484,
+    "source_url": "https://www.ticketmaster.com.mx/auditorio-nacional-tickets-ciudad-de-mexico/venue/499713",
+    "source": "Ticketmaster"
+  },
+  "adb9cf705eb23a8e163862388d7070b2": {
+    "venue": "Auditorio Banamex",
+    "city": "Monterrey",
+    "region": "NL",
+    "country": "MX",
+    "latitude": 25.67765795,
+    "longitude": -100.28085777,
+    "source_url": "https://www.ticketmaster.com.mx/auditorio-banamex-tickets-monterrey/venue/163889",
+    "source": "Ticketmaster"
+  },
+  "f8b9db0bffbda2a807ea02a8317951fd": {
+    "venue": "Auditorio Telmex",
+    "city": "Zapopan",
+    "region": "JAL",
+    "country": "MX",
+    "latitude": 20.73324,
+    "longitude": -103.38112,
+    "source_url": "https://www.ticketmaster.com.mx/auditorio-telmex-tickets-zapopan/venue/164460",
+    "source": "Ticketmaster"
+  },
+  "114d5943473a49f19ab1cecbcd7d8767": {
+    "venue": "SLANE CASTLE",
+    "city": "Co. Meath",
+    "region": "",
+    "country": "IE",
+    "latitude": 53.71032955,
+    "longitude": -6.55895591,
+    "source_url": "https://www.ticketmaster.ie/slane-castle-tickets-co-meath/venue/197505",
+    "source": "Ticketmaster"
+  },
+  "bbc148ef01e9b2b63e594284ed23633e": {
+    "venue": "Aut\u00f3dromo Hermanos Rodr\u00edguez - Redirect",
+    "city": "Temple City",
+    "region": "CA",
+    "country": "US",
+    "latitude": 19.40345,
+    "longitude": -99.088778,
+    "source_url": "https://www.ticketmaster.com/autodromo-hermanos-rodriguez-redirect-tickets-temple-city/venue/213164",
+    "source": "Ticketmaster"
+  },
+  "4704d470ee436170aa17dc5d89a55724": {
+    "venue": "Tempe Beach Park",
+    "city": "Tempe",
+    "region": "AZ",
+    "country": "US",
+    "latitude": 33.430737,
+    "longitude": -111.941694,
+    "source_url": "https://www.ticketmaster.com/tempe-beach-park-tickets-tempe/venue/205047",
+    "source": "Ticketmaster"
+  },
+  "a810e433fb885e557fecfbaf9afc7f2c": {
+    "venue": "Estadio San Marcos",
+    "city": "Lima",
+    "region": "LIM",
+    "country": "PE",
+    "latitude": -12.0550642,
+    "longitude": -77.0823504,
+    "source_url": "https://www.ticketmaster.pe/venue/estadio-san-marcos",
+    "source": "Ticketmaster"
+  },
+  "ff612e2bca9dddd74f88426a5585a333": {
+    "venue": "Autodromo Hnos. Rodriguez",
+    "city": "M\u00e9xico",
+    "region": "CDMX",
+    "country": "MX",
+    "latitude": 19.402829,
+    "longitude": -99.089247,
+    "source_url": "https://www.ticketmaster.com.mx/autodromo-hnos-rodriguez-tickets-mexico/venue/163973",
+    "source": "Ticketmaster"
+  },
+  "bc11c4b5e2e90b68ee852186677d2d94": {
+    "venue": "Centennial Park",
+    "city": "Sydney",
+    "region": "NSW",
+    "country": "AU",
+    "latitude": -33.879555,
+    "longitude": 151.215627,
+    "source_url": "https://www.ticketmaster.com.au/centennial-park-tickets-sydney/venue/156457",
+    "source": "Ticketmaster"
+  },
+  "6384da08f039625e0882f5350ec1342e": {
+    "venue": "Cirque Royal - Koninklijk Circus",
+    "city": "Brussels",
+    "region": "",
+    "country": "BE",
+    "latitude": 50.84906,
+    "longitude": 4.36565,
+    "source_url": "https://www.ticketmaster.be/venue/cirque-royal-koninklijk-circus-brussels-tickets/cro/101",
+    "source": "Ticketmaster"
+  },
+  "d113df9638b07cf2f976ce488ad87480": {
+    "venue": "SALLE PLEYEL",
+    "city": "Paris",
+    "region": "75",
+    "country": "FR",
+    "latitude": 48.876849,
+    "longitude": 2.301064,
+    "source_url": "https://www.ticketmaster.fr/fr/salle/salle-pleyel/idsite/9",
+    "source": "Ticketmaster"
+  },
+  "0ad506e7abb007a7c223bc60dd3986c6": {
+    "venue": "O2 Academy Bristol",
+    "city": "Bristol",
+    "region": "",
+    "country": "GB",
+    "latitude": 51.454142,
+    "longitude": -2.600849,
+    "source_url": "https://www.ticketmaster.co.uk/o2-academy-bristol-tickets-bristol/venue/509558",
+    "source": "Ticketmaster"
+  },
+  "33c12a7721b4f206299c72f942601539": {
+    "venue": "O2 Academy Leeds",
+    "city": "Leeds",
+    "region": "",
+    "country": "GB",
+    "latitude": 53.802291,
+    "longitude": -1.547287,
+    "source_url": "https://www.ticketmaster.co.uk/o2-academy-leeds-tickets-leeds/venue/508768",
+    "source": "Ticketmaster"
+  },
+  "b14f3d7992e4cbb9f502c198144fbfb8": {
+    "venue": "3Olympia Theatre",
+    "city": "Dublin",
+    "region": "D2",
+    "country": "IE",
+    "latitude": 53.344318,
+    "longitude": -6.266114,
+    "source_url": "https://www.ticketmaster.ie/3olympia-theatre-tickets-dublin/venue/198239",
+    "source": "Ticketmaster"
+  },
+  "3aeed2598a09c1266670ba9ced3aba5e": {
+    "venue": "O2 Apollo Manchester",
+    "city": "Manchester",
+    "region": "",
+    "country": "GB",
+    "latitude": 53.469422,
+    "longitude": -2.221964,
+    "source_url": "https://www.ticketmaster.co.uk/o2-apollo-manchester-tickets-manchester/venue/444077",
+    "source": "Ticketmaster"
+  },
+  "109ffb8248453bfdbdabcc1f2064e3be": {
+    "venue": "Eventim Apollo",
+    "city": "London",
+    "region": "",
+    "country": "GB",
+    "latitude": 51.490693,
+    "longitude": -0.224423,
+    "source_url": "https://www.ticketmaster.co.uk/eventim-apollo-tickets-london/venue/417569",
+    "source": "Ticketmaster"
+  },
+  "887b95b243b3aa9449180ebcec1aca56": {
+    "venue": "40 Watt Club",
+    "city": "Athens",
+    "region": "GA",
+    "country": "US",
+    "latitude": 34.005199,
+    "longitude": -83.347504,
+    "source_url": "https://www.ticketmaster.com/julien-baker-tickets/artist/2182568?global=true&page=0",
+    "source": "Ticketmaster"
+  },
+  "d6b217ebce476fbc71469d994b8c7b41": {
+    "venue": "Neumos",
+    "city": "Seattle",
+    "region": "WA",
+    "country": "US",
+    "latitude": 47.610802,
+    "longitude": -122.302803,
+    "source_url": "https://www.ticketmaster.com/julien-baker-tickets/artist/2182568?global=true&page=0",
+    "source": "Ticketmaster"
+  },
+  "995c4346ead983913340df9d2b0f9f0c": {
+    "venue": "Frost Bank Center",
+    "city": "San Antonio",
+    "region": "TX",
+    "country": "US",
+    "latitude": 29.4330386,
+    "longitude": -98.4337987,
+    "source_url": "https://www.ticketmaster.com/frost-bank-center-tickets-san-antonio/venue/475590",
+    "source": "Ticketmaster"
+  },
+  "6b536a16b965f5e9920c626629f5490c": {
+    "venue": "Toyota Center",
+    "city": "Houston",
+    "region": "TX",
+    "country": "US",
+    "latitude": 29.7520386,
+    "longitude": -95.3623133,
+    "source_url": "https://www.ticketmaster.com/toyota-center-tickets-houston/venue/475759",
+    "source": "Ticketmaster"
+  },
+  "0f5603697fbd90bcc19021ffdfd66f07": {
+    "venue": "Toyota Center - TX",
+    "city": "Houston",
+    "region": "TX",
+    "country": "US",
+    "latitude": 29.759399,
+    "longitude": -95.362999,
+    "source_url": "https://www.ticketmaster.com/doja-cat-tickets/artist/2062205?global=true&page=0",
+    "source": "Ticketmaster"
+  },
+  "17876aee6a56b2bd389069d74f010e09": {
+    "venue": "Kaseya Center",
+    "city": "Miami",
+    "region": "FL",
+    "country": "US",
+    "latitude": 25.781232,
+    "longitude": -80.187805,
+    "source_url": "https://www.ticketmaster.com/kaseya-center-tickets-miami/venue/106601",
+    "source": "Ticketmaster"
+  },
+  "1894c666e968b89ce5addc495bc179f9": {
+    "venue": "Benchmark International Arena",
+    "city": "Tampa",
+    "region": "FL",
+    "country": "US",
+    "latitude": 27.942743,
+    "longitude": -82.451772,
+    "source_url": "https://www.ticketmaster.com/benchmark-international-arena-tickets-tampa/venue/106710",
+    "source": "Ticketmaster"
+  },
+  "90e194571bdc4f905677af206358a2d2": {
+    "venue": "CFG Bank Arena",
+    "city": "Baltimore",
+    "region": "MD",
+    "country": "US",
+    "latitude": 39.288494,
+    "longitude": -76.6187,
+    "source_url": "https://www.ticketmaster.com/cfg-bank-arena-tickets-baltimore/venue/172041",
+    "source": "Ticketmaster"
+  },
+  "56f1ac0de1c08f0868b018b28342d27a": {
+    "venue": "NOTO",
+    "city": "Philadelphia",
+    "region": "PA",
+    "country": "US",
+    "latitude": 39.957705,
+    "longitude": -75.159035,
+    "source_url": "https://www.ticketmaster.com/noto-tickets-philadelphia/venue/17142",
+    "source": "Ticketmaster"
+  },
+  "e46f56eb835ae5ee10d6097d0f54bdb3": {
+    "venue": "Queen Elizabeth Theatre",
+    "city": "Vancouver",
+    "region": "BC",
+    "country": "CA",
+    "latitude": 49.2777469,
+    "longitude": -123.1174817,
+    "source_url": "https://www.ticketmaster.ca/queen-elizabeth-theatre-tickets-vancouver/venue/139293",
+    "source": "Ticketmaster"
+  },
+  "bb399adb8981d46572de8f1031222df8": {
+    "venue": "Delta Center",
+    "city": "Salt Lake City",
+    "region": "UT",
+    "country": "US",
+    "latitude": 40.756599,
+    "longitude": -111.8992,
+    "source_url": "https://www.ticketmaster.com/post-malone-tickets/artist/2119390?global=true&page=0",
+    "source": "Ticketmaster"
+  }
+}

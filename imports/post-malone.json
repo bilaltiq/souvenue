@@ -1,0 +1,32 @@
+{
+  "artist": "Post Malone",
+  "slug": "post-malone",
+  "image": "rose",
+  "tour_label": "Upcoming shows & appearances",
+  "source_url": "https://www.ticketmaster.com/post-malone-tickets/artist/2119390",
+  "imported_at": "2026-11-01",
+  "source_count": 1,
+  "excluded_listings": [],
+  "events": [
+    {
+      "id": "tm-post-malone-5133198",
+      "artist": "Post Malone",
+      "artist_slug": "post-malone",
+      "title": "Post Malone w/ Alesso",
+      "venue": "Delta Center",
+      "city": "Salt Lake City",
+      "region": "UT",
+      "country": "US",
+      "start_date": "2026-12-31",
+      "local_time": "22:00",
+      "timezone": "America/Denver",
+      "date": "December 31, 2026",
+      "image": "rose",
+      "source": "Ticketmaster",
+      "source_url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7Skb",
+      "listing_page": "https://www.ticketmaster.com/post-malone-tickets/artist/2119390?global=true&page=0",
+      "status": "Scheduled",
+      "kind": "tour"
+    }
+  ]
+}

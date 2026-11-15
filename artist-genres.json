@@ -1,0 +1,712 @@
+{
+  "olivia-rodrigo": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/olivia-rodrigo-tickets/artist/2836194",
+    "retrieved_at": "2026-11-01"
+  },
+  "noah-kahan": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6F1",
+        "name": "Pop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/noah-kahan-tickets/artist/2385568",
+    "retrieved_at": "2026-11-01"
+  },
+  "sombr": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAvv",
+        "name": "Alternative",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vAde",
+        "name": "Indie Rock",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/sombr-tickets/artist/3144534",
+    "retrieved_at": "2026-11-01"
+  },
+  "phoebe-bridgers": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6dt",
+        "name": "Alternative Rock",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/phoebe-bridgers-tickets/artist/2133305",
+    "retrieved_at": "2026-11-01"
+  },
+  "gracie-abrams": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/gracie-abrams-tickets/artist/2763148",
+    "retrieved_at": "2026-11-01"
+  },
+  "charli-xcx": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/charli-xcx-tickets/artist/1638380",
+    "retrieved_at": "2026-11-01"
+  },
+  "tame-impala": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6F1",
+        "name": "Pop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/tame-impala-tickets/artist/1446562",
+    "retrieved_at": "2026-11-01"
+  },
+  "taylor-swift": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/taylor-swift-tickets/artist/1094215",
+    "retrieved_at": "2026-11-01"
+  },
+  "sabrina-carpenter": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/sabrina-carpenter-tickets/artist/2001092",
+    "retrieved_at": "2026-11-01"
+  },
+  "chappell-roan": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/chappell-roan-tickets/artist/2397430",
+    "retrieved_at": "2026-11-01"
+  },
+  "billie-eilish": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vkEk",
+        "name": "Indie Pop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/billie-eilish-tickets/artist/2257710",
+    "retrieved_at": "2026-11-01"
+  },
+  "lana-del-rey": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6F1",
+        "name": "Pop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/lana-del-rey-tickets/artist/1646704",
+    "retrieved_at": "2026-11-01"
+  },
+  "ariana-grande": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/ariana-grande-tickets/artist/1688071",
+    "retrieved_at": "2026-11-01"
+  },
+  "lorde": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6F1",
+        "name": "Pop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/lorde-tickets/artist/1901987",
+    "retrieved_at": "2026-11-01"
+  },
+  "the-weeknd": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAv1",
+        "name": "Hip-Hop/Rap",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vkdA",
+        "name": "Urban",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/the-weeknd-tickets/artist/1697014",
+    "retrieved_at": "2026-11-01"
+  },
+  "dua-lipa": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/dua-lipa-tickets/artist/2179476",
+    "retrieved_at": "2026-11-01"
+  },
+  "sza": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAee",
+        "name": "R&B",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/sza-tickets/artist/1858419",
+    "retrieved_at": "2026-11-01"
+  },
+  "harry-styles": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vkEl",
+        "name": "Pop Rock",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/harry-styles-tickets/artist/2366444",
+    "retrieved_at": "2026-11-01"
+  },
+  "hozier": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6F1",
+        "name": "Pop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/hozier-tickets/artist/1896592",
+    "retrieved_at": "2026-11-01"
+  },
+  "florence-the-machine": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6F1",
+        "name": "Pop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/florence-the-machine-tickets/artist/1362337",
+    "retrieved_at": "2026-11-01"
+  },
+  "laufey": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAvE",
+        "name": "Jazz",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/laufey-tickets/artist/2790801",
+    "retrieved_at": "2026-11-01"
+  },
+  "mitski": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAvv",
+        "name": "Alternative",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vAdv",
+        "name": "Indie Pop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/mitski-tickets/artist/2077487",
+    "retrieved_at": "2026-11-01"
+  },
+  "beabadoobee": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6F1",
+        "name": "Pop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/beabadoobee-tickets/artist/2618990",
+    "retrieved_at": "2026-11-01"
+  },
+  "lizzy-mcalpine": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vk1l",
+        "name": "Adult Contemporary",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/lizzy-mcalpine-tickets/artist/2782189",
+    "retrieved_at": "2026-11-01"
+  },
+  "clairo": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAvv",
+        "name": "Alternative",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/clairo-tickets/artist/2491075",
+    "retrieved_at": "2026-11-01"
+  },
+  "renee-rapp": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/renee-rapp-tickets/artist/2959906",
+    "retrieved_at": "2026-11-01"
+  },
+  "role-model": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vkIk",
+        "name": "Singer-Songwriter",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/role-model-tickets/artist/2629945",
+    "retrieved_at": "2026-11-01"
+  },
+  "dominic-fike": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAv1",
+        "name": "Hip-Hop/Rap",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/dominic-fike-tickets/artist/2647396",
+    "retrieved_at": "2026-11-01"
+  },
+  "conan-gray": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/conan-gray-tickets/artist/2543736",
+    "retrieved_at": "2026-11-01"
+  },
+  "wallows": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAvv",
+        "name": "Alternative",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vAvn",
+        "name": "Alternative Rock",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/wallows-tickets/artist/2430902",
+    "retrieved_at": "2026-11-01"
+  },
+  "the-1975": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/the-1975-tickets/artist/1765575",
+    "retrieved_at": "2026-11-01"
+  },
+  "arctic-monkeys": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6dt",
+        "name": "Alternative Rock",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/arctic-monkeys-tickets/artist/991635",
+    "retrieved_at": "2026-11-01"
+  },
+  "hayley-williams": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/hayley-williams-tickets/artist/2733627",
+    "retrieved_at": "2026-11-01"
+  },
+  "paramore": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6dt",
+        "name": "Alternative Rock",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/paramore-tickets/artist/986126",
+    "retrieved_at": "2026-11-01"
+  },
+  "the-strokes": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6dt",
+        "name": "Alternative Rock",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/the-strokes-tickets/artist/807068",
+    "retrieved_at": "2026-11-01"
+  },
+  "vampire-weekend": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6dt",
+        "name": "Alternative Rock",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/vampire-weekend-tickets/artist/1166577",
+    "retrieved_at": "2026-11-01"
+  },
+  "bleachers": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6F1",
+        "name": "Pop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/bleachers-tickets/artist/1965170",
+    "retrieved_at": "2026-11-01"
+  },
+  "the-marias": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v66A",
+        "name": "Indie Rock",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/the-marias-tickets/artist/2470306",
+    "retrieved_at": "2026-11-01"
+  },
+  "ethel-cain": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAvv",
+        "name": "Alternative",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vAvn",
+        "name": "Alternative Rock",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/ethel-cain-tickets/artist/2872189",
+    "retrieved_at": "2026-11-01"
+  },
+  "julien-baker": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v66A",
+        "name": "Indie Rock",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/julien-baker-tickets/artist/2182568",
+    "retrieved_at": "2026-11-01"
+  },
+  "lucy-dacus": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAvv",
+        "name": "Alternative",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/lucy-dacus-tickets/artist/2216541",
+    "retrieved_at": "2026-11-01"
+  },
+  "kendrick-lamar": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAv1",
+        "name": "Hip-Hop/Rap",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vkdA",
+        "name": "Urban",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/kendrick-lamar-tickets/artist/1480454",
+    "retrieved_at": "2026-11-01"
+  },
+  "doja-cat": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAv1",
+        "name": "Hip-Hop/Rap",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vkdA",
+        "name": "Urban",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/doja-cat-tickets/artist/2062205",
+    "retrieved_at": "2026-11-01"
+  },
+  "tyler-the-creator": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAv1",
+        "name": "Hip-Hop/Rap",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vkdA",
+        "name": "Urban",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/tyler-the-creator-tickets/artist/1744607",
+    "retrieved_at": "2026-11-01"
+  },
+  "blackpink": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vkE1",
+        "name": "K-Pop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/blackpink-tickets/artist/2590072",
+    "retrieved_at": "2026-11-01"
+  },
+  "bts": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vkE1",
+        "name": "K-Pop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/bts-tickets/artist/2110227",
+    "retrieved_at": "2026-11-01"
+  },
+  "bad-bunny": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAv1",
+        "name": "Hip-Hop/Rap",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vke1",
+        "name": "Latin Hip-Hop",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/bad-bunny-tickets/artist/2317395",
+    "retrieved_at": "2026-11-01"
+  },
+  "coldplay": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAeA",
+        "name": "Rock",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7v6dt",
+        "name": "Alternative Rock",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/coldplay-tickets/artist/806431",
+    "retrieved_at": "2026-11-01"
+  },
+  "post-malone": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAv1",
+        "name": "Hip-Hop/Rap",
+        "level": "genre"
+      },
+      {
+        "id": "KZazBEonSMnZfZ7vkdA",
+        "name": "Urban",
+        "level": "subgenre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/post-malone-tickets/artist/2119390",
+    "retrieved_at": "2026-11-01"
+  },
+  "ed-sheeran": {
+    "categories": [
+      {
+        "id": "KnvZfZ7vAev",
+        "name": "Pop",
+        "level": "genre"
+      }
+    ],
+    "source_url": "https://www.ticketmaster.com/ed-sheeran-tickets/artist/1560779",
+    "retrieved_at": "2026-11-01"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "artist": "Ed Sheeran",
+  "slug": "ed-sheeran",
+  "image": "ice",
+  "tour_label": "LOOP Tour",
+  "source_url": "https://www.ticketmaster.com/ed-sheeran-tickets/artist/1560779",
+  "imported_at": "2026-11-01",
+  "source_count": 1,
+  "excluded_listings": [],
+  "events": [
+    {
+      "id": "tm-ed-sheeran-0D006331D60A3A7A",
+      "artist": "Ed Sheeran",
+      "artist_slug": "ed-sheeran",
+      "title": "Ed Sheeran: LOOP Tour",
+      "venue": "Raymond James Stadium",
+      "city": "Tampa",
+      "region": "FL",
+      "country": "US",
+      "start_date": "2026-11-07",
+      "local_time": "18:00",
+      "timezone": "America/New_York",
+      "date": "November 7, 2026",
+      "image": "ice",
+      "source": "Ticketmaster",
+      "source_url": "https://www.ticketmaster.com/ed-sheeran-loop-tour-tampa-florida-11-07-2026/event/0D006331D60A3A7A",
+      "listing_page": "https://www.ticketmaster.com/ed-sheeran-tickets/artist/1560779?global=true&page=0",
+      "status": "Scheduled",
+      "kind": "tour"
+    }
+  ]
+}

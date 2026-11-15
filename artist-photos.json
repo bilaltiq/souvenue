@@ -1,0 +1,352 @@
+{
+  "olivia-rodrigo": {
+    "path": "/artists/olivia-rodrigo.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/4e1/ca96dd03-8def-46ae-b6d3-9441e992c4e1_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/olivia-rodrigo-tickets/artist/2836194",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-10-30"
+  },
+  "noah-kahan": {
+    "path": "/artists/noah-kahan.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/b32/410e23ca-ee21-4238-bdfb-ca99edcd3b32_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/noah-kahan-tickets/artist/2385568",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-10-30"
+  },
+  "sombr": {
+    "path": "/artists/sombr.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/0b8/d1bc79bb-d6e6-4735-bc5c-190572eec0b8_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/sombr-tickets/artist/3144534",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-10-30"
+  },
+  "phoebe-bridgers": {
+    "path": "/artists/phoebe-bridgers.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/8bf/03985c53-fb10-4d38-ab4f-662df14e78bf_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/phoebe-bridgers-tickets/artist/2133305",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-10-30"
+  },
+  "gracie-abrams": {
+    "path": "/artists/gracie-abrams.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/fff/f6d140e3-86db-4e6a-9df3-f5addcd45fff_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/gracie-abrams-tickets/artist/2763148",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-10-30"
+  },
+  "charli-xcx": {
+    "path": "/artists/charli-xcx.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/87c/2a316b21-0865-4f0c-9e56-14b517a6987c_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/charli-xcx-tickets/artist/1638380",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-10-30"
+  },
+  "taylor-swift": {
+    "path": "/artists/taylor-swift.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/451/fc7b3533-8fde-4d26-b832-8a7e97d5f451_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/taylor-swift-tickets/artist/1094215",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "tame-impala": {
+    "path": "/artists/tame-impala.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/cd0/d26204db-9477-43df-965b-ee262dc05cd0_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/tame-impala-tickets/artist/1446562",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "sabrina-carpenter": {
+    "path": "/artists/sabrina-carpenter.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/21c/fde60e2c-ff3b-414f-935e-806930a0321c_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/sabrina-carpenter-tickets/artist/2001092",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "billie-eilish": {
+    "path": "/artists/billie-eilish.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/c5f/0ca2a6ed-c39b-44ed-954f-2b1391d73c5f_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/billie-eilish-tickets/artist/2257710",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "chappell-roan": {
+    "path": "/artists/chappell-roan.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/363/b78fe25d-be79-437a-bb24-41eefea04363_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/chappell-roan-tickets/artist/2397430",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "lana-del-rey": {
+    "path": "/artists/lana-del-rey.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/fe4/79920315-ffcc-4e42-a4fd-c7083f876fe4_1120111_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/lana-del-rey-tickets/artist/1646704",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "the-weeknd": {
+    "path": "/artists/the-weeknd.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/966/779d1731-4094-4a97-bc16-1341dcb41966_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/the-weeknd-tickets/artist/1697014",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "ariana-grande": {
+    "path": "/artists/ariana-grande.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/adb/fc874544-aef0-468d-8db5-0507863cbadb_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/ariana-grande-tickets/artist/1688071",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "dua-lipa": {
+    "path": "/artists/dua-lipa.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/742/b171b0e7-fe30-4993-889a-554345dd4742_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/dua-lipa-tickets/artist/2179476",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "sza": {
+    "path": "/artists/sza.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/cde/d540d489-7ed6-44a9-882a-21dd7c724cde_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/sza-tickets/artist/1858419",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "lorde": {
+    "path": "/artists/lorde.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/8cf/04ff2283-c1bf-417a-b845-b3685ab578cf_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/lorde-tickets/artist/1901987",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "hozier": {
+    "path": "/artists/hozier.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/9fe/d6cc61a9-9850-4e4b-9a7e-893c63c629fe_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/hozier-tickets/artist/1896592",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "florence-the-machine": {
+    "path": "/artists/florence-the-machine.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/694/190031fa-7976-4e34-9cbc-bedfe3cb3694_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/florence-the-machine-tickets/artist/1362337",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "laufey": {
+    "path": "/artists/laufey.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/5de/dcb5ffb5-d421-4b2a-8c62-f98af27a55de_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/laufey-tickets/artist/2790801",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "harry-styles": {
+    "path": "/artists/harry-styles.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/2c8/8b6d9420-66c7-4bcb-877b-0ff0238da2c8_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/harry-styles-tickets/artist/2366444",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "beabadoobee": {
+    "path": "/artists/beabadoobee.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/696/f8aa5376-37a5-42a1-aec2-c6886ca22696_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/beabadoobee-tickets/artist/2618990",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "mitski": {
+    "path": "/artists/mitski.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/c8d/48852c5f-9627-4cdc-a86b-7df526ee8c8d_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/mitski-tickets/artist/2077487",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "clairo": {
+    "path": "/artists/clairo.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/4ba/2dba61b8-f5e4-4464-90a3-4509ccfd94ba_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/clairo-tickets/artist/2491075",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "renee-rapp": {
+    "path": "/artists/renee-rapp.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/66d/4b840932-9fbe-4eb2-a31f-f4c6761e866d_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/renee-rapp-tickets/artist/2959906",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "lizzy-mcalpine": {
+    "path": "/artists/lizzy-mcalpine.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/e1b/33f0f33c-f96e-4863-8552-6abbdd9aae1b_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/lizzy-mcalpine-tickets/artist/2782189",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "role-model": {
+    "path": "/artists/role-model.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/e07/8b9d60f8-faf0-488f-90d3-5cd1f69aae07_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/role-model-tickets/artist/2629945",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "dominic-fike": {
+    "path": "/artists/dominic-fike.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/fd2/31ff92a8-a234-4215-8536-d50b9484cfd2_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/dominic-fike-tickets/artist/2647396",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "conan-gray": {
+    "path": "/artists/conan-gray.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/221/8202a9fe-de0b-4b27-a882-fd4acbef3221_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/conan-gray-tickets/artist/2543736",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "wallows": {
+    "path": "/artists/wallows.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/321/5e041520-3c32-4779-9b17-e69383aa2321_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/wallows-tickets/artist/2430902",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "the-1975": {
+    "path": "/artists/the-1975.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/771/d853fa6a-a436-4ace-895f-b54cbbf5b771_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/the-1975-tickets/artist/1765575",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "hayley-williams": {
+    "path": "/artists/hayley-williams.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/dc6/55f55324-9481-423a-846a-a803f46ecdc6_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/hayley-williams-tickets/artist/2733627",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "arctic-monkeys": {
+    "path": "/artists/arctic-monkeys.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/20c/39a92fd1-cff7-4815-9e38-47ad38dde20c_1817101_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/arctic-monkeys-tickets/artist/991635",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "paramore": {
+    "path": "/artists/paramore.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/2f5/a55e7aa0-9008-4e26-8595-74376a4b52f5_1741111_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/paramore-tickets/artist/986126",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "the-strokes": {
+    "path": "/artists/the-strokes.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/436/bf45b6be-dfa4-4b6f-b46b-9063416ef436_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/the-strokes-tickets/artist/807068",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "bleachers": {
+    "path": "/artists/bleachers.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/c22/c8629e9a-cca8-4ef6-992e-712853df0c22_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/bleachers-tickets/artist/1965170",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "vampire-weekend": {
+    "path": "/artists/vampire-weekend.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/70f/d943274f-8176-48fb-ab93-8316c60e070f_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/vampire-weekend-tickets/artist/1166577",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "the-marias": {
+    "path": "/artists/the-marias.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/667/c68e18ef-e5a4-4154-a02f-278e939a7667_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/the-marias-tickets/artist/2470306",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "ethel-cain": {
+    "path": "/artists/ethel-cain.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/fb1/a9d6e1d1-54b5-434f-957f-545451390fb1_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/ethel-cain-tickets/artist/2872189",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "julien-baker": {
+    "path": "/artists/julien-baker.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/e99/73f50a18-b054-4e28-a1e5-b30ead998e99_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/julien-baker-tickets/artist/2182568",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "lucy-dacus": {
+    "path": "/artists/lucy-dacus.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/3ef/48bdd3d4-d72a-4bb8-9908-db448e5583ef_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/lucy-dacus-tickets/artist/2216541",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "kendrick-lamar": {
+    "path": "/artists/kendrick-lamar.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/f7c/00abe3c8-7939-4399-8f3c-a65c89fb9f7c_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/kendrick-lamar-tickets/artist/1480454",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "tyler-the-creator": {
+    "path": "/artists/tyler-the-creator.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/3a3/04ee9987-d0dd-41f6-a169-afc7727293a3_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/tyler-the-creator-tickets/artist/1744607",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "doja-cat": {
+    "path": "/artists/doja-cat.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/b3f/bb7ae999-2e8c-4af5-97c5-73e396c67b3f_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/doja-cat-tickets/artist/2062205",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "blackpink": {
+    "path": "/artists/blackpink.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/f1a/9f9df134-17b4-4a88-9122-ea21ebda0f1a_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/blackpink-tickets/artist/2590072",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "bts": {
+    "path": "/artists/bts.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/cac/79200b54-8f97-4909-a952-46af7db06cac_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/bts-tickets/artist/2110227",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "bad-bunny": {
+    "path": "/artists/bad-bunny.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/598/144e8308-c5a1-4f38-b913-e38d9d02f598_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/bad-bunny-tickets/artist/2317395",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "coldplay": {
+    "path": "/artists/coldplay.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/35d/83661bca-e5e4-44ea-86ac-1a27ebfaa35d_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/coldplay-tickets/artist/806431",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "post-malone": {
+    "path": "/artists/post-malone.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/344/89b3ad2c-d696-4f4d-a29b-9918588cd344_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/post-malone-tickets/artist/2119390",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  },
+  "ed-sheeran": {
+    "path": "/artists/ed-sheeran.jpg",
+    "source_url": "https://s1.ticketm.net/dam/a/7ac/222f0ea8-3b7e-4039-b40b-04a68ccde7ac_RETINA_PORTRAIT_3_2.jpg",
+    "source_page": "https://www.ticketmaster.com/ed-sheeran-tickets/artist/1560779",
+    "credit": "Artist photo via Ticketmaster",
+    "retrieved_at": "2026-11-01"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "artist": "Lucy Dacus",
+  "slug": "lucy-dacus",
+  "image": "rose",
+  "tour_label": "FOREVER IS A FEELING TOUR",
+  "source_url": "https://www.ticketmaster.com/lucy-dacus-tickets/artist/2216541",
+  "imported_at": "2026-11-01",
+  "source_count": 1,
+  "excluded_listings": [],
+  "events": [
+    {
+      "id": "tm-lucy-dacus-1100627FA43722DE",
+      "artist": "Lucy Dacus",
+      "artist_slug": "lucy-dacus",
+      "title": "LUCY DACUS - FOREVER IS A FEELING TOUR",
+      "venue": "Queen Elizabeth Theatre",
+      "city": "Vancouver",
+      "region": "BC",
+      "country": "CA",
+      "start_date": "2027-08-13",
+      "local_time": "20:00",
+      "timezone": "America/Vancouver",
+      "date": "August 13, 2027",
+      "image": "rose",
+      "source": "Ticketmaster",
+      "source_url": "https://www.ticketmaster.ca/lucy-dacus-forever-is-a-feeling-vancouver-british-columbia-08-13-2027/event/1100627FA43722DE",
+      "listing_page": "https://www.ticketmaster.com/lucy-dacus-tickets/artist/2216541?global=true&page=0",
+      "status": "Cancelled",
+      "kind": "tour"
+    }
+  ]
+}

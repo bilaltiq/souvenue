@@ -1,0 +1,137 @@
+{
+  "artist": "The Strokes",
+  "slug": "the-strokes",
+  "image": "violet",
+  "tour_label": "Upcoming shows & appearances",
+  "source_url": "https://www.ticketmaster.com/the-strokes-tickets/artist/807068",
+  "imported_at": "2026-11-01",
+  "source_count": 10,
+  "excluded_listings": [
+    {
+      "id": "tm-the-strokes-14006499D8B1B7DC",
+      "reason": "Duplicate listing for the same show"
+    },
+    {
+      "id": "tm-the-strokes-14006499E967D4F2",
+      "reason": "Duplicate listing for the same show"
+    },
+    {
+      "id": "tm-the-strokes-14006499FB2EF290",
+      "reason": "Duplicate listing for the same show"
+    },
+    {
+      "id": "tm-the-strokes-14006499FC7FF53C",
+      "reason": "Duplicate listing for the same show"
+    },
+    {
+      "id": "tm-the-strokes-14006499F53FE84C",
+      "reason": "Ancillary upgrade or separately hosted afterparty"
+    }
+  ],
+  "events": [
+    {
+      "id": "tm-the-strokes-14006499D700B533",
+      "artist": "The Strokes",
+      "artist_slug": "the-strokes",
+      "title": "Abono General 3 d\u00edas Corona Capital 2026",
+      "venue": "Autodromo Hnos. Rodriguez",
+      "city": "M\u00e9xico",
+      "region": "CDMX",
+      "country": "MX",
+      "start_date": "2026-11-20",
+      "local_time": "00:00",
+      "timezone": "America/Mexico_City",
+      "date": "November 20, 2026",
+      "image": "violet",
+      "source": "Ticketmaster",
+      "source_url": "https://www.ticketmaster.com.mx/abono-general-3-dias-corona-capital-mexico-20-11-2026/event/14006499D700B533",
+      "listing_page": "https://www.ticketmaster.com/the-strokes-tickets/artist/807068?global=true&page=0",
+      "status": "Scheduled",
+      "kind": "appearance",
+      "alternate_source_urls": [
+        "https://www.ticketmaster.com.mx/abono-comfort-pass-banamex-corona-capital-mexico-20-11-2026/event/14006499D8B1B7DC",
+        "https://www.ticketmaster.com.mx/abono-banamex-plus-corona-capital-2026-mexico-20-11-2026/event/14006499E967D4F2"
+      ]
+    },
+    {
+      "id": "tm-the-strokes-211149",
+      "artist": "The Strokes",
+      "artist_slug": "the-strokes",
+      "title": "The Strokes",
+      "venue": "Estadio San Marcos",
+      "city": "Lima",
+      "region": "LIM",
+      "country": "PE",
+      "start_date": "2026-11-20",
+      "local_time": "19:00",
+      "timezone": "America/Lima",
+      "date": "November 20, 2026",
+      "image": "violet",
+      "source": "Ticketmaster",
+      "source_url": "https://www.ticketmaster.pe/event/the-strokes",
+      "listing_page": "https://www.ticketmaster.com/the-strokes-tickets/artist/807068?global=true&page=0",
+      "status": "Scheduled",
+      "kind": "tour"
+    },
+    {
+      "id": "tm-the-strokes-1A0064C3F6011688",
+      "artist": "The Strokes",
+      "artist_slug": "the-strokes",
+      "title": "Corona Capital",
+      "venue": "Aut\u00f3dromo Hermanos Rodr\u00edguez - Redirect",
+      "city": "Temple City",
+      "region": "CA",
+      "country": "US",
+      "start_date": "2026-11-22",
+      "local_time": "12:00",
+      "timezone": "America/Los_Angeles",
+      "date": "November 22, 2026",
+      "image": "violet",
+      "source": "Ticketmaster",
+      "source_url": "https://on.fgtix.com/trk/xtgnc",
+      "listing_page": "https://www.ticketmaster.com/the-strokes-tickets/artist/807068?global=true&page=0",
+      "status": "Scheduled",
+      "kind": "appearance"
+    },
+    {
+      "id": "tm-the-strokes-200274",
+      "artist": "The Strokes",
+      "artist_slug": "the-strokes",
+      "title": "The Strokes - Reality Awaits",
+      "venue": "Centennial Park",
+      "city": "Sydney",
+      "region": "NSW",
+      "country": "AU",
+      "start_date": "2027-02-20",
+      "local_time": "16:15",
+      "timezone": "Australia/Sydney",
+      "date": "February 20, 2027",
+      "image": "violet",
+      "source": "Ticketmaster",
+      "source_url": "https://www.moshtix.com.au/v2/event/the-strokes-reality-awaits/200274",
+      "listing_page": "https://www.ticketmaster.com/the-strokes-tickets/artist/807068?global=true&page=0",
+      "status": "Scheduled",
+      "kind": "tour"
+    },
+    {
+      "id": "tm-the-strokes-19006556A678522A",
+      "artist": "The Strokes",
+      "artist_slug": "the-strokes",
+      "title": "Innings Festival",
+      "venue": "Tempe Beach Park",
+      "city": "Tempe",
+      "region": "AZ",
+      "country": "US",
+      "start_date": "2027-02-27",
+      "local_time": "12:00",
+      "timezone": "America/Phoenix",
+      "date": "February 27, 2027",
+      "image": "violet",
+      "source": "Ticketmaster",
+      "source_url": "https://on.fgtix.com/trk/MzqK",
+      "listing_page": "https://www.ticketmaster.com/the-strokes-tickets/artist/807068?global=true&page=0",
+      "status": "Scheduled",
+      "kind": "appearance"
+    }
+  ]
+}

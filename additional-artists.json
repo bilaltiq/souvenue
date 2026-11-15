@@ -1,0 +1,310 @@
+{
+  "tame-impala": {
+    "name": "Tame Impala",
+    "id": "1446562",
+    "image": "cobalt",
+    "source_url": "https://www.ticketmaster.com/tame-impala-tickets/artist/1446562",
+    "verified_name": "Tame Impala"
+  },
+  "taylor-swift": {
+    "name": "Taylor Swift",
+    "id": "1094215",
+    "image": "violet",
+    "source_url": "https://www.ticketmaster.com/taylor-swift-tickets/artist/1094215",
+    "verified_name": "Taylor Swift"
+  },
+  "sabrina-carpenter": {
+    "name": "Sabrina Carpenter",
+    "id": "2001092",
+    "image": "rose",
+    "source_url": "https://www.ticketmaster.com/sabrina-carpenter-tickets/artist/2001092",
+    "verified_name": "Sabrina Carpenter"
+  },
+  "chappell-roan": {
+    "name": "Chappell Roan",
+    "id": "2397430",
+    "image": "forest",
+    "source_url": "https://www.ticketmaster.com/chappell-roan-tickets/artist/2397430",
+    "verified_name": "Chappell Roan"
+  },
+  "billie-eilish": {
+    "name": "Billie Eilish",
+    "id": "2257710",
+    "image": "ice",
+    "source_url": "https://www.ticketmaster.com/billie-eilish-tickets/artist/2257710",
+    "verified_name": "Billie Eilish"
+  },
+  "lana-del-rey": {
+    "name": "Lana Del Rey",
+    "id": "1646704",
+    "image": "violet",
+    "source_url": "https://www.ticketmaster.com/lana-del-rey-tickets/artist/1646704",
+    "verified_name": "Lana Del Rey"
+  },
+  "ariana-grande": {
+    "name": "Ariana Grande",
+    "id": "1688071",
+    "image": "rose",
+    "source_url": "https://www.ticketmaster.com/ariana-grande-tickets/artist/1688071",
+    "verified_name": "Ariana Grande"
+  },
+  "lorde": {
+    "name": "Lorde",
+    "id": "1901987",
+    "image": "cobalt",
+    "source_url": "https://www.ticketmaster.com/lorde-tickets/artist/1901987",
+    "verified_name": "Lorde"
+  },
+  "the-weeknd": {
+    "name": "The Weeknd",
+    "id": "1697014",
+    "image": "cobalt",
+    "source_url": "https://www.ticketmaster.com/the-weeknd-tickets/artist/1697014",
+    "verified_name": "The Weeknd"
+  },
+  "dua-lipa": {
+    "name": "Dua Lipa",
+    "id": "2179476",
+    "image": "ice",
+    "source_url": "https://www.ticketmaster.com/dua-lipa-tickets/artist/2179476",
+    "verified_name": "Dua Lipa"
+  },
+  "sza": {
+    "name": "SZA",
+    "id": "1858419",
+    "image": "forest",
+    "source_url": "https://www.ticketmaster.com/sza-tickets/artist/1858419",
+    "verified_name": "SZA"
+  },
+  "harry-styles": {
+    "name": "Harry Styles",
+    "id": "2366444",
+    "image": "violet",
+    "source_url": "https://www.ticketmaster.com/harry-styles-tickets/artist/2366444",
+    "verified_name": "Harry Styles"
+  },
+  "hozier": {
+    "name": "Hozier",
+    "id": "1896592",
+    "image": "rose",
+    "source_url": "https://www.ticketmaster.com/hozier-tickets/artist/1896592",
+    "verified_name": "Hozier"
+  },
+  "florence-the-machine": {
+    "name": "Florence + The Machine",
+    "id": "1362337",
+    "image": "ice",
+    "source_url": "https://www.ticketmaster.com/florence-the-machine-tickets/artist/1362337",
+    "verified_name": "Florence + The Machine"
+  },
+  "laufey": {
+    "name": "Laufey",
+    "id": "2790801",
+    "image": "cobalt",
+    "source_url": "https://www.ticketmaster.com/laufey-tickets/artist/2790801",
+    "verified_name": "Laufey"
+  },
+  "mitski": {
+    "name": "Mitski",
+    "id": "2077487",
+    "image": "forest",
+    "source_url": "https://www.ticketmaster.com/mitski-tickets/artist/2077487",
+    "verified_name": "Mitski"
+  },
+  "beabadoobee": {
+    "name": "beabadoobee",
+    "id": "2618990",
+    "image": "rose",
+    "source_url": "https://www.ticketmaster.com/beabadoobee-tickets/artist/2618990",
+    "verified_name": "beabadoobee"
+  },
+  "lizzy-mcalpine": {
+    "name": "Lizzy McAlpine",
+    "id": "2782189",
+    "image": "ice",
+    "source_url": "https://www.ticketmaster.com/lizzy-mcalpine-tickets/artist/2782189",
+    "verified_name": "Lizzy McAlpine"
+  },
+  "clairo": {
+    "name": "Clairo",
+    "id": "2491075",
+    "image": "violet",
+    "source_url": "https://www.ticketmaster.com/clairo-tickets/artist/2491075",
+    "verified_name": "Clairo"
+  },
+  "renee-rapp": {
+    "name": "Rene\u00e9 Rapp",
+    "id": "2959906",
+    "image": "forest",
+    "source_url": "https://www.ticketmaster.com/renee-rapp-tickets/artist/2959906",
+    "verified_name": "Rene\u00e9 Rapp"
+  },
+  "role-model": {
+    "name": "Role Model",
+    "id": "2629945",
+    "image": "violet",
+    "source_url": "https://www.ticketmaster.com/role-model-tickets/artist/2629945",
+    "verified_name": "ROLE MODEL"
+  },
+  "dominic-fike": {
+    "name": "Dominic Fike",
+    "id": "2647396",
+    "image": "cobalt",
+    "source_url": "https://www.ticketmaster.com/dominic-fike-tickets/artist/2647396",
+    "verified_name": "Dominic Fike"
+  },
+  "conan-gray": {
+    "name": "Conan Gray",
+    "id": "2543736",
+    "image": "rose",
+    "source_url": "https://www.ticketmaster.com/conan-gray-tickets/artist/2543736",
+    "verified_name": "Conan Gray"
+  },
+  "wallows": {
+    "name": "Wallows",
+    "id": "2430902",
+    "image": "ice",
+    "source_url": "https://www.ticketmaster.com/wallows-tickets/artist/2430902",
+    "verified_name": "Wallows"
+  },
+  "the-1975": {
+    "name": "The 1975",
+    "id": "1765575",
+    "image": "forest",
+    "source_url": "https://www.ticketmaster.com/the-1975-tickets/artist/1765575",
+    "verified_name": "The 1975"
+  },
+  "arctic-monkeys": {
+    "name": "Arctic Monkeys",
+    "id": "991635",
+    "image": "cobalt",
+    "source_url": "https://www.ticketmaster.com/arctic-monkeys-tickets/artist/991635",
+    "verified_name": "Arctic Monkeys"
+  },
+  "hayley-williams": {
+    "name": "Hayley Williams",
+    "id": "2733627",
+    "image": "ice",
+    "source_url": "https://www.ticketmaster.com/hayley-williams-tickets/artist/2733627",
+    "verified_name": "Hayley Williams"
+  },
+  "paramore": {
+    "name": "Paramore",
+    "id": "986126",
+    "image": "rose",
+    "source_url": "https://www.ticketmaster.com/paramore-tickets/artist/986126",
+    "verified_name": "Paramore"
+  },
+  "the-strokes": {
+    "name": "The Strokes",
+    "id": "807068",
+    "image": "violet",
+    "source_url": "https://www.ticketmaster.com/the-strokes-tickets/artist/807068",
+    "verified_name": "The Strokes"
+  },
+  "vampire-weekend": {
+    "name": "Vampire Weekend",
+    "id": "1166577",
+    "image": "forest",
+    "source_url": "https://www.ticketmaster.com/vampire-weekend-tickets/artist/1166577",
+    "verified_name": "Vampire Weekend"
+  },
+  "bleachers": {
+    "name": "Bleachers",
+    "id": "1965170",
+    "image": "violet",
+    "source_url": "https://www.ticketmaster.com/bleachers-tickets/artist/1965170",
+    "verified_name": "Bleachers"
+  },
+  "the-marias": {
+    "name": "The Mar\u00edas",
+    "id": "2470306",
+    "image": "cobalt",
+    "source_url": "https://www.ticketmaster.com/the-marias-tickets/artist/2470306",
+    "verified_name": "The Mar\u00edas"
+  },
+  "ethel-cain": {
+    "name": "Ethel Cain",
+    "id": "2872189",
+    "image": "forest",
+    "source_url": "https://www.ticketmaster.com/ethel-cain-tickets/artist/2872189",
+    "verified_name": "Ethel Cain"
+  },
+  "julien-baker": {
+    "name": "Julien Baker",
+    "id": "2182568",
+    "image": "ice",
+    "source_url": "https://www.ticketmaster.com/julien-baker-tickets/artist/2182568",
+    "verified_name": "Julien Baker"
+  },
+  "lucy-dacus": {
+    "name": "Lucy Dacus",
+    "id": "2216541",
+    "image": "rose",
+    "source_url": "https://www.ticketmaster.com/lucy-dacus-tickets/artist/2216541",
+    "verified_name": "Lucy Dacus"
+  },
+  "kendrick-lamar": {
+    "name": "Kendrick Lamar",
+    "id": "1480454",
+    "image": "rose",
+    "source_url": "https://www.ticketmaster.com/kendrick-lamar-tickets/artist/1480454",
+    "verified_name": "Kendrick Lamar"
+  },
+  "doja-cat": {
+    "name": "Doja Cat",
+    "id": "2062205",
+    "image": "cobalt",
+    "source_url": "https://www.ticketmaster.com/doja-cat-tickets/artist/2062205",
+    "verified_name": "Doja Cat"
+  },
+  "tyler-the-creator": {
+    "name": "Tyler, The Creator",
+    "id": "1744607",
+    "image": "violet",
+    "source_url": "https://www.ticketmaster.com/tyler-the-creator-tickets/artist/1744607",
+    "verified_name": "Tyler, The Creator"
+  },
+  "blackpink": {
+    "name": "BLACKPINK",
+    "id": "2590072",
+    "image": "cobalt",
+    "source_url": "https://www.ticketmaster.com/blackpink-tickets/artist/2590072",
+    "verified_name": "BLACKPINK"
+  },
+  "bts": {
+    "name": "BTS",
+    "id": "2110227",
+    "image": "forest",
+    "source_url": "https://www.ticketmaster.com/bts-tickets/artist/2110227",
+    "verified_name": "BTS"
+  },
+  "bad-bunny": {
+    "name": "Bad Bunny",
+    "id": "2317395",
+    "image": "ice",
+    "source_url": "https://www.ticketmaster.com/bad-bunny-tickets/artist/2317395",
+    "verified_name": "Bad Bunny"
+  },
+  "coldplay": {
+    "name": "Coldplay",
+    "id": "806431",
+    "image": "violet",
+    "source_url": "https://www.ticketmaster.com/coldplay-tickets/artist/806431",
+    "verified_name": "Coldplay"
+  },
+  "post-malone": {
+    "name": "Post Malone",
+    "id": "2119390",
+    "image": "rose",
+    "source_url": "https://www.ticketmaster.com/post-malone-tickets/artist/2119390",
+    "verified_name": "Post Malone"
+  },
+  "ed-sheeran": {
+    "name": "Ed Sheeran",
+    "id": "1560779",
+    "image": "ice",
+    "source_url": "https://www.ticketmaster.com/ed-sheeran-tickets/artist/1560779",
+    "verified_name": "Ed Sheeran"
+  }
+}
