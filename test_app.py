@@ -97,8 +97,9 @@ class Flow(unittest.TestCase):
    self.assertEqual(Response('POST','/api/post',{'scope':'show:noah-kahan','body':'Missing photo','category':'merch'},cookie).status,400)
    self.assertEqual(Response('GET','/api/posts/show:olivia-rodrigo').data[0]['attended'],0)
    self.assertEqual(Response('POST','/api/checkin',{'event':'missing'},cookie).status,404)
-   data=state['events'][0];data['artist']='Editable artist';self.assertEqual(Response('POST','/api/event',data,cookie).status,200)
-   self.assertEqual(Response('GET','/api/state',cookie=cookie).data['events'][0]['artist'],'Editable artist')
+   data=dict(next(event for event in state['events'] if event['id']=='noah-kahan'));data['artist']='Editable artist';self.assertEqual(Response('POST','/api/event',data,cookie).status,200)
+   updated=next(event for event in Response('GET','/api/state',cookie=cookie).data['events'] if event['id']==data['id'])
+   self.assertEqual(updated['artist'],'Editable artist')
    tagged={'scope':'show:noah-kahan','body':'Where is the merch stand?','tags':['Merch','Questions','Merch']}
    self.assertEqual(Response('POST','/api/post',tagged,cookie).status,200)
    saved=Response('GET','/api/posts/show:noah-kahan').data[-1]
