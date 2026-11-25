@@ -34,6 +34,30 @@ def db():
   return PostgresConnection(url)
  if os.environ.get('VERCEL'):raise RuntimeError('DATABASE_URL is required on Vercel; local SQLite is not persistent.')
  c=sqlite3.connect(DB,factory=LocalConnection);c.row_factory=sqlite3.Row;return c
+
+def password_digest(password,salt):
+ raw_password=password.encode();raw_salt=salt.encode()
+ if hasattr(hashlib,'scrypt'):
+  return 'scrypt$'+hashlib.scrypt(raw_password,salt=raw_salt,n=16384,r=8,p=1).hex()
+ rounds=310000
+ digest=hashlib.pbkdf2_hmac('sha256',raw_password,raw_salt,rounds).hex()
+ return f'pbkdf2_sha256${rounds}${digest}'
+
+def password_matches(password,stored,salt):
+ raw_password=password.encode();raw_salt=salt.encode()
+ if stored.startswith('pbkdf2_sha256$'):
+  try:
+   _,rounds,digest=stored.split('$',2)
+   candidate=hashlib.pbkdf2_hmac('sha256',raw_password,raw_salt,int(rounds)).hex()
+   return hmac.compare_digest(digest,candidate)
+  except (ValueError,TypeError):return False
+ if stored.startswith('scrypt$'):
+  if not hasattr(hashlib,'scrypt'):return False
+  stored=stored.split('$',1)[1]
+ if not hasattr(hashlib,'scrypt'):return False
+ candidate=hashlib.scrypt(raw_password,salt=raw_salt,n=16384,r=8,p=1).hex()
+ return hmac.compare_digest(stored,candidate)
+
 def initialize():
  with db() as c:
   if os.environ.get('DATABASE_URL'):
@@ -43,7 +67,8 @@ def initialize():
   if 'method' not in [r[1] for r in c.execute('PRAGMA table_info(attendance)')]:c.execute("ALTER TABLE attendance ADD COLUMN method TEXT NOT NULL DEFAULT 'demo'")
   if 'visibility' not in [r[1] for r in c.execute('PRAGMA table_info(users)')]:c.execute("ALTER TABLE users ADD COLUMN visibility TEXT NOT NULL DEFAULT 'public'")
   if 'leaderboard_opt_in' not in [r[1] for r in c.execute('PRAGMA table_info(users)')]:c.execute("ALTER TABLE users ADD COLUMN leaderboard_opt_in INTEGER NOT NULL DEFAULT 0")
-  c.execute("CREATE TABLE IF NOT EXISTS concert_logs(id TEXT PRIMARY KEY,user TEXT,identity TEXT,event_id TEXT,artist TEXT,venue TEXT,city TEXT,date TEXT,created REAL,UNIQUE(user,identity))")
+  c.execute("CREATE TABLE IF NOT EXISTS concert_logs(id TEXT PRIMARY KEY,user TEXT,identity TEXT,event_id TEXT,artist TEXT,venue TEXT,city TEXT,date TEXT,created REAL,artists_seen TEXT DEFAULT 'null',UNIQUE(user,identity))")
+  if 'artists_seen' not in [r[1] for r in c.execute('PRAGMA table_info(concert_logs)')]:c.execute("ALTER TABLE concert_logs ADD COLUMN artists_seen TEXT DEFAULT 'null'")
   c.execute("CREATE TABLE IF NOT EXISTS feed_posts(id TEXT PRIMARY KEY,user TEXT,body TEXT,photo TEXT,event_id TEXT,category TEXT,created REAL)")
   if 'extra_photos' not in [r[1] for r in c.execute('PRAGMA table_info(feed_posts)')]:c.execute("ALTER TABLE feed_posts ADD COLUMN extra_photos TEXT NOT NULL DEFAULT '[]'")
   c.executescript("""CREATE TABLE IF NOT EXISTS friendships(low TEXT,high TEXT,sender TEXT,status TEXT,created REAL,PRIMARY KEY(low,high));
@@ -186,20 +211,29 @@ def historical_catalog():
 def concert_identity(artist,venue,city,date):
  def norm(value):return re.sub(r'[^a-z0-9]','',unicodedata.normalize('NFKD',str(value)).encode('ascii','ignore').decode().lower())
  return '|'.join(norm(x) for x in (artist,venue,city,date))
+def artist_identity(artist):
+ return re.sub(r'[^a-z0-9]','',unicodedata.normalize('NFKD',str(artist)).encode('ascii','ignore').decode().lower())
+def logged_artist_count(history):
+ return len({artist_identity(person.get('artist','')) for log in history for person in log.get('artists_seen',[]) if person.get('artist')})
 def concert_history(c,uid):
  if not uid:return []
  history={}
  for log in rows(c,'SELECT * FROM concert_logs WHERE user=? ORDER BY created',(uid,)):
-  history[log['identity']]={**log,'checked_in':False,'points':0,'start_date':log['date']}
+  try:seen=json.loads(log.get('artists_seen')) if log.get('artists_seen') is not None else None
+  except (TypeError,ValueError):seen=None
+  if seen is None:seen=[{'artist':log['artist'],'artist_slug':''}]
+  history[log['identity']]={**log,'artists_seen':seen,'checked_in':False,'points':0,'start_date':log['date']}
  events={e['id']:e for e in event_records(c)}
  for attendance in rows(c,'SELECT * FROM attendance WHERE user=?',(uid,)):
   e=events.get(attendance['event'])
   if not e:continue
   day=e.get('start_date') or e['date'];key=concert_identity(e['artist'],e['venue'],e['city'],day)
+  prior=next((log for log in history.values() if log.get('event_id')==e['id'] or concert_identity(log.get('artist',''),log.get('venue',''),log.get('city',''),log.get('start_date',''))==key),None)
   # An explicitly selected event always upgrades the same manual entry.
   for k,log in list(history.items()):
    if log.get('event_id')==e['id']:del history[k]
-  history[key]={**e,'id':'checkin-'+e['id'],'event_id':e['id'],'checked_in':True,'checkin_method':attendance['method'],'points':ATTENDANCE_POINTS,'created':attendance['created'],'start_date':day}
+  seen=prior.get('artists_seen') if prior else [{'artist':e['artist'],'artist_slug':e.get('artist_slug','')}]
+  history[key]={**e,**({'artists_seen':seen} if prior else {}),'id':'checkin-'+e['id'],'event_id':e['id'],'checked_in':True,'checkin_method':attendance['method'],'points':ATTENDANCE_POINTS,'created':attendance['created'],'start_date':day}
  return sorted(history.values(),key=lambda e:(e['start_date'],e['created']),reverse=True)
 
 class Handler(BaseHTTPRequestHandler):
@@ -233,7 +267,7 @@ class Handler(BaseHTTPRequestHandler):
      if mime not in ('image/jpeg','image/png','image/webp'):return self.reply(404,{'error':'Photo unavailable.'})
      self.send_response(200);self.send_header('Content-Type',mime);self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff');self.send_header('Content-Length',str(len(content)));self.end_headers();self.wfile.write(content);return
     if p=='/api/past-events':return self.reply(200,historical_catalog())
-    if p=='/api/state':return self.reply(200,{'demo_checkins_enabled':demo_checkins_enabled(),'hosted':hosted(),'max_photo_bytes':MAX_PHOTO_BYTES,'max_post_photo_bytes':MAX_POST_PHOTO_BYTES,'concert_history':concert_history(c,u['id']) if u else [],'user':u,'today':datetime.now(ZoneInfo('America/New_York')).date().isoformat(),'events':event_records(c),'artists':artist_records(c),'points':c.execute('SELECT COUNT(*) FROM attendance WHERE user=?',(u['id'],)).fetchone()[0]*ATTENDANCE_POINTS if u else 0,'points_per_checkin':ATTENDANCE_POINTS,'attendance':rows(c,'SELECT event,created,method,100 AS points FROM attendance WHERE user=? ORDER BY created DESC',(u['id'],)) if u else []})
+    if p=='/api/state':return self.reply(200,{'demo_checkins_enabled':demo_checkins_enabled(),'hosted':hosted(),'max_photo_bytes':MAX_PHOTO_BYTES,'max_post_photo_bytes':MAX_POST_PHOTO_BYTES,'concert_history':concert_history(c,u['id']) if u else [],'artists_seen_count':logged_artist_count(concert_history(c,u['id'])) if u else 0,'user':u,'today':datetime.now(ZoneInfo('America/New_York')).date().isoformat(),'events':event_records(c),'artists':artist_records(c),'points':c.execute('SELECT COUNT(*) FROM attendance WHERE user=?',(u['id'],)).fetchone()[0]*ATTENDANCE_POINTS if u else 0,'points_per_checkin':ATTENDANCE_POINTS,'attendance':rows(c,'SELECT event,created,method,100 AS points FROM attendance WHERE user=? ORDER BY created DESC',(u['id'],)) if u else []})
     if p=='/api/leaderboards':
      options=parse_qs(urlparse(self.path).query);period=options.get('period',['all'])[0];scope=options.get('scope',['all'])[0]
      if period not in ('all','month') or scope not in ('all','friends'):return self.reply(400,{'error':'Choose a valid leaderboard filter.'})
@@ -308,7 +342,7 @@ class Handler(BaseHTTPRequestHandler):
    b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','image/jpeg');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
   # Vercel serves public/ from its CDN and omits it from the Python bundle.
   # Page navigation must read a template that ships with the server instead.
-  file=ROOT/'public'/p.lstrip('/') if p in ('/app.js','/style.css') else ROOT/'templates'/'index.html'
+  file=ROOT/'public'/p.lstrip('/') if p in ('/app.js','/style.css','/flex-carousel.js') else ROOT/'templates'/'index.html'
   b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','text/javascript' if file.suffix=='.js' else 'text/css' if file.suffix=='.css' else 'text/html');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b)
  def readable(self,c,u,scope):
   if scope.startswith('community:'):return bool(c.execute('SELECT 1 FROM communities WHERE id=?',(scope[10:],)).fetchone())
@@ -338,9 +372,9 @@ class Handler(BaseHTTPRequestHandler):
      r=c.execute('SELECT * FROM users WHERE name=?',(name,)).fetchone()
      if p=='/api/register':
       if r:return self.reply(409,{'error':'Name already in use. Sign in or choose another name.'})
-      salt=secrets.token_hex(16);uid=secrets.token_hex(16);digest=hashlib.scrypt(pw.encode(),salt=salt.encode(),n=16384,r=8,p=1).hex();c.execute('INSERT INTO users(id,name,password,salt) VALUES(?,?,?,?)',(uid,name,digest,salt))
+      salt=secrets.token_hex(16);uid=secrets.token_hex(16);digest=password_digest(pw,salt);c.execute('INSERT INTO users(id,name,password,salt) VALUES(?,?,?,?)',(uid,name,digest,salt))
      else:
-      if not r or not hmac.compare_digest(r['password'],hashlib.scrypt(pw.encode(),salt=r['salt'].encode(),n=16384,r=8,p=1).hex()):return self.reply(401,{'error':'Name or password is incorrect.'})
+      if not r or not password_matches(pw,r['password'],r['salt']):return self.reply(401,{'error':'Name or password is incorrect.'})
       uid=r['id']
      token=secrets.token_urlsafe(32);c.execute('INSERT INTO sessions VALUES(?,?,?)',(token,uid,time.time()+86400*7));c.commit();self.send_response(200);self.send_header('Set-Cookie',f'session={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800'+('; Secure' if hosted() else ''));self.send_header('Content-Type','application/json');self.end_headers();self.wfile.write(b'{}');return
     if p=='/api/logout':
@@ -358,9 +392,21 @@ class Handler(BaseHTTPRequestHandler):
      except ValueError:return self.reply(400,{'error':'Choose a valid concert date.'})
      if parsed>datetime.now(ZoneInfo('America/New_York')).date():return self.reply(400,{'error':'Only shows on or before today can be logged.'})
      identity=concert_identity(artist,venue,city,day)
-     if any(h['checked_in'] and (h.get('event_id')==event_id or concert_identity(h['artist'],h['venue'],h['city'],h['start_date'])==identity) for h in concert_history(c,u['id'])):return self.reply(200,{'ok':True,'already_checked_in':True})
-     c.execute('INSERT OR IGNORE INTO concert_logs VALUES(?,?,?,?,?,?,?,?,?)',(secrets.token_hex(16),u['id'],identity,event_id,artist,venue,city,day,time.time()))
-     return self.reply(200,{'ok':True})
+     artists_seen=data.get('artists_seen')
+     if artists_seen is not None and (not isinstance(artists_seen,list) or len(artists_seen)>30):return self.reply(400,{'error':'Choose up to 30 performers for this show.'})
+     normalized=[];seen_keys=set()
+     for person in (artists_seen if artists_seen is not None else [{'artist':artist,'artist_slug':event.get('artist_slug','') if event else ''}]):
+      if isinstance(person,str):person={'artist':person,'artist_slug':''}
+      if not isinstance(person,dict):continue
+      name=str(person.get('artist','')).strip()[:160];slug=str(person.get('artist_slug','')).strip()[:160]
+      key=slug or artist_identity(name)
+      if not name or not key or key in seen_keys:continue
+      seen_keys.add(key);normalized.append({'artist':name,'artist_slug':slug})
+     log=c.execute('SELECT id FROM concert_logs WHERE user=? AND identity=?',(u['id'],identity)).fetchone()
+     log_id=log['id'] if log else secrets.token_hex(16)
+     if not log:c.execute('INSERT INTO concert_logs(id,user,identity,event_id,artist,venue,city,date,created,artists_seen) VALUES(?,?,?,?,?,?,?,?,?,?)',(log_id,u['id'],identity,event_id,artist,venue,city,day,time.time(),json.dumps(normalized)))
+     else:c.execute('UPDATE concert_logs SET artists_seen=? WHERE id=? AND user=?',(json.dumps(normalized),log_id,u['id']))
+     return self.reply(200,{'ok':True,'artists_seen':normalized})
     if p=='/api/concert-log-delete':
      c.execute('DELETE FROM concert_logs WHERE id=? AND user=?',(str(data.get('id','')),u['id']))
      return self.reply(200,{'ok':True})
