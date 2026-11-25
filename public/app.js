@@ -347,3 +347,20 @@ document.querySelector('#account').onclick=async()=>{if(state.user){await api('l
 })();
 
 
+
+// Mobile navigation menu (design system v1)
+(() => {
+ const header = document.querySelector('header');
+ const toggle = document.querySelector('.menu-toggle');
+ if (!header || !toggle) return;
+ const setOpen = open => {
+  header.classList.toggle('nav-open', open);
+  toggle.setAttribute('aria-expanded', String(open));
+  toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+ };
+ toggle.addEventListener('click', () => setOpen(!header.classList.contains('nav-open')));
+ header.querySelectorAll('nav a').forEach(link => link.addEventListener('click', () => setOpen(false)));
+ document.addEventListener('keydown', event => { if (event.key === 'Escape') setOpen(false); });
+ document.addEventListener('click', event => { if (!header.contains(event.target)) setOpen(false); });
+ matchMedia('(min-width: 901px)').addEventListener('change', event => { if (event.matches) setOpen(false); });
+})();

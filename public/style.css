@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+/* Only Instrument Sans renders: the night palette below forces it on every element. */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap');
 :root{--paper:#f5f4ed;--ink:#232d25;--accent:#d8f46b;--line:#d8dcd1;--muted:#677064}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:'DM Sans',Arial,sans-serif;font-size:15px}h1,h2,h3,.brand{font-family:'Instrument Sans',Arial,sans-serif;letter-spacing:-.05em}h1{font-size:clamp(44px,6.5vw,86px);font-weight:500;line-height:1.02;margin:20px 0 25px}h2{font-size:38px;font-weight:500;line-height:1.1;margin:10px 0 20px}h3{font-size:25px;font-weight:500;margin:8px 0}p{line-height:1.6}a{color:inherit;text-decoration:none}button,.button{background:var(--ink);border:1px solid var(--ink);color:var(--paper);padding:13px 21px;border-radius:6px;font:600 14px 'DM Sans',Arial;cursor:pointer;display:inline-block;text-align:center}button:hover,.button:hover{filter:brightness(1.2)}.secondary{background:transparent;color:var(--ink)}a:focus-visible,button:focus-visible{outline:3px solid #6d8a16;outline-offset:4px}header{height:91px;display:flex;align-items:center;justify-content:space-between;max-width:1280px;margin:auto;padding:0 48px;gap:20px}.brand{font-size:36px;font-weight:700;letter-spacing:-2px}.brand span{color:#6a7d36;margin-left:4px}nav{display:flex;gap:32px;font-size:14px}nav a:hover{text-decoration:underline}.notice{padding:11px 30px;background:#e7eadf;text-align:center;font-size:10px;font-weight:700;letter-spacing:1.5px}.notice span{font-weight:400;margin-left:20px;letter-spacing:.3px}main{max-width:1280px;margin:auto;padding:0 48px}.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:70px;align-items:center;padding:73px 0 80px}.eyebrow{font-size:10px;letter-spacing:1.6px;font-weight:700;line-height:1.7}.hero h1 em{font-style:normal;color:#688039}.hero>div>p:not(.eyebrow){font-size:17px;color:var(--muted);margin:25px 0 30px}.hero .button{background:var(--accent);color:var(--ink);border-color:var(--accent);min-width:220px}.hero .button span{margin-left:30px}.ticket{transform:rotate(5deg);border:1px solid var(--ink);box-shadow:11px 12px 0 #e1e4d6;background:#ecefdf;border-radius:14px;overflow:hidden;max-width:400px}.ticket-top,.ticket-bottom{padding:19px 23px;font-size:10px;letter-spacing:2px;display:flex;justify-content:space-between;align-items:center}.ticket-top span{font-size:25px}.ticket-art{height:290px;position:relative;background:#304c37;overflow:hidden;color:#e5eecc;padding:25px}.ticket-art p{position:relative;font:500 37px/.98 'Instrument Sans',Arial;letter-spacing:-2px;margin:100px 0 0}.wave{position:absolute;color:#95ac6c;font-size:290px;letter-spacing:-65px;line-height:.9;transform:rotate(-32deg);left:75px;top:-30px}.ticket-bottom{border-top:2px dashed #788068;font-size:9px}.ticket-bottom span{letter-spacing:-1px;font-size:22px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:25px}.section-head h2{margin-bottom:0}.muted{color:var(--muted);font-size:13px}.cards{display:grid;grid-template-columns:1fr 1fr;gap:28px}.event-card{display:block;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fafaf5;transition:transform .2s}.event-card:hover{transform:translateY(-3px)}.poster{height:255px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:24px;color:#e5ecda;background:#3c5341}.poster.violet{background:#70618e;color:#f5e8f4}.poster.amber{background:#996238;color:#ffedbe}.poster-meta,.poster-bottom{position:relative;z-index:1;font-size:9px;letter-spacing:2px}.poster strong{font:500 57px/.95 'Instrument Sans',Arial;letter-spacing:-3px;max-width:340px;position:relative;z-index:1}.orbit{position:absolute;width:330px;height:330px;border:1px solid #ffffff35;border-radius:50%;right:-20px;top:-40px;box-shadow:0 0 0 25px #ffffff0c,0 0 0 50px #ffffff0b,0 0 0 75px #ffffff09,0 0 0 100px #ffffff08}.violet .orbit{border-radius:35%;transform:rotate(40deg)}.card-info{padding:21px 25px 25px}.card-info .eyebrow{margin:0}.card-info .eyebrow span{float:right;font-size:21px}.card-info p:not(.eyebrow){margin:3px 0;font-size:13px;color:var(--muted)}.pill,.badge{display:inline-block;border:1px solid #cbd4b6;background:#eaf0dc;border-radius:30px;font-size:10px;padding:5px 10px;margin-top:12px}.how{margin:70px 0 40px;padding:35px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.how>div{display:grid;grid-template-columns:1fr 1fr;column-gap:80px}.how p{color:var(--muted)}.how a{grid-column:2;font-size:13px;text-decoration:underline}footer{display:flex;justify-content:space-between;padding:15px 0 40px;font-size:23px;font-weight:600}footer span{font-size:10px;color:var(--muted);font-weight:400}.back{display:block;font-size:13px;margin:30px 0}.event-hero{display:grid;grid-template-columns:.9fr 1.15fr;gap:50px;align-items:center}.poster.large{height:440px;border-radius:10px}.poster.large strong{font-size:75px}.event-hero h1{font-size:58px;margin:15px 0}.event-detail{font-size:19px}.check-panel{display:flex;gap:18px;border:1px solid #cdd4bf;padding:22px;border-radius:8px;background:#edf0e4;margin:25px 0}.check-panel .icon{font-size:30px}.check-panel p{font-size:13px;margin:7px 0 15px}.check-panel small{display:block;font-size:10px;line-height:1.5;margin-top:12px;color:var(--muted)}.community{margin:55px 0 80px}.tabs{display:flex;border-bottom:1px solid var(--line);gap:12px;overflow:auto;margin-bottom:25px}.tabs button{white-space:nowrap;background:none;border:0;border-radius:0;color:var(--muted);padding:16px 14px}.tabs .active{color:var(--ink);border-bottom:3px solid var(--ink)}.forum-head{border-bottom:1px solid var(--line);padding-bottom:20px}.forum-head p{margin:6px 0}.forum-head small{color:var(--muted)}.empty{text-align:center;padding:50px 20px}.empty>span{font-size:40px}.empty p{color:var(--muted)}.post{display:flex;gap:16px;padding:25px 0;border-bottom:1px solid var(--line)}.post>div:last-child{min-width:0}.post p{white-space:pre-wrap;overflow-wrap:anywhere}.avatar{display:grid;place-items:center;background:#dce3cc;border-radius:50%;width:42px;height:42px;flex-shrink:0}.post small{display:block;color:var(--muted);margin-top:6px;font-size:10px}.post .badge{margin:0 0 0 8px}.photo{max-width:100%;max-height:450px;border-radius:8px}form label{display:block;font-size:13px;font-weight:600;margin:20px 0 8px}input,textarea,select{font:inherit;width:100%;padding:12px;margin-top:8px;background:#fffefa;border:1px solid #c7cebd;border-radius:5px;color:var(--ink)}textarea{min-height:110px;resize:vertical}.compose-actions{display:flex;gap:20px;align-items:center;justify-content:space-between;margin:10px 0}label.file{margin:0;cursor:pointer}input[type=file]{width:190px;font-size:10px}small{font-size:11px;color:var(--muted)}.merch{display:grid;grid-template-columns:repeat(3,1fr);gap:25px}.product{height:220px;background:#e7e8dd;border-radius:8px;display:grid;place-content:center;font-size:80px}.tote{color:#645c4a;font-size:35px}.print{background:#d6dfbd;font-size:38px;text-align:center}.merch h3{font-size:21px}.merch p{font-size:12px}.intro{max-width:600px;color:var(--muted)}.studio-grid{display:grid;grid-template-columns:1fr 1fr;gap:25px;margin-top:35px}.studio-card{border:1px solid var(--line);padding:28px;border-radius:10px;background:#fafaf5}.studio-card h2{font-size:28px}.studio-card label{display:block;margin-top:16px;font-size:12px}.studio-card input{font-size:13px}.actions{display:flex;gap:10px;margin:18px 0 25px;flex-wrap:wrap}details{border-top:1px solid var(--line);padding-top:20px}summary{cursor:pointer;font-weight:600}form small{display:block;margin:10px 0}.instructions{margin:50px 0;max-width:850px}.instructions li{line-height:1.8;margin:12px 0}.instructions p{color:var(--muted);font-size:13px}.history>p{margin-left:15px}.history{margin-bottom:25px}dialog{background:var(--paper);border:1px solid var(--line);border-radius:14px;max-width:480px;width:calc(100% - 30px);padding:35px}dialog::backdrop{background:#19211999}dialog h2{font-size:36px}dialog p{font-size:13px}dialog button{margin-right:5px}.close{float:right;padding:0;background:none;color:var(--ink);border:0;font-size:28px}#autherror{color:#9b3329}#toast:not(:empty){position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:var(--ink);color:white;padding:16px 25px;border-radius:8px;box-shadow:0 4px 20px #0003;z-index:5;width:max-content;max-width:90%;font-size:13px}@media(max-width:760px){header{padding:0 20px;height:80px;gap:10px}.brand{font-size:29px}header button{padding:9px 10px;font-size:11px}nav{gap:13px;font-size:11px}.notice{font-size:9px;padding:10px}.notice span{display:block;margin:5px 0 0;font-size:9px}main{padding:0 20px}.hero{padding:40px 0 50px;grid-template-columns:1fr;gap:40px}.hero h1{font-size:58px}.ticket{width:80%;max-width:350px;justify-self:center}.ticket-art{height:230px}.ticket-art p{font-size:30px;margin-top:90px}.section-head{display:block}.section-head>.muted{display:block;margin-top:15px}.cards,.event-hero,.studio-grid{grid-template-columns:1fr}.poster{height:240px}.how>div{grid-template-columns:1fr;gap:0}.how a{grid-column:1}.how{margin-top:45px}footer{display:block}footer span{display:block;margin-top:15px}.event-hero{gap:20px}.poster.large{height:300px}.event-hero h1{font-size:48px}.merch{grid-template-columns:1fr}.product{height:190px}.studio-card{padding:20px}.tabs{gap:0}.tabs button{padding:14px 12px}.compose-actions{gap:8px;flex-wrap:wrap}.post .badge{margin-left:0;display:block;width:fit-content}h2{font-size:32px}.check-panel{padding:18px}.check-panel .icon{display:none}}
 .poster-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.45)}
 .unlock-celebration{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#1d2b257a;backdrop-filter:blur(5px);pointer-events:none;animation:celebration-fade 2.8s both}.unlock-card{background:var(--paper);border-radius:28px;padding:28px 45px;text-align:center;box-shadow:0 20px 80px #0003;animation:unlock-pop .5s cubic-bezier(.2,1.5,.5,1) both;max-width:90vw}.unlock-card h2{margin:10px 0;font-size:38px}.unlock-card>p:last-child{color:var(--muted);margin-bottom:0}.lock-scene{position:relative;width:180px;height:170px;margin:auto}.unlock-lock{position:absolute;left:35px;top:10px;width:110px;overflow:visible;transform:rotate(-8deg);animation:lock-bounce .6s .35s both}.unlock-lock rect{fill:var(--accent);stroke:var(--ink);stroke-width:5}.shackle{fill:none;stroke:var(--ink);stroke-width:10;stroke-linecap:round;transform-origin:85px 54px;animation:shackle-open .65s .45s cubic-bezier(.2,.8,.2,1) forwards}.unlock-lock circle{fill:var(--ink)}.keyhole{stroke:var(--ink);stroke-width:6;stroke-linecap:round}.spark{position:absolute;color:#718b37;font-size:35px;animation:sparkle .7s .65s both}.s1{left:0;top:20px}.s2{right:0;top:5px;animation-delay:.8s}.s3{right:0;bottom:10px;animation-delay:.9s}@keyframes shackle-open{to{transform:translateY(-14px) rotate(32deg)}}@keyframes unlock-pop{from{opacity:0;transform:scale(.75) translateY(25px)}to{opacity:1;transform:none}}@keyframes lock-bounce{50%{transform:rotate(8deg) translateY(-8px)}100%{transform:rotate(0)}}@keyframes sparkle{from{opacity:0;transform:scale(.1) rotate(-60deg)}to{opacity:1;transform:scale(1) rotate(0)}}@keyframes celebration-fade{0%{opacity:0}12%,82%{opacity:1}100%{opacity:0}}@media(prefers-reduced-motion:reduce){.unlock-celebration,.unlock-card,.unlock-lock,.shackle,.spark{animation:none}.shackle{transform:translateY(-14px) rotate(32deg)}}
@@ -308,7 +309,8 @@ h1, h2, h3, .brand { color: var(--ink); font-family: 'Instrument Sans', Arial, s
 header { border-color: #30314e; }
 .brand span, nav a:hover, .artist-tour, .tabs .active { color: var(--pink); }
 .notice { background-color: #11152a; border-color: #30314e; color: #d5e9ff; }
-button, .button, .hero .button, .photo-groups button[aria-pressed="true"] {
+/* Toggle buttons ([aria-pressed]) and the menu button are styled in the design system section. */
+button:not([aria-pressed]):not(.menu-toggle), .button, .hero .button {
   background: #70caff !important;
   border: 1px solid #70caff !important;
   box-shadow: none !important;
@@ -428,4 +430,105 @@ body.souvenue-home header { background: #080b18; border-color: #30314e; }
   .home-carousel-controls button { height: 40px; width: 40px; }
   .flex-carousel-card { flex-basis: 78vw; }
   .flex-carousel { height: min(560px, 92vw); min-height: 360px; }
+}
+
+
+/* ==========================================================================
+   SOUVENUE DESIGN SYSTEM — v1 (Nov 2026)
+   New and corrected styles go here. Everything above is legacy layers
+   (light, neon, cream, then the night palette) being migrated. See CLAUDE.md.
+   ========================================================================== */
+
+/* ---- Header + navigation ---------------------------------------------- */
+header, body.souvenue-home header { position: relative !important; z-index: 20; }
+header nav a[aria-current="page"] { color: var(--pink); }
+.menu-toggle { display: none; }
+
+@media (max-width: 900px) {
+  header, body.souvenue-home header {
+    flex-wrap: nowrap !important; height: 64px !important; min-height: 0 !important;
+    padding: 0 18px !important; gap: 10px !important;
+  }
+  header .brand, .souvenue-home .brand { flex: 1; order: 0 !important; font-size: 26px !important; }
+  header .brand .souvenue-logo { width: 44px !important; height: 36px !important; }
+  header #account, .souvenue-home header #account {
+    order: 0 !important; margin-left: auto; max-width: 150px;
+    padding: 9px 12px !important; font-size: 12px !important;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .menu-toggle {
+    display: inline-flex; flex-direction: column; justify-content: center; gap: 5px;
+    width: 40px; height: 38px; padding: 0 10px; flex-shrink: 0;
+    background: transparent; border: 1px solid var(--line); border-radius: 6px; cursor: pointer;
+  }
+  .menu-toggle, body.souvenue-home header .menu-toggle,
+  .menu-toggle:hover, body.souvenue-home header .menu-toggle:hover {
+    background: transparent !important; border: 1px solid var(--line) !important;
+    box-shadow: none !important; padding: 0 10px !important; transform: none; filter: none;
+  }
+  .menu-toggle:hover, body.souvenue-home header .menu-toggle:hover { border-color: var(--muted) !important; }
+  .menu-toggle span { display: block; height: 2px; background: var(--ink); border-radius: 2px; transition: transform .2s ease; }
+  header.nav-open .menu-toggle span:first-child { transform: translateY(3.5px) rotate(45deg); }
+  header.nav-open .menu-toggle span:last-child { transform: translateY(-3.5px) rotate(-45deg); }
+
+  header nav, .souvenue-home header nav { display: none !important; }
+  header.nav-open nav, body.souvenue-home header.nav-open nav {
+    display: flex !important; position: absolute; top: 100%; left: 0; right: 0;
+    flex-direction: column; align-items: stretch !important; gap: 0 !important;
+    padding: 6px 18px 14px; background: var(--paper); border-bottom: 1px solid var(--line);
+    box-shadow: 0 24px 40px #00000099; font-size: 17px !important;
+    overflow: visible !important; white-space: normal !important;
+  }
+  header.nav-open nav a { padding: 14px 2px; border-bottom: 1px solid var(--line); text-align: left !important; }
+  header.nav-open nav a:last-child { border-bottom: 0; }
+
+  .notice, .souvenue-home .notice { font-size: 10px; padding: 8px 16px; }
+  .notice span, .souvenue-home .notice span { display: block; margin: 2px 0 0; }
+}
+
+/* ---- Home hero ---------------------------------------------------------- */
+.souvenue-home .hero-copy { max-width: 640px; }
+.souvenue-home .hero h1 { max-width: none; font-size: clamp(48px, 5.6vw, 78px); line-height: 1.02; }
+@media (max-width: 760px) {
+  .souvenue-home .hero h1 { font-size: clamp(40px, 11vw, 60px); }
+}
+
+/* ---- Toggle chips (genre, photo, people and topic filters) -------------- */
+main button[aria-pressed]:not(.community-category-tile) {
+  background: transparent !important; border: 1px solid #424566 !important; border-radius: 999px;
+  box-shadow: none !important; color: var(--muted) !important;
+  font-weight: 600; transition: border-color .15s ease, color .15s ease, background-color .15s ease;
+}
+main button[aria-pressed]:not(.community-category-tile):hover {
+  border-color: var(--accent) !important; color: var(--ink) !important; filter: none;
+}
+main button[aria-pressed="true"]:not(.community-category-tile) {
+  background: var(--accent) !important; border-color: var(--accent) !important; color: #080b18 !important;
+}
+
+/* ---- Artist directory grid ---------------------------------------------- */
+#artist-results.artist-directory-list {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 32px 22px;
+}
+.artist-directory-row {
+  flex-direction: column; align-items: stretch; gap: 12px;
+  padding: 0; border: 0; border-radius: 0;
+}
+.artist-directory-row:hover { background: none; }
+.artist-directory-row .directory-photo { width: 100%; height: auto; aspect-ratio: 1 / 1; border-radius: 10px; }
+.artist-directory-row .directory-photo img { transition: transform .35s ease; }
+.artist-directory-row:hover .directory-photo img { transform: scale(1.04); }
+.artist-directory-row .directory-artist-info h3 { font-size: 21px; line-height: 1.15; margin: 0 0 4px; transition: color .15s ease; }
+.artist-directory-row:hover .directory-artist-info h3 { color: var(--pink); }
+.artist-directory-row .directory-artist-info p { color: var(--muted); font-size: 12px; margin: 0 0 4px; }
+.artist-directory-row .directory-artist-info small { color: var(--accent); font-size: 12px; }
+.artist-directory-row .directory-open { display: none; }
+.artist-directory-row:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: 10px; }
+@media (max-width: 640px) {
+  #artist-results.artist-directory-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; }
+  .artist-directory-row .directory-photo { width: 100%; height: auto; }
+  .artist-directory-row .directory-artist-info h3 { font-size: 17px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .artist-directory-row .directory-photo img, .menu-toggle span { transition: none; }
 }
