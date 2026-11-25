@@ -334,7 +334,8 @@ document.querySelector('#account').onclick=async()=>{if(state.user){await api('l
 
 (() => {
  const syncShell = () => {
-  const isHome = !!app.querySelector('.hero');
+  // Before the first render #app is empty: keep the class index.html set, so the header doesn't jump.
+  const isHome = app.children.length ? !!app.querySelector('.hero') : location.pathname === '/';
   document.body.classList.toggle('souvenue-home', isHome);
   document.querySelectorAll('header nav a').forEach(link => {
    const active = link.pathname === location.pathname || (link.pathname === '/artists' && location.pathname.startsWith('/artist/'));
