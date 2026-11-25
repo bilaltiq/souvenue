@@ -404,7 +404,23 @@ header, body.souvenue-home header { position: relative !important; z-index: 20; 
 header nav a[aria-current="page"] { color: var(--pink); }
 .menu-toggle { display: none; }
 
-@media (max-width: 900px) {
+/* Tablet and narrow desktop windows: keep the tabs visible on their own row under the brand. */
+@media (min-width: 761px) and (max-width: 1050px) {
+  header, body.souvenue-home header {
+    flex-wrap: wrap !important; height: auto !important; min-height: 0 !important;
+    padding: 14px 25px 0 !important; row-gap: 6px !important;
+  }
+  header .brand, .souvenue-home .brand { flex: 1; }
+  header nav, .souvenue-home header nav {
+    order: 3; flex: 0 0 100%; justify-content: center; flex-wrap: nowrap;
+    gap: 24px !important; font-size: 13px !important; padding: 6px 0 14px;
+    overflow-x: auto; white-space: nowrap; scrollbar-width: none;
+  }
+  header nav a { white-space: nowrap; }
+}
+
+/* Phones: the nav collapses into the .menu-toggle dropdown. */
+@media (max-width: 760px) {
   header, body.souvenue-home header {
     flex-wrap: nowrap !important; height: 64px !important; min-height: 0 !important;
     padding: 0 18px !important; gap: 10px !important;

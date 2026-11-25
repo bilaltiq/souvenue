@@ -29,8 +29,8 @@ talk in show, venue and artist communities, with points and leaderboards.
 - One typeface: Instrument Sans. A rule forces it on every element.
 - Primary buttons use solid `--accent`. Toggle/filter buttons use `aria-pressed`,
   which makes them chips: outlined, and filled blue when selected.
-- Mobile breakpoint for the header is 900px. Below that the nav collapses into the
-  `.menu-toggle` dropdown.
+- Header breakpoints: from 761–1050px the nav tabs sit on their own row under the
+  brand; at 760px and below they collapse into the `.menu-toggle` dropdown.
 
 ## style.css structure (important)
 style.css is several themes stacked on each other: light green, then neon,
@@ -41,6 +41,6 @@ older layers in place. The long-term plan is to move them into that section
 and delete the dead ones. Check pages visually before and after any change.
 
 ## Product notes
-- "Demo studio" (`/studio`) is a local developer tool. app.js hides it when
-  `state.hosted` is true.
+- "Demo studio" (`/studio`) is a local developer tool. It is not in the nav; open
+  it by URL locally. app.js only renders it when `state.hosted` is false.
 - Event data is saved Ticketmaster snapshots (`ticketmaster-events.json`, `imports/`).
