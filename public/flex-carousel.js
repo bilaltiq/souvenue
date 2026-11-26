@@ -1,8 +1,92 @@
-// FlexCarousel's lens shader, using the supplied React Bits GLSL in the
-// prototype's existing vanilla-JS shell (so the rest of the site stays intact).
+// FlexCarousel from React Bits (https://reactbits.dev), ported to plain JS so it
+// runs without React or a build step. The engine (springs, intro, focus, lens
+// shader, input handling) follows the original source line for line; the few
+// `ogl` helpers it used (Renderer, Program, Plane, Triangle, Texture,
+// RenderTarget) are replaced by the small raw WebGL2 equivalents below.
+//
+// Usage: mountFlexCarousel({ container, items, config, controls: { prev, next } })
+// Returns a cleanup function, or false when WebGL2 is unavailable.
+
+const BEND_PRESETS = {
+  liquid: { lensWidth: 0.74, lensHeight: 1.18, tilt: 62, roundness: 1, bend: 0.34, reach: 0.38, curl: 'twist', dispersion: 0.45, liquid: 0, followCursor: false },
+  ribbon: { lensWidth: 0.8, lensHeight: 0.8, tilt: 0, roundness: 1, bend: 0.34, reach: 0.34, curl: 'twist', dispersion: 0.4, liquid: 0, followCursor: false },
+  vortex: { lensWidth: 0.7, lensHeight: 0.95, tilt: 30, roundness: 1, bend: 0.46, reach: 0.3, curl: 'twist', dispersion: 0.5, liquid: 0, followCursor: false },
+  arch: { lensWidth: 0.8, lensHeight: 0.8, tilt: 0, roundness: 1, bend: 0.3, reach: 0.36, curl: 'rise', dispersion: 0.4, liquid: 0, followCursor: false }
+};
+
+const DEFAULTS = {
+  preset: 'liquid', intro: 'rise', cardHeight: 0.5, gap: 12, radius: 0, fit: 'natural',
+  squeeze: 0.2, focusOnClick: true, autoplay: false, interval: 4, captions: true, captureWheel: true
+};
+
+const FIT_ASPECT = { portrait: 0.75, square: 1, landscape: 4 / 3 };
+const TAPS = 12;
+const PIXEL_BUDGET = 4.5e6;
+const INTRO_DURATION = { rise: 2.1, bloom: 1.6, spin: 2.2, deal: 1.5, fade: 0.35 };
+
+const wrap = (value, size) => ((((value + size / 2) % size) + size) % size) - size / 2;
+const clamp01 = value => Math.min(Math.max(value, 0), 1);
+const easeOut = value => 1 - Math.pow(1 - clamp01(value), 3);
+const easeOutQuint = value => 1 - Math.pow(1 - clamp01(value), 5);
+const easeInOut = value => {
+  const t = clamp01(value);
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+};
+
+const cardVertex = `#version 300 es
+in vec2 position;
+uniform vec4 uRect;
+uniform vec2 uResolution;
+out vec2 vLocal;
+void main() {
+  vLocal = vec2(position.x, -position.y) * uRect.zw;
+  vec2 px = uRect.xy + vLocal;
+  gl_Position = vec4(px.x / uResolution.x * 2.0 - 1.0, 1.0 - px.y / uResolution.y * 2.0, 0.0, 1.0);
+}
+`;
+
+const cardFragment = `#version 300 es
+precision highp float;
+uniform sampler2D tMap;
+uniform vec2 uSize;
+uniform vec2 uImage;
+uniform float uRadius;
+uniform float uAlpha;
+uniform float uReady;
+uniform float uShift;
+uniform float uDpr;
+uniform vec3 uPlaceholder;
+in vec2 vLocal;
+out vec4 fragColor;
+
+float roundedBox(vec2 p, vec2 b, float r) {
+  vec2 q = abs(p) - b + r;
+  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
+}
+
+void main() {
+  float sd = roundedBox(vLocal, uSize * 0.5, min(uRadius, min(uSize.x, uSize.y) * 0.5));
+  float mask = clamp(0.5 - sd * uDpr, 0.0, 1.0);
+  vec2 local = vLocal / uSize + 0.5;
+  float cardAspect = uSize.x / uSize.y;
+  float imageAspect = uImage.x / max(uImage.y, 1.0);
+  vec2 scale = imageAspect > cardAspect ? vec2(cardAspect / imageAspect, 1.0) : vec2(1.0, imageAspect / cardAspect);
+  scale /= 1.08;
+  vec2 uv = vec2(local.x, 1.0 - local.y);
+  uv = (uv - 0.5) * scale + 0.5;
+  uv.x += uShift * (1.0 - scale.x) * 0.5;
+  vec3 image = texture(tMap, uv).rgb;
+  vec3 color = mix(uPlaceholder, image, uReady);
+  float alpha = mask * uAlpha;
+  fragColor = vec4(color * alpha, alpha);
+}
+`;
+
 const lensVertex = `#version 300 es
 in vec2 position;
-void main() { gl_Position = vec4(position, 0.0, 1.0); }
+void main() {
+  gl_Position = vec4(position, 0.0, 1.0);
+}
 `;
 
 const lensFragment = `#version 300 es
@@ -22,6 +106,7 @@ uniform float uDispersion;
 uniform float uStrength;
 uniform float uSceneAlpha;
 out vec4 fragColor;
+
 void main() {
   vec2 frag = gl_FragCoord.xy / uDpr;
   vec2 uv = frag / uResolution;
@@ -37,6 +122,7 @@ void main() {
   vec2 outward = grad / glen;
   vec2 normal = vec2(ca * outward.x - sa * outward.y, sa * outward.x + ca * outward.y);
   vec2 along = vec2(-normal.y, normal.x);
+
   float t = clamp((edge + uInner) / (uInner + uOuter), 0.0, 1.0);
   float ramp = t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
   float slope = 16.0 * t * t * (1.0 - t) * (1.0 - t);
@@ -46,11 +132,13 @@ void main() {
   vec2 swirl = along * along.y * side * slope * uFlow * uStrength * 0.35;
   vec2 drift = vec2(0.0, -lift) - swirl;
   vec2 shifted = uv + drift / uResolution;
+
   vec2 texels = uResolution * uDpr;
   vec2 gx = dFdx(shifted);
   vec2 gy = dFdy(shifted);
   gx *= min(1.0, 3.0 / max(length(gx * texels), 1e-4));
   gy *= min(1.0, 3.0 / max(length(gy * texels), 1e-4));
+
   vec4 color = textureGrad(tScene, shifted, gx, gy);
   vec2 spread = vec2(0.0, side * slope * uFlow * uStrength) / uResolution * uDispersion;
   float spreadPx = length(spread * texels);
@@ -58,8 +146,8 @@ void main() {
     vec3 base = color.rgb / color.a;
     vec3 sumColor = vec3(0.0);
     vec3 sumWeight = vec3(0.0);
-    for (int i = 0; i < 12; i++) {
-      float s = (float(i) + 0.5) / 12.0;
+    for (int i = 0; i < ${TAPS}; i++) {
+      float s = (float(i) + 0.5) / float(${TAPS});
       vec4 c = textureGrad(tScene, shifted + spread * (s - 0.5), gx, gy);
       vec3 w = max(1.0 - abs(vec3(s) - vec3(0.15, 0.5, 0.85)) * 2.6, 0.0) * c.a;
       sumColor += c.rgb * (w / max(c.a, 0.002));
@@ -68,24 +156,14 @@ void main() {
     vec3 split = mix(base, sumColor / max(sumWeight, vec3(1e-4)), clamp(sumWeight * 2.0, 0.0, 1.0));
     color.rgb = mix(color.rgb, clamp(split, 0.0, 1.0) * color.a, smoothstep(0.25, 1.5, spreadPx));
   }
+
   fragColor = color * uSceneAlpha;
 }
 `;
 
-export default function mountFlexCarousel({ container, items, config = {} }) {
-  if (!container || !items?.length) return false;
-  const previous = container.parentElement.querySelector('.home-carousel-prev');
-  const next = container.parentElement.querySelector('.home-carousel-next');
-  const live = container.parentElement.querySelector('.home-carousel-caption');
-  const canvas = document.createElement('canvas');
-  const gl = canvas.getContext('webgl2', { alpha: true, antialias: true, premultipliedAlpha: true });
-  if (!gl) return false;
+// ---- Minimal WebGL2 helpers (stand-ins for the ogl classes) ----------------
 
-  const scene = document.createElement('canvas');
-  const sceneCtx = scene.getContext('2d');
-  if (!sceneCtx) return false;
-  canvas.className = 'flex-carousel-canvas';
-  canvas.setAttribute('aria-hidden', 'true');
+function createProgram(gl, vertex, fragment) {
   const compile = (type, source) => {
     const shader = gl.createShader(type);
     gl.shaderSource(shader, source);
@@ -93,184 +171,1027 @@ export default function mountFlexCarousel({ container, items, config = {} }) {
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(shader));
     return shader;
   };
-  let program;
+  const program = gl.createProgram();
+  const vs = compile(gl.VERTEX_SHADER, vertex);
+  const fs = compile(gl.FRAGMENT_SHADER, fragment);
+  gl.attachShader(program, vs);
+  gl.attachShader(program, fs);
+  gl.linkProgram(program);
+  gl.deleteShader(vs);
+  gl.deleteShader(fs);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
+  const uniforms = {};
+  const count = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+  for (let i = 0; i < count; i++) {
+    const info = gl.getActiveUniform(program, i);
+    uniforms[info.name] = gl.getUniformLocation(program, info.name);
+  }
+  return { program, uniforms };
+}
+
+function createGeometry(gl, program, positions) {
+  const vao = gl.createVertexArray();
+  const buffer = gl.createBuffer();
+  gl.bindVertexArray(vao);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+  const location = gl.getAttribLocation(program, 'position');
+  gl.enableVertexAttribArray(location);
+  gl.vertexAttribPointer(location, 2, gl.FLOAT, false, 0, 0);
+  gl.bindVertexArray(null);
+  return { vao, buffer, count: positions.length / 2 };
+}
+
+// ---- Component ---------------------------------------------------------------
+
+export default function mountFlexCarousel({ container, items, config = {}, controls = {} }) {
+  if (!container || !items?.length) return false;
+
+  const canvas = document.createElement('canvas');
+  const gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false, depth: false });
+  if (!gl) return false;
+
+  let cardGL;
+  let lensGL;
   try {
-    program = gl.createProgram();
-    gl.attachShader(program, compile(gl.VERTEX_SHADER, lensVertex));
-    gl.attachShader(program, compile(gl.FRAGMENT_SHADER, lensFragment));
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
+    cardGL = createProgram(gl, cardVertex, cardFragment);
+    lensGL = createProgram(gl, lensVertex, lensFragment);
   } catch (error) {
-    console.error('FlexCarousel lens shader could not start:', error);
+    console.error('FlexCarousel could not start:', error);
     gl.getExtension('WEBGL_lose_context')?.loseContext();
     return false;
   }
 
-  const vertices = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-  gl.useProgram(program);
-  const positionLocation = gl.getAttribLocation(program, 'position');
-  gl.enableVertexAttribArray(positionLocation);
-  gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-  const texture = gl.createTexture();
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.uniform1i(gl.getUniformLocation(program, 'tScene'), 0);
-  const uniform = name => gl.getUniformLocation(program, name);
-  const uniforms = {
-    resolution: uniform('uResolution'), dpr: uniform('uDpr'), center: uniform('uCenter'),
-    half: uniform('uHalf'), angle: uniform('uAngle'), exponent: uniform('uExponent'),
-    inner: uniform('uInner'), outer: uniform('uOuter'), flow: uniform('uFlow'),
-    curl: uniform('uCurl'), dispersion: uniform('uDispersion'), strength: uniform('uStrength'),
-    alpha: uniform('uSceneAlpha')
+  const options = { ...DEFAULTS, ...config };
+  const base = BEND_PRESETS[options.preset] || BEND_PRESETS.liquid;
+  const pick = key => (config[key] === undefined || config[key] === null ? base[key] : config[key]);
+  const settings = {
+    intro: options.intro,
+    cardHeight: options.cardHeight,
+    gap: options.gap,
+    radius: options.radius,
+    fit: options.fit,
+    lensWidth: pick('lensWidth'),
+    lensHeight: pick('lensHeight'),
+    tilt: pick('tilt'),
+    roundness: pick('roundness'),
+    bend: pick('bend'),
+    reach: pick('reach'),
+    curl: pick('curl'),
+    dispersion: pick('dispersion'),
+    liquid: pick('liquid'),
+    followCursor: pick('followCursor'),
+    squeeze: options.squeeze,
+    focusOnClick: options.focusOnClick,
+    autoplay: options.autoplay,
+    interval: options.interval,
+    captureWheel: options.captureWheel
+  };
+  const list = items;
+
+  // --- DOM (what the React component rendered) ---
+  canvas.className = 'flex-carousel-canvas';
+  canvas.style.display = 'block';
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  canvas.setAttribute('aria-hidden', 'true');
+  container.prepend(canvas);
+  container.classList.add('has-glass');
+  container.tabIndex = 0;
+  container.style.setProperty('--flex-carousel-half', `${Math.min(Math.max(settings.cardHeight, 0.05), 1) * 50}%`);
+
+  const liveRegion = document.createElement('div');
+  liveRegion.className = 'flex-carousel__live';
+  liveRegion.setAttribute('aria-live', 'polite');
+  liveRegion.setAttribute('aria-atomic', 'true');
+  container.append(liveRegion);
+
+  let captionEl = null;
+  let titleEl = null;
+  let countEl = null;
+  let digitsEl = null;
+  let activeState = 0;
+  let revealedState = false;
+  let focusOpenState = false;
+
+  const renderDigits = value => {
+    const text = String(value).padStart(2, '0');
+    if (digitsEl.children.length !== text.length) {
+      digitsEl.innerHTML = text
+        .split('')
+        .map(
+          () =>
+            `<span class="flex-carousel__digit"><span class="flex-carousel__reel">${'0123456789'
+              .split('')
+              .map(n => `<span>${n}</span>`)
+              .join('')}</span></span>`
+        )
+        .join('');
+    }
+    text.split('').forEach((digit, i) => {
+      digitsEl.children[i].firstChild.style.transform = `translateY(${-Number(digit) * 10}%)`;
+    });
   };
 
-  let width = 1, height = 1, scale = 1, active = 0, position = 0, targetPosition = 0;
-  let dragging = false, downX = 0, moved = false, focused = false, raf = 0, timer = 0, destroyed = false;
-  let introStart = performance.now();
-  const images = items.map(item => {
-    const image = new Image(); image.decoding = 'async'; image.src = item.src;
-    image.addEventListener('load', wake); return { ...item, image };
-  });
-  const cardH = () => Math.min(height * (config.cardHeight ?? .5), height * .78);
-  const cardW = i => {
-    const img = images[i]?.image;
-    const aspect = img?.naturalWidth && img?.naturalHeight ? img.naturalWidth / img.naturalHeight : 1;
-    return Math.min(cardH() * aspect, width * .82);
+  const renderTitle = () => {
+    const current = list[activeState] || list[0];
+    const next = document.createElement('span');
+    next.className = 'flex-carousel__title';
+    next.textContent = current.title || current.alt || '';
+    if (current.subtitle) {
+      const sub = document.createElement('span');
+      sub.className = 'flex-carousel__subtitle';
+      sub.textContent = current.subtitle;
+      next.append(sub);
+    }
+    // Replacing the node restarts the title animation, like React's key={active}.
+    titleEl.replaceWith(next);
+    titleEl = next;
   };
-  const stride = i => cardW(i) + (config.gap ?? 8);
-  const offsetFor = i => images.slice(0, i).reduce((sum, _, n) => sum + stride(n), 0);
-  const loopWidth = () => images.reduce((sum, _, i) => sum + stride(i), 0);
-  const mod = (n, m) => ((n % m) + m) % m;
-  const positionFor = (index, near = targetPosition) => {
-    const loop = Math.max(loopWidth(), 1), base = offsetFor(mod(index, items.length));
-    return base + Math.round((near - base) / loop) * loop;
+
+  const renderCaption = () => {
+    if (!options.captions || !revealedState) return;
+    if (!captionEl) {
+      captionEl = document.createElement('div');
+      captionEl.className = 'flex-carousel__caption';
+      captionEl.setAttribute('aria-hidden', 'true');
+      titleEl = document.createElement('span');
+      countEl = document.createElement('span');
+      countEl.className = 'flex-carousel__count';
+      digitsEl = document.createElement('span');
+      digitsEl.className = 'flex-carousel__digits';
+      const slash = document.createElement('span');
+      slash.className = 'flex-carousel__slash';
+      slash.textContent = '/';
+      const total = document.createElement('span');
+      total.textContent = String(list.length).padStart(2, '0');
+      countEl.append(digitsEl, slash, total);
+      captionEl.append(titleEl, countEl);
+      container.insertBefore(captionEl, liveRegion);
+    }
+    renderTitle();
+    renderDigits(activeState + 1);
+    countEl.toggleAttribute('data-hidden', focusOpenState);
   };
-  const nearest = offset => {
-    const loop = Math.max(loopWidth(), 1);
-    let best = 0, bestD = Infinity;
-    for (let i = 0; i < items.length; i++) {
-      const raw = mod(offset - offsetFor(i) + loop / 2, loop) - loop / 2;
-      if (Math.abs(raw) < bestD) { best = i; bestD = Math.abs(raw); }
+
+  const renderLive = () => {
+    const current = list[activeState] || list[0];
+    const label = current ? current.title || current.alt || `Image ${activeState + 1}` : '';
+    liveRegion.textContent = `${label}, ${activeState + 1} of ${list.length}`;
+  };
+
+  const setActive = value => {
+    if (value === activeState) return;
+    activeState = value;
+    renderCaption();
+    renderLive();
+  };
+  const setRevealed = value => {
+    if (value === revealedState) return;
+    revealedState = value;
+    renderCaption();
+  };
+  const setFocusOpen = value => {
+    focusOpenState = value;
+    countEl?.toggleAttribute('data-hidden', value);
+  };
+  renderLive();
+
+  // --- GL resources ---
+  gl.clearColor(0, 0, 0, 0);
+  const cardGeometry = createGeometry(gl, cardGL.program, [-0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5]);
+  const lensGeometry = createGeometry(gl, lensGL.program, [-1, -1, 3, -1, -1, 3]);
+  const anisoExt =
+    gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
+  const emptyPixel = new Uint8Array([0, 0, 0, 0]);
+
+  const target = { texture: gl.createTexture(), framebuffer: gl.createFramebuffer(), width: 2, height: 2 };
+  const allocateTarget = (w, h) => {
+    target.width = w;
+    target.height = h;
+    gl.bindTexture(gl.TEXTURE_2D, target.texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, target.texture, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  };
+  allocateTarget(2, 2);
+
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+
+  let dpr = 1;
+  let slots = [];
+  let width = 1;
+  let height = 1;
+  let pos = 0;
+  let vel = 0;
+  let goal = 0;
+  let mode = 'spring';
+  let wheelAt = 0;
+  let raf = 0;
+  let last = performance.now();
+  let visible = true;
+  let alive = true;
+  let dirty = true;
+  let activeIndex = -1;
+  let interactedAt = -Infinity;
+  let autoplayAt = performance.now();
+  let hasFocus = false;
+  let deform = 0;
+  let deformVel = 0;
+  let layout = null;
+  let resnap = false;
+  let hover = '';
+  let lift = 1;
+  let energy = 0;
+  let lastPos = 0;
+  const lens = { x: 0, y: 0, vx: 0, vy: 0, ready: false };
+  const pointer = { x: 0, y: 0, over: false, down: false, id: -1, startX: 0, startY: 0, startPos: 0, dragging: false, touch: false, samples: [] };
+  const introState = { kind: 'none', t: 0, running: false, done: false, readyAt: 0 };
+  const focus = { index: -1, pending: -1, t: 0, v: 0, target: 0 };
+  let instances = [];
+
+  const loadSlot = (item, index) => {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, emptyPixel);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    const slot = { item, index, texture, aspect: 0.8, loaded: false, failed: false, ready: 0, color: [0.5, 0.5, 0.5], image: [1, 1], dispose: () => {} };
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.decoding = 'async';
+    image.onload = () => {
+      if (!alive || !slots.includes(slot)) return;
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      if (anisoExt) gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, 8);
+      slot.image = [image.naturalWidth || 1, image.naturalHeight || 1];
+      slot.aspect = slot.image[0] / slot.image[1];
+      try {
+        const probe = document.createElement('canvas');
+        probe.width = 8;
+        probe.height = 8;
+        const ctx = probe.getContext('2d', { willReadFrequently: true });
+        if (ctx) {
+          ctx.drawImage(image, 0, 0, 8, 8);
+          const data = ctx.getImageData(0, 0, 8, 8).data;
+          const avg = [0, 0, 0];
+          for (let i = 0; i < data.length; i += 4) {
+            avg[0] += data[i];
+            avg[1] += data[i + 1];
+            avg[2] += data[i + 2];
+          }
+          slot.color = avg.map(v => v / 64 / 255);
+        }
+      } catch {
+        slot.color = [0.5, 0.5, 0.5];
+      }
+      slot.loaded = true;
+      dirty = true;
+      start();
+    };
+    image.onerror = () => {
+      if (!alive) return;
+      slot.failed = true;
+      dirty = true;
+      start();
+    };
+    image.src = item.src;
+    slot.dispose = () => {
+      image.onload = null;
+      image.onerror = null;
+      gl.deleteTexture(texture);
+    };
+    return slot;
+  };
+
+  const setItems = next => {
+    slots.forEach(slot => slot.dispose());
+    slots = next.map(loadSlot);
+    activeIndex = -1;
+    layout = null;
+    resnap = true;
+    focus.target = 0;
+    focus.t = 0;
+    focus.v = 0;
+    focus.pending = -1;
+    setFocusOpen(false);
+    introState.readyAt = performance.now();
+    dirty = true;
+    start();
+  };
+
+  const metrics = s => {
+    const cardH = Math.max(24, s.cardHeight * height);
+    const fixed = FIT_ASPECT[s.fit];
+    const widths = slots.map(slot => (fixed || slot.aspect) * cardH);
+    const centers = [];
+    let cursor = 0;
+    for (let i = 0; i < widths.length; i++) {
+      centers.push(cursor + widths[i] / 2);
+      cursor += widths[i] + s.gap;
+    }
+    return { cardH, widths, centers, gap: s.gap, loop: Math.max(cursor, 1) };
+  };
+
+  const nearest = (m, at) => {
+    let best = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < m.centers.length; i++) {
+      const dist = Math.abs(wrap(m.centers[i] - at, m.loop));
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = i;
+      }
     }
     return best;
   };
-  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-  const caption = () => {
-    if (!live) return;
-    live.firstChild.textContent = `${items[active].title || items[active].alt || 'Artist'} · Explore artist `;
-    const count = live.querySelector('span');
-    if (count) count.textContent = `${String(active + 1).padStart(2, '0')} / ${String(items.length).padStart(2, '0')}`;
+
+  const snapPoint = (m, at) => {
+    const i = nearest(m, at);
+    return at + wrap(m.centers[i] - at, m.loop);
   };
-  const select = i => { active = mod(i, items.length); targetPosition = positionFor(active); focused = false; caption(); wake(); };
-  const roundedRect = (ctx, x, y, w, h, r) => { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); };
+
+  const remap = (from, to, at) => {
+    const i = nearest(from, at);
+    const offset = wrap(at - from.centers[i], from.loop);
+    const cycles = Math.round((at - offset - from.centers[i]) / from.loop);
+    return cycles * to.loop + to.centers[i] + offset * (to.widths[i] / from.widths[i]);
+  };
+
+  const step = (m, delta) => {
+    let at = snapPoint(m, goal);
+    let index = nearest(m, at);
+    const n = m.centers.length;
+    for (let k = 0; k < Math.abs(delta); k++) {
+      const next = (index + (delta > 0 ? 1 : n - 1)) % n;
+      const distance =
+        delta > 0 ? m.widths[index] / 2 + m.gap + m.widths[next] / 2 : -(m.widths[next] / 2 + m.gap + m.widths[index] / 2);
+      at += distance;
+      index = next;
+    }
+    goal = at;
+    mode = 'spring';
+    dirty = true;
+    start();
+  };
+
+  const goTo = (m, index) => {
+    const i = ((index % m.centers.length) + m.centers.length) % m.centers.length;
+    goal = goal + wrap(m.centers[i] - goal, m.loop);
+    mode = 'spring';
+    dirty = true;
+    start();
+  };
+
+  const openFocus = index => {
+    focus.index = index;
+    focus.pending = -1;
+    focus.target = 1;
+    setFocusOpen(true);
+    dirty = true;
+    start();
+  };
+
+  const closeFocus = () => {
+    focus.pending = -1;
+    if (focus.target === 0) return false;
+    focus.target = 0;
+    setFocusOpen(false);
+    dirty = true;
+    start();
+    return true;
+  };
+
+  const skipIntro = () => {
+    if (introState.running) introState.t = 1;
+  };
+
+  const introEffects = () => {
+    const t = introState.running ? introState.t : introState.done ? 1 : 0;
+    const e = { sceneAlpha: 1, strength: 1, card: null };
+    if (!introState.done && !introState.running) {
+      e.sceneAlpha = 0;
+      e.strength = 0;
+      return e;
+    }
+    if (t >= 1) return e;
+    const kind = introState.kind;
+    if (kind === 'rise') {
+      e.strength = easeInOut((t - 0.3) / 0.65);
+      e.card = rel => {
+        const delay = Math.min(Math.abs(rel) / (width * 0.6), 1) * 0.34;
+        const local = clamp01((t - delay) / 0.6);
+        return { alpha: clamp01(local * 4), x: 0, y: (1 - easeOutQuint(local)) * height * 0.62, scale: 0.5 + 0.5 * easeInOut((local - 0.18) / 0.82) };
+      };
+    } else if (kind === 'bloom') {
+      e.strength = easeInOut((t - 0.2) / 0.8);
+      e.card = rel => {
+        const delay = Math.min(Math.abs(rel) / (width * 0.6), 1) * 0.25;
+        const local = easeOut((t - delay) / 0.55);
+        return { alpha: local, x: 0, y: 0, scale: 0.92 + 0.08 * local };
+      };
+    } else if (kind === 'spin') {
+      e.sceneAlpha = easeOut(t / 0.25);
+      e.strength = easeOut((t - 0.55) / 0.45);
+    } else if (kind === 'deal') {
+      e.strength = easeOut((t - 0.45) / 0.5);
+      e.card = rel => {
+        const spread = Math.min(Math.abs(rel) / (width * 0.6), 1) * 0.3;
+        const local = easeOut((t - 0.12 - spread) / 0.5);
+        return { alpha: easeOut((t - spread) / 0.12), x: -rel * (1 - local), y: 0, scale: 1 };
+      };
+    } else {
+      e.sceneAlpha = easeOut(t);
+      e.strength = easeOut(t);
+    }
+    return e;
+  };
+
+  const beginIntro = (s, m) => {
+    const kind = reducedMotion && s.intro !== 'none' ? 'fade' : s.intro;
+    introState.kind = INTRO_DURATION[kind] ? kind : 'none';
+    introState.running = introState.kind !== 'none';
+    introState.done = !introState.running;
+    introState.t = 0;
+    if (introState.done) setRevealed(true);
+    if (introState.kind === 'spin') {
+      const distance = m.loop * 1.6 + width;
+      pos = goal + distance;
+      vel = -distance * 3;
+      mode = 'spring';
+    }
+  };
+
+  let resizePending = false;
+  const applyResize = () => {
+    width = Math.max(1, container.clientWidth);
+    height = Math.max(1, container.clientHeight);
+    dpr = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(PIXEL_BUDGET / (width * height)));
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    allocateTarget(Math.max(2, Math.round(width * dpr)), Math.max(2, Math.round(height * dpr)));
+    dirty = true;
+  };
+
   const resize = () => {
-    const rect = container.getBoundingClientRect();
-    width = Math.max(1, rect.width); height = Math.max(1, rect.height);
-    scale = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(4500000 / (width * height)));
-    canvas.width = scene.width = Math.round(width * scale);
-    canvas.height = scene.height = Math.round(height * scale);
-    canvas.style.width = '100%'; canvas.style.height = '100%';
-    sceneCtx.setTransform(scale, 0, 0, scale, 0, 0);
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    caption(); wake();
+    resizePending = true;
+    start();
   };
-  const renderScene = now => {
-    sceneCtx.clearRect(0, 0, width, height);
-    sceneCtx.fillStyle = '#080b18'; sceneCtx.fillRect(0, 0, width, height);
-    const h = cardH();
-    const t = clamp((now - introStart) / 1600, 0, 1);
-    const intro = config.intro === 'bloom' ? t : 1;
-    const squeeze = 1 - (config.squeeze ?? .1) * clamp(Math.abs(targetPosition - position) / Math.max(width, 1), 0, 1);
-    const loop = Math.max(loopWidth(), 1);
-    images.forEach((item, i) => {
-      const image = item.image;
-      if (!image.complete || !image.naturalWidth) return;
-      const scaleCard = squeeze * (focused && i === active ? 1.16 : 1);
-      const w = cardW(i) * scaleCard, ch = h * scaleCard;
-      const y = height * .5 - ch * .5, footer = 68;
-      for (let cycle = -2; cycle <= 2; cycle++) {
-        const x = width * .5 + offsetFor(i) + cycle * loop - position;
-        if (x + w / 2 < 0 || x - w / 2 > width) continue;
-        sceneCtx.save(); sceneCtx.globalAlpha = intro;
-        roundedRect(sceneCtx, x - w / 2, y, w, ch + footer, config.radius ?? 12);
-        sceneCtx.clip(); sceneCtx.fillStyle = '#12152c'; sceneCtx.fillRect(x - w / 2, y, w, ch + footer);
-        const aspect = image.naturalWidth / image.naturalHeight, boxAspect = w / ch;
-        let sx = 0, sy = 0, sw = image.naturalWidth, sh = image.naturalHeight;
-        if (aspect > boxAspect) { sw = image.naturalHeight * boxAspect; sx = (image.naturalWidth - sw) / 2; }
-        else { sh = image.naturalWidth / boxAspect; sy = (image.naturalHeight - sh) / 2; }
-        sceneCtx.drawImage(image, sx, sy, sw, sh, x - w / 2, y, w, ch);
-        sceneCtx.fillStyle = '#12152c'; sceneCtx.fillRect(x - w / 2, y + ch, w, footer);
-        sceneCtx.fillStyle = '#f2f1ff'; sceneCtx.font = '600 19px "Instrument Sans",Arial,sans-serif'; sceneCtx.textBaseline = 'top';
-        sceneCtx.fillText(item.title || item.alt || 'Artist', x - w / 2 + 15, y + ch + 12, w - 30);
-        sceneCtx.fillStyle = '#b2b5d1'; sceneCtx.font = '12px "Instrument Sans",Arial,sans-serif';
-        sceneCtx.fillText(item.subtitle || 'Explore artist', x - w / 2 + 15, y + ch + 39, w - 30);
-        sceneCtx.restore();
+
+  const frame = now => {
+    raf = 0;
+    if (!container.isConnected) {
+      destroy();
+      return;
+    }
+    if (resizePending) {
+      resizePending = false;
+      applyResize();
+    }
+    if (!alive) return;
+    const s = settings;
+    const dt = Math.min(0.05, Math.max(0.001, (now - last) / 1000));
+    last = now;
+    if (!slots.length) {
+      if (visible) raf = requestAnimationFrame(frame);
+      return;
+    }
+
+    const m = metrics(s);
+    const n = slots.length;
+    let animating = false;
+
+    if (resnap) {
+      goal = snapPoint(m, goal);
+      pos = goal;
+      vel = 0;
+      resnap = false;
+    } else if (layout && layout.loop !== m.loop) {
+      pos = remap(layout, m, pos);
+      goal = remap(layout, m, goal);
+      pointer.startPos = pos + (pointer.x - pointer.startX);
+      animating = true;
+    }
+    layout = m;
+
+    if (!introState.running && !introState.done) {
+      const allSettled = slots.every(slot => slot.loaded || slot.failed);
+      if (allSettled || now - introState.readyAt > 3500) {
+        goal = snapPoint(m, goal);
+        pos = goal;
+        beginIntro(s, m);
       }
-    });
-    return t;
+    }
+    if (introState.running) {
+      introState.t = Math.min(1, introState.t + dt / (INTRO_DURATION[introState.kind] || 1));
+      if (introState.t >= 1) {
+        introState.running = false;
+        introState.done = true;
+        setRevealed(true);
+      }
+      animating = true;
+    }
+
+    if (mode === 'wheel' && now - wheelAt > 150) {
+      goal = snapPoint(m, goal);
+      mode = 'spring';
+    }
+    if (!pointer.dragging) {
+      const spinning = introState.running && introState.kind === 'spin';
+      const stiffness = spinning ? 9 : mode === 'wheel' ? 80 : 55;
+      const damping = 2 * Math.sqrt(stiffness);
+      const steps = Math.ceil(dt / (1 / 240));
+      const h = dt / steps;
+      for (let i = 0; i < steps; i++) {
+        const acc = stiffness * (goal - pos) - damping * vel;
+        vel += acc * h;
+        pos += vel * h;
+      }
+      if (Math.abs(goal - pos) < 0.05 && Math.abs(vel) < 0.5) {
+        pos = goal;
+        vel = 0;
+      } else {
+        animating = true;
+      }
+    } else {
+      animating = true;
+    }
+
+    if (Math.abs(pos) > m.loop * 8) {
+      const shift = Math.round(pos / m.loop) * m.loop;
+      pos -= shift;
+      goal -= shift;
+      pointer.startPos -= shift;
+    }
+
+    const current = nearest(m, pos);
+    if (current !== activeIndex) {
+      activeIndex = current;
+      setActive(current);
+      options.onChange?.(current, list[current]);
+    }
+
+    if (focus.pending >= 0 && mode === 'spring' && Math.abs(goal - pos) < 1.5 && Math.abs(vel) < 30) {
+      if (current === focus.pending) openFocus(current);
+      else focus.pending = -1;
+    }
+
+    if (
+      s.autoplay &&
+      !reducedMotion &&
+      introState.done &&
+      focus.target === 0 &&
+      focus.t < 0.01 &&
+      !pointer.over &&
+      !pointer.down &&
+      !hasFocus &&
+      mode === 'spring' &&
+      Math.abs(goal - pos) < 1 &&
+      now - interactedAt > 3000 &&
+      now - autoplayAt > s.interval * 1000
+    ) {
+      autoplayAt = now;
+      step(m, 1);
+    }
+    if (s.autoplay && !reducedMotion) animating = true;
+
+    const travel = Math.abs(pos - lastPos) / dt;
+    lastPos = pos;
+    const energyTarget = reducedMotion ? 0 : Math.min(travel / 2600, 1);
+    energy += (energyTarget - energy) * (1 - Math.exp(-dt / (energyTarget > energy ? 0.07 : 0.35)));
+    if (energy > 0.001) animating = true;
+    const liquidAmount = reducedMotion ? 0 : s.liquid;
+    const push = Math.max(-1, Math.min(1, vel / 2200));
+    const deformStiffness = 120;
+    const deformDamping = 2 * Math.sqrt(deformStiffness) * 0.32;
+    deformVel += (deformStiffness * (push - deform) - deformDamping * deformVel) * dt;
+    deform += deformVel * dt;
+    if (Math.abs(deform) > 0.0005 || Math.abs(deformVel) > 0.005) animating = true;
+
+    const focusStiffness = 64;
+    focus.v += (focusStiffness * (focus.target - focus.t) - 2 * Math.sqrt(focusStiffness) * focus.v) * dt;
+    focus.t += focus.v * dt;
+    if (Math.abs(focus.target - focus.t) < 0.0005 && Math.abs(focus.v) < 0.001) {
+      focus.t = focus.target;
+      focus.v = 0;
+    } else {
+      animating = true;
+    }
+    const focusAmount = clamp01(focus.t);
+    const focusEase = easeInOut(focusAmount);
+    const focusW = focus.index >= 0 && focus.index < n ? m.widths[focus.index] : m.cardH;
+    const focusScale = Math.max(1, Math.min(1.3, (height * 0.84) / m.cardH, (width * 0.92) / focusW));
+    const nextLift = 1 + (focusScale - 1) * focusEase;
+    if (Math.abs(nextLift - lift) > 0.0005) {
+      lift = nextLift;
+      container.style.setProperty('--flex-carousel-lift', lift.toFixed(4));
+    }
+
+    const effects = introEffects();
+
+    const homeX = width / 2;
+    const homeY = height / 2;
+    const follow = s.followCursor && pointer.over && !pointer.dragging && !pointer.touch && focus.target === 0;
+    const aimX = follow ? pointer.x : homeX;
+    const aimY = follow ? pointer.y : homeY;
+    if (!lens.ready) {
+      lens.x = homeX;
+      lens.y = homeY;
+      lens.ready = true;
+    }
+    const lensK = 110;
+    const lensC = 2 * Math.sqrt(lensK) * 0.8;
+    lens.vx += (lensK * (aimX - lens.x) - lensC * lens.vx) * dt;
+    lens.vy += (lensK * (aimY - lens.y) - lensC * lens.vy) * dt;
+    lens.x += lens.vx * dt;
+    lens.y += lens.vy * dt;
+    if (Math.abs(aimX - lens.x) + Math.abs(aimY - lens.y) > 0.2 || Math.abs(lens.vx) + Math.abs(lens.vy) > 0.5) animating = true;
+
+    const cardH = m.cardH;
+    let halfW = (s.lensWidth * width) / 2;
+    let halfH = (s.lensHeight * width) / 2;
+    const squash = Math.abs(deform) * liquidAmount;
+    halfW *= 1 + squash * 0.16;
+    halfH *= 1 - squash * 0.08;
+    const lensX = lens.x - deform * 14 * liquidAmount;
+
+    for (let i = 0; i < n; i++) {
+      const slot = slots[i];
+      if (slot.loaded && slot.ready < 1) {
+        slot.ready = Math.min(1, slot.ready + dt / 0.45);
+        animating = true;
+      }
+    }
+
+    const waiting = !introState.done;
+    if (dirty || animating || pointer.dragging) {
+      dirty = false;
+      instances = [];
+      const cu = cardGL.uniforms;
+      const shrink = 1 - clamp01(s.squeeze) * energy;
+      const draws = [];
+      for (let i = 0; i < n; i++) {
+        const w = m.widths[i];
+        const baseRel = wrap(m.centers[i] - pos, m.loop);
+        for (let k = -3; k <= 3; k++) {
+          const rel = baseRel + k * m.loop;
+          if (Math.abs(rel) - w / 2 > width + 40) continue;
+          const fx = effects.card ? effects.card(rel) : null;
+          let x = homeX + rel + (fx ? fx.x : 0);
+          let scale = shrink * (fx ? fx.scale : 1);
+          let alpha = fx ? fx.alpha : 1;
+          if (focusAmount > 0) {
+            if (i === focus.index && Math.abs(rel) < w) {
+              scale *= 1 + (focusScale - 1) * focusEase;
+            } else {
+              const order = Math.min(Math.abs(rel) / width, 1) * 0.25;
+              const part = easeInOut(focusAmount * 1.25 - order);
+              x += Math.sign(rel) * part * width * 0.7;
+              alpha *= 1 - part;
+            }
+          }
+          const cw = w * scale;
+          if (alpha <= 0.001 || x + cw / 2 < -40 || x - cw / 2 > width + 40) continue;
+          draws.push({ i, rel, x, y: homeY + (fx ? fx.y : 0), cw, ch: cardH * scale, alpha });
+        }
+      }
+      draws.sort((a, b) => Math.abs(b.rel) - Math.abs(a.rel));
+
+      // Card pass: draw every visible card into the offscreen scene texture.
+      gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
+      gl.viewport(0, 0, target.width, target.height);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.useProgram(cardGL.program);
+      gl.bindVertexArray(cardGeometry.vao);
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.uniform1i(cu.tMap, 0);
+      gl.uniform2f(cu.uResolution, width, height);
+      gl.uniform1f(cu.uDpr, dpr);
+      gl.uniform1f(cu.uRadius, s.radius);
+      for (const draw of draws) {
+        const slot = slots[draw.i];
+        gl.bindTexture(gl.TEXTURE_2D, slot.texture);
+        gl.uniform4f(cu.uRect, draw.x, draw.y, draw.cw + 2, draw.ch + 2);
+        gl.uniform2f(cu.uSize, draw.cw, draw.ch);
+        gl.uniform2f(cu.uImage, slot.image[0], slot.image[1]);
+        gl.uniform1f(cu.uAlpha, draw.alpha);
+        gl.uniform1f(cu.uReady, slot.ready);
+        gl.uniform1f(cu.uShift, reducedMotion ? 0 : Math.max(-1, Math.min(1, draw.rel / (width * 0.75))));
+        gl.uniform3f(cu.uPlaceholder, slot.color[0], slot.color[1], slot.color[2]);
+        gl.drawArrays(gl.TRIANGLES, 0, cardGeometry.count);
+        instances.push({ index: draw.i, x0: draw.x - draw.cw / 2, x1: draw.x + draw.cw / 2, y0: draw.y - draw.ch / 2, y1: draw.y + draw.ch / 2 });
+      }
+      gl.disable(gl.BLEND);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.bindTexture(gl.TEXTURE_2D, target.texture);
+      gl.generateMipmap(gl.TEXTURE_2D);
+
+      // Lens pass: bend the scene through the invisible glass onto the canvas.
+      const lu = lensGL.uniforms;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.useProgram(lensGL.program);
+      gl.bindVertexArray(lensGeometry.vao);
+      gl.uniform1i(lu.tScene, 0);
+      gl.uniform2f(lu.uResolution, width, height);
+      gl.uniform1f(lu.uDpr, dpr);
+      gl.uniform2f(lu.uCenter, lensX, lens.y);
+      gl.uniform2f(lu.uHalf, Math.max(halfW, 1), Math.max(halfH, 1));
+      gl.uniform1f(lu.uAngle, (s.tilt * Math.PI) / 180);
+      gl.uniform1f(lu.uExponent, 2 + Math.pow(1 - clamp01(s.roundness), 1.5) * 10);
+      const spanW = Math.max(halfW, 1);
+      const spanH = Math.max(halfH, 1);
+      const inner = Math.max(4, s.reach * (spanW + spanH) * 0.5);
+      gl.uniform1f(lu.uInner, inner);
+      gl.uniform1f(lu.uOuter, inner * 1.6);
+      gl.uniform1f(lu.uFlow, s.bend * (spanW + spanH) * 0.45);
+      gl.uniform1f(lu.uCurl, s.curl === 'rise' ? 1 : s.curl === 'fall' ? -1 : 0);
+      gl.uniform1f(lu.uDispersion, s.dispersion * 0.12 * (1 + Math.abs(deform) * liquidAmount * 1.2));
+      gl.uniform1f(lu.uStrength, effects.strength * (1 - focusEase));
+      gl.uniform1f(lu.uSceneAlpha, effects.sceneAlpha);
+      gl.drawArrays(gl.TRIANGLES, 0, lensGeometry.count);
+      gl.bindVertexArray(null);
+    }
+
+    let nextHover = '';
+    if (pointer.over && !pointer.dragging && introState.done && s.focusOnClick) {
+      const hit = instances.find(inst => pointer.x >= inst.x0 && pointer.x <= inst.x1 && pointer.y >= inst.y0 && pointer.y <= inst.y1);
+      if (focus.target > 0) nextHover = 'close';
+      else if (hit) nextHover = 'open';
+    }
+    if (nextHover !== hover) {
+      hover = nextHover;
+      if (hover) container.setAttribute('data-hover', hover);
+      else container.removeAttribute('data-hover');
+    }
+
+    if (visible && (animating || waiting || dirty || pointer.down)) raf = requestAnimationFrame(frame);
   };
-  const draw = (now = performance.now()) => {
-    raf = 0; if (destroyed) return;
-    position += (targetPosition - position) * .12;
-    const loop = Math.max(loopWidth(), 1);
-    if (Math.abs(position) > loop * 6) { const shift = Math.trunc(position / loop) * loop; position -= shift; targetPosition -= shift; }
-    const t = renderScene(now);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, scene);
-    gl.useProgram(program); gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
-    gl.enableVertexAttribArray(positionLocation); gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-    const halfW = Math.max(width * (config.lensWidth ?? .74) / 2, 1);
-    const halfH = Math.max(width * (config.lensHeight ?? 1.18) / 2, 1);
-    const spanW = Math.max(halfW, 1), spanH = Math.max(halfH, 1);
-    const inner = Math.max(4, (config.reach ?? .38) * (spanW + spanH) * .5);
-    const strength = config.intro === 'bloom' ? clamp((t - .2) / .8, 0, 1) ** 2 * (3 - 2 * clamp((t - .2) / .8, 0, 1)) : 1;
-    gl.uniform2f(uniforms.resolution, width, height);
-    gl.uniform1f(uniforms.dpr, scale);
-    gl.uniform2f(uniforms.center, width / 2, height / 2);
-    gl.uniform2f(uniforms.half, halfW, halfH);
-    gl.uniform1f(uniforms.angle, (config.tilt ?? 62) * Math.PI / 180);
-    gl.uniform1f(uniforms.exponent, 2 + Math.pow(1 - clamp(config.roundness ?? 1, 0, 1), 1.5) * 10);
-    gl.uniform1f(uniforms.inner, inner); gl.uniform1f(uniforms.outer, inner * 1.6);
-    gl.uniform1f(uniforms.flow, (config.bend ?? .34) * (spanW + spanH) * .45);
-    gl.uniform1f(uniforms.curl, config.curl === 'rise' ? 1 : config.curl === 'fall' ? -1 : 0);
-    gl.uniform1f(uniforms.dispersion, (config.dispersion ?? .45) * .12);
-    gl.uniform1f(uniforms.strength, strength * (focused ? 0 : 1));
-    gl.uniform1f(uniforms.alpha, 1);
-    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLES, 0, 3);
-    if (Math.abs(targetPosition - position) > .2 || t < 1) wake();
+
+  function start() {
+    if (raf || !visible || !alive) return;
+    last = performance.now();
+    raf = requestAnimationFrame(frame);
+  }
+
+  const localPoint = e => {
+    const rect = container.getBoundingClientRect();
+    return [e.clientX - rect.left, e.clientY - rect.top];
   };
-  function wake() { if (!raf && !destroyed) raf = requestAnimationFrame(draw); }
-  const prev = () => select(active - 1), forward = () => select(active + 1);
-  const startAuto = () => { clearInterval(timer); if (config.autoplay && !matchMedia('(prefers-reduced-motion: reduce)').matches) timer = setInterval(forward, (config.interval ?? 5) * 1000); };
-  const down = e => { if (e.button !== undefined && e.button !== 0) return; dragging = true; moved = false; downX = e.clientX; clearInterval(timer); container.setPointerCapture?.(e.pointerId); };
-  const move = e => { if (!dragging) return; const dx = e.clientX - downX; if (Math.abs(dx) > 5) moved = true; position -= dx; targetPosition = position; downX = e.clientX; wake(); };
-  const up = e => {
-    if (!dragging) return; dragging = false;
-    if (moved) select(nearest(position));
-    else { const x = e.clientX - container.getBoundingClientRect().left, hit = nearest(targetPosition + x - width * .5); if (hit !== active) select(hit); else { focused = !focused; wake(); } }
-    startAuto();
+
+  const onPointerDown = e => {
+    if (e.button !== undefined && e.button > 0) return;
+    skipIntro();
+    const [x, y] = localPoint(e);
+    pointer.down = true;
+    pointer.id = e.pointerId;
+    pointer.touch = e.pointerType === 'touch';
+    pointer.startX = x;
+    pointer.startY = y;
+    pointer.x = x;
+    pointer.y = y;
+    pointer.startPos = pos;
+    pointer.dragging = false;
+    pointer.samples = [{ x, t: performance.now() }];
+    interactedAt = performance.now();
+    if (Math.abs(vel) > 40) {
+      goal = pos;
+      vel = 0;
+    }
+    dirty = true;
+    start();
   };
-  const key = e => { if (e.key === 'ArrowRight') { e.preventDefault(); forward(); } else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); } else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); focused = !focused; wake(); } else if (e.key === 'Escape') { focused = false; wake(); } };
-  const visibility = () => document.hidden ? clearInterval(timer) : startAuto();
-  container.prepend(canvas); container.classList.add('has-glass');
-  previous?.addEventListener('click', prev); next?.addEventListener('click', forward);
-  container.addEventListener('pointerdown', down); container.addEventListener('pointermove', move);
-  container.addEventListener('pointerup', up); container.addEventListener('pointercancel', up); container.addEventListener('keydown', key);
-  document.addEventListener('visibilitychange', visibility);
-  const observer = new ResizeObserver(resize); observer.observe(container); resize(); caption(); startAuto();
-  return () => {
-    destroyed = true; clearInterval(timer); cancelAnimationFrame(raf); observer.disconnect();
-    previous?.removeEventListener('click', prev); next?.removeEventListener('click', forward);
-    container.removeEventListener('pointerdown', down); container.removeEventListener('pointermove', move);
-    container.removeEventListener('pointerup', up); container.removeEventListener('pointercancel', up); container.removeEventListener('keydown', key);
-    document.removeEventListener('visibilitychange', visibility); gl.deleteTexture(texture); gl.deleteProgram(program); gl.deleteBuffer(vertices);
-    canvas.remove(); container.classList.remove('has-glass');
+
+  const onPointerMove = e => {
+    const [x, y] = localPoint(e);
+    pointer.x = x;
+    pointer.y = y;
+    pointer.over = true;
+    if (pointer.down && e.pointerId === pointer.id) {
+      const dx = x - pointer.startX;
+      const dy = y - pointer.startY;
+      const slop = pointer.touch ? 10 : 5;
+      if (!pointer.dragging) {
+        if (pointer.touch && Math.abs(dy) > slop && Math.abs(dy) > Math.abs(dx)) {
+          pointer.down = false;
+          return;
+        }
+        if (Math.abs(dx) > slop) {
+          pointer.dragging = true;
+          pointer.startX = x;
+          pointer.startPos = pos;
+          closeFocus();
+          try {
+            container.setPointerCapture(e.pointerId);
+          } catch {
+            pointer.dragging = true;
+          }
+          container.setAttribute('data-dragging', '');
+        }
+      }
+      if (pointer.dragging) {
+        pos = pointer.startPos - (x - pointer.startX);
+        goal = pos;
+        vel = 0;
+        const now = performance.now();
+        pointer.samples.push({ x, t: now });
+        while (pointer.samples.length > 2 && now - pointer.samples[0].t > 100) pointer.samples.shift();
+      }
+    }
+    dirty = true;
+    start();
   };
+
+  const onPointerUp = e => {
+    if (!pointer.down || e.pointerId !== pointer.id) return;
+    pointer.down = false;
+    container.removeAttribute('data-dragging');
+    const s = settings;
+    const m = metrics(s);
+    interactedAt = performance.now();
+    if (pointer.dragging) {
+      pointer.dragging = false;
+      const now = performance.now();
+      const first = pointer.samples[0];
+      const lastSample = pointer.samples[pointer.samples.length - 1];
+      let velocity = 0;
+      if (first && lastSample && lastSample.t > first.t && now - lastSample.t < 70) {
+        velocity = -((lastSample.x - first.x) / (lastSample.t - first.t)) * 1000;
+      }
+      vel = velocity;
+      const landing = snapPoint(m, pos + velocity * 0.32);
+      goal = landing;
+      if (Math.abs(velocity) > 400 && Math.abs(landing - pos) < 1) step(m, velocity > 0 ? 1 : -1);
+      mode = 'spring';
+      start();
+      return;
+    }
+    if (closeFocus()) return;
+    const [x, y] = localPoint(e);
+    const hit = instances.find(inst => x >= inst.x0 && x <= inst.x1 && y >= inst.y0 && y <= inst.y1);
+    if (!hit) return;
+    if (hit.index === activeIndex && Math.abs(goal - pos) < 2) {
+      options.onSelect?.(hit.index, list[hit.index]);
+      if (s.focusOnClick) openFocus(hit.index);
+    } else {
+      const rel = (hit.x0 + hit.x1) / 2 - width / 2;
+      goal = snapPoint(m, pos + rel);
+      mode = 'spring';
+      if (s.focusOnClick) focus.pending = hit.index;
+      start();
+    }
+  };
+
+  const onPointerLeave = () => {
+    pointer.over = false;
+    dirty = true;
+    start();
+  };
+
+  const onPointerCancel = () => {
+    pointer.down = false;
+    pointer.dragging = false;
+    container.removeAttribute('data-dragging');
+    goal = snapPoint(metrics(settings), pos);
+    mode = 'spring';
+    start();
+  };
+
+  const onWheel = e => {
+    const s = settings;
+    if (e.ctrlKey) return;
+    let dx = e.deltaX;
+    let dy = e.deltaY;
+    if (e.shiftKey && Math.abs(dx) < Math.abs(dy)) {
+      dx = dy;
+      dy = 0;
+    }
+    const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? height : 1;
+    const horizontal = Math.abs(dx) > Math.abs(dy);
+    if (!horizontal && !s.captureWheel) return;
+    e.preventDefault();
+    skipIntro();
+    interactedAt = performance.now();
+    if (closeFocus()) return;
+    const delta = Math.max(-120, Math.min(120, (horizontal ? dx : dy) * unit));
+    goal += delta * 1.25;
+    mode = 'wheel';
+    wheelAt = performance.now();
+    start();
+  };
+
+  const stepBy = delta => {
+    skipIntro();
+    closeFocus();
+    interactedAt = performance.now();
+    step(metrics(settings), delta);
+  };
+
+  const onKeyDown = e => {
+    const s = settings;
+    const m = metrics(s);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      stepBy(1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      stepBy(-1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      closeFocus();
+      goTo(m, 0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      closeFocus();
+      goTo(m, slots.length - 1);
+    } else if (e.key === 'Escape') {
+      if (closeFocus()) e.preventDefault();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (closeFocus() || activeIndex < 0) return;
+      options.onSelect?.(activeIndex, list[activeIndex]);
+      if (s.focusOnClick) openFocus(activeIndex);
+    }
+  };
+
+  const onFocus = () => {
+    hasFocus = true;
+  };
+  const onBlur = () => {
+    hasFocus = false;
+  };
+  const onVisibility = () => {
+    if (!container.isConnected) destroy();
+    else if (!document.hidden) start();
+  };
+  const onPrev = () => stepBy(-1);
+  const onNext = () => stepBy(1);
+
+  container.addEventListener('pointerdown', onPointerDown);
+  container.addEventListener('pointermove', onPointerMove);
+  container.addEventListener('pointerup', onPointerUp);
+  container.addEventListener('pointerleave', onPointerLeave);
+  container.addEventListener('pointercancel', onPointerCancel);
+  container.addEventListener('wheel', onWheel, { passive: false });
+  container.addEventListener('keydown', onKeyDown);
+  container.addEventListener('focus', onFocus);
+  container.addEventListener('blur', onBlur);
+  document.addEventListener('visibilitychange', onVisibility);
+  controls.prev?.addEventListener('click', onPrev);
+  controls.next?.addEventListener('click', onNext);
+
+  const resizeObserver = new ResizeObserver(resize);
+  resizeObserver.observe(container);
+  const intersectionObserver = new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    start();
+  });
+  intersectionObserver.observe(container);
+
+  function destroy() {
+    if (!alive) return;
+    alive = false;
+    visible = false;
+    cancelAnimationFrame(raf);
+    resizeObserver.disconnect();
+    intersectionObserver.disconnect();
+    container.removeEventListener('pointerdown', onPointerDown);
+    container.removeEventListener('pointermove', onPointerMove);
+    container.removeEventListener('pointerup', onPointerUp);
+    container.removeEventListener('pointerleave', onPointerLeave);
+    container.removeEventListener('pointercancel', onPointerCancel);
+    container.removeEventListener('wheel', onWheel);
+    container.removeEventListener('keydown', onKeyDown);
+    container.removeEventListener('focus', onFocus);
+    container.removeEventListener('blur', onBlur);
+    document.removeEventListener('visibilitychange', onVisibility);
+    controls.prev?.removeEventListener('click', onPrev);
+    controls.next?.removeEventListener('click', onNext);
+    slots.forEach(slot => slot.dispose());
+    slots = [];
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    canvas.remove();
+    captionEl?.remove();
+    liveRegion.remove();
+    container.classList.remove('has-glass');
+  }
+
+  resize();
+  setItems(list);
+  return destroy;
 }

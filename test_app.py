@@ -75,6 +75,22 @@ class Flow(unittest.TestCase):
    self.assertEqual(Response('GET','/api/state',cookie=other).data['points'],0)
    server.initialize();self.assertEqual(len(Response('GET','/api/state',cookie=other).data['concert_history']),1)
    self.assertEqual(Response('GET','/api/state').data['concert_history'],[])
+ def test_concert_rating(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'test.sqlite3';server.initialize()
+   cookie=Response('POST','/api/register',{'name':'Rater','password':'demo-pass-123'}).headers['Set-Cookie'].split(';')[0]
+   payload={'artist':'Tame Impala','venue':'TD Garden','city':'Boston','date':'2026-07-28'}
+   rating=lambda:Response('GET','/api/state',cookie=cookie).data['concert_history'][0].get('rating')
+   self.assertEqual(Response('POST','/api/concert-log',{**payload,'rating':3.5},cookie).status,200);self.assertEqual(rating(),3.5)
+   for bad in (0.25,5.5,-1,'4',True,[4]):self.assertEqual(Response('POST','/api/concert-log',{**payload,'rating':bad},cookie).status,400)
+   self.assertEqual(rating(),3.5)
+   Response('POST','/api/concert-log',{**payload,'artists_seen':[{'artist':'Tame Impala'},{'artist':'Opener'}]},cookie);self.assertEqual(rating(),3.5)
+   Response('POST','/api/concert-log',{**payload,'rating':5},cookie);self.assertEqual(rating(),5)
+   Response('POST','/api/concert-log',{**payload,'rating':None},cookie);self.assertIsNone(rating())
+   Response('POST','/api/concert-log',{**payload,'rating':0.5},cookie)
+   with server.db() as c:
+    c.execute("INSERT INTO events(id,artist,venue,city,date,image,metadata) VALUES(?,?,?,?,?,?,?)",('past-rated','Tame Impala','TD Garden','Boston','Jul 28, 2026','violet',json.dumps({'start_date':'2026-07-28'})))
+   Response('POST','/api/checkin',{'event':'past-rated'},cookie);self.assertEqual(rating(),0.5)
  def test_complete_journey(self):
   with tempfile.TemporaryDirectory() as tmp:
    server.DB=Path(tmp)/'test.sqlite3';server.initialize()

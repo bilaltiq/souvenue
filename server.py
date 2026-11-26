@@ -69,6 +69,7 @@ def initialize():
   if 'leaderboard_opt_in' not in [r[1] for r in c.execute('PRAGMA table_info(users)')]:c.execute("ALTER TABLE users ADD COLUMN leaderboard_opt_in INTEGER NOT NULL DEFAULT 0")
   c.execute("CREATE TABLE IF NOT EXISTS concert_logs(id TEXT PRIMARY KEY,user TEXT,identity TEXT,event_id TEXT,artist TEXT,venue TEXT,city TEXT,date TEXT,created REAL,artists_seen TEXT DEFAULT 'null',UNIQUE(user,identity))")
   if 'artists_seen' not in [r[1] for r in c.execute('PRAGMA table_info(concert_logs)')]:c.execute("ALTER TABLE concert_logs ADD COLUMN artists_seen TEXT DEFAULT 'null'")
+  if 'rating' not in [r[1] for r in c.execute('PRAGMA table_info(concert_logs)')]:c.execute("ALTER TABLE concert_logs ADD COLUMN rating REAL")
   c.execute("CREATE TABLE IF NOT EXISTS feed_posts(id TEXT PRIMARY KEY,user TEXT,body TEXT,photo TEXT,event_id TEXT,category TEXT,created REAL)")
   if 'extra_photos' not in [r[1] for r in c.execute('PRAGMA table_info(feed_posts)')]:c.execute("ALTER TABLE feed_posts ADD COLUMN extra_photos TEXT NOT NULL DEFAULT '[]'")
   c.executescript("""CREATE TABLE IF NOT EXISTS friendships(low TEXT,high TEXT,sender TEXT,status TEXT,created REAL,PRIMARY KEY(low,high));
@@ -233,7 +234,7 @@ def concert_history(c,uid):
   for k,log in list(history.items()):
    if log.get('event_id')==e['id']:del history[k]
   seen=prior.get('artists_seen') if prior else [{'artist':e['artist'],'artist_slug':e.get('artist_slug','')}]
-  history[key]={**e,**({'artists_seen':seen} if prior else {}),'id':'checkin-'+e['id'],'event_id':e['id'],'checked_in':True,'checkin_method':attendance['method'],'points':ATTENDANCE_POINTS,'created':attendance['created'],'start_date':day}
+  history[key]={**e,**({'artists_seen':seen,'rating':prior.get('rating')} if prior else {}),'id':'checkin-'+e['id'],'event_id':e['id'],'checked_in':True,'checkin_method':attendance['method'],'points':ATTENDANCE_POINTS,'created':attendance['created'],'start_date':day}
  return sorted(history.values(),key=lambda e:(e['start_date'],e['created']),reverse=True)
 
 class Handler(BaseHTTPRequestHandler):
@@ -402,11 +403,17 @@ class Handler(BaseHTTPRequestHandler):
       key=slug or artist_identity(name)
       if not name or not key or key in seen_keys:continue
       seen_keys.add(key);normalized.append({'artist':name,'artist_slug':slug})
-     log=c.execute('SELECT id FROM concert_logs WHERE user=? AND identity=?',(u['id'],identity)).fetchone()
+     # Optional star rating: 0.5-5 in half-star steps; null/0 clears it; omitted keeps the saved one.
+     has_rating='rating' in data;rating=data.get('rating')
+     if rating in (None,0):rating=None
+     elif isinstance(rating,bool) or not isinstance(rating,(int,float)) or not 0.5<=rating<=5 or rating*2!=int(rating*2):return self.reply(400,{'error':'Rate the show from half a star to 5 stars.'})
+     else:rating=float(rating)
+     log=c.execute('SELECT id,rating FROM concert_logs WHERE user=? AND identity=?',(u['id'],identity)).fetchone()
      log_id=log['id'] if log else secrets.token_hex(16)
-     if not log:c.execute('INSERT INTO concert_logs(id,user,identity,event_id,artist,venue,city,date,created,artists_seen) VALUES(?,?,?,?,?,?,?,?,?,?)',(log_id,u['id'],identity,event_id,artist,venue,city,day,time.time(),json.dumps(normalized)))
-     else:c.execute('UPDATE concert_logs SET artists_seen=? WHERE id=? AND user=?',(json.dumps(normalized),log_id,u['id']))
-     return self.reply(200,{'ok':True,'artists_seen':normalized})
+     if not has_rating:rating=log['rating'] if log else None
+     if not log:c.execute('INSERT INTO concert_logs(id,user,identity,event_id,artist,venue,city,date,created,artists_seen,rating) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(log_id,u['id'],identity,event_id,artist,venue,city,day,time.time(),json.dumps(normalized),rating))
+     else:c.execute('UPDATE concert_logs SET artists_seen=?,rating=? WHERE id=? AND user=?',(json.dumps(normalized),rating,log_id,u['id']))
+     return self.reply(200,{'ok':True,'artists_seen':normalized,'rating':rating})
     if p=='/api/concert-log-delete':
      c.execute('DELETE FROM concert_logs WHERE id=? AND user=?',(str(data.get('id','')),u['id']))
      return self.reply(200,{'ok':True})
