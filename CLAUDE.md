@@ -26,7 +26,12 @@ talk in show, venue and artist communities, with points and leaderboards.
 - Night palette tokens (`:root` near the end of style.css): `--paper #080b18`,
   `--ink #f2f1ff`, `--accent #70caff` (primary blue), `--pink #ff74cb`
   (highlights, active states), `--line #30314e`, `--muted #b2b5d1`, `--panel #12152c`.
-- One typeface: Instrument Sans. A rule forces it on every element.
+- Two typefaces, loaded from Google Fonts in `templates/index.html`: Bricolage Grotesque
+  (bold, `--font-display`) for headings and big poster numbers, Hanken Grotesk
+  (`--font-text`) for everything else, including the "souvenue" wordmark (medium weight).
+- Text sizes outside headings: lead 18 · body 16 · UI 14 · meta 12. Nothing below 12px.
+- No uppercase letter-spaced "eyebrow" tags above headings. Put real metadata
+  (city, source, topic) in a sentence-case `.meta-line`.
 - Primary buttons use solid `--accent`. Toggle/filter buttons use `aria-pressed`,
   which makes them chips: outlined, and filled blue when selected.
 - Header breakpoints: from 761–1050px the nav tabs sit on their own row under the
