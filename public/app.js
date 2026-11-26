@@ -221,7 +221,7 @@ function selectedPerformers(root,headliner){
 // rating, {} to save without changing it ("Skip"), or null to cancel.
 const STAR_ICON='<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.8l2.85 5.95 6.55.85-4.8 4.55 1.2 6.5L12 17.5l-5.8 3.15 1.2-6.5-4.8-4.55 6.55-.85z"/></svg>';
 function ratingNumber(r){return (Math.floor(r)||'')+(r%1?'½':'')}
-function ratingText(r){return r?`${ratingNumber(r)} out of 5 ${r>1?'stars':'star'}`:'No rating yet'}
+function ratingText(r){return r?`${ratingNumber(r)} out of 5 stars`:'No rating yet'}
 function starsMarkup(r){return `<span class="star-display" role="img" aria-label="Rated ${esc(ratingText(r))}">${[1,2,3,4,5].map(n=>`<span class="star-mini" data-fill="${r>=n?'full':r>=n-.5?'half':'empty'}"><span class="star-empty">${STAR_ICON}</span><span class="star-fill">${STAR_ICON}</span></span>`).join('')}</span>`}
 function savedRatingFor(show){const key=[show.artist,show.venue,show.city,show.start_date||show.date].map(x=>performerKey(String(x||''))).join('|');return concertHistory().find(log=>(show.id&&log.event_id===show.id)||[log.artist,log.venue,log.city,log.start_date].map(x=>performerKey(String(x||''))).join('|')===key)?.rating||0}
 function askRating(show){return new Promise(resolve=>{
@@ -231,12 +231,12 @@ function askRating(show){return new Promise(resolve=>{
  dialog.innerHTML=`<p class="eyebrow">HOW WAS THE NIGHT?</p><h2 id="rating-dialog-title">Rate this show.</h2><p class="rating-show"><strong>${esc(show.artist||'')}</strong><small>${esc([show.venue,show.city,when].filter(Boolean).join(' · '))}</small></p><div class="star-rating" role="group" aria-label="Show rating">${[1,2,3,4,5].map(n=>`<button type="button" class="star" data-star="${n}" aria-label="${n} ${n===1?'star':'stars'}"><span class="star-empty">${STAR_ICON}</span><span class="star-fill">${STAR_ICON}</span></button>`).join('')}</div><p class="star-rating-value" aria-live="polite"></p><div class="rating-actions"><button type="button" data-rating-save>Save show</button><button type="button" class="rating-skip" data-rating-skip>Skip rating</button></div><button type="button" class="rating-close" aria-label="Close without saving" data-rating-cancel>×</button>`;
  document.body.append(dialog);
  const stars=[...dialog.querySelectorAll('.star')],value=dialog.querySelector('.star-rating-value');
- let rating=Number(show.rating)||0,lastStar=0,lastTap=0,result=null;
+ let rating=Number(show.rating)||0,result=null;
  const paint=()=>{stars.forEach((star,i)=>{star.dataset.fill=rating>=i+1?'full':rating>=i+.5?'half':'empty'});value.textContent=ratingText(rating)};
+ // Click cycle on star n: fill up to n → click the top full star again for a half → click the half to empty it.
  stars.forEach((star,i)=>star.onclick=()=>{
-  const n=i+1,now=performance.now(),double=lastStar===n&&now-lastTap<350;
-  if(double){rating=n-.5;lastStar=0}                        // second quick tap on the same star → half star
-  else{rating=rating===n-.5?n-1:n;lastStar=n;lastTap=now}    // tap a half star → empty; any other tap → filled up to here
+  const n=i+1;
+  rating=rating===n?n-.5:rating===n-.5?n-1:n;
   paint();
  });
  dialog.querySelector('.star-rating').onkeydown=ev=>{const step={ArrowRight:.5,ArrowUp:.5,ArrowLeft:-.5,ArrowDown:-.5}[ev.key];if(step===undefined&&ev.key!=='Home'&&ev.key!=='End')return;ev.preventDefault();rating=ev.key==='Home'?0:ev.key==='End'?5:Math.max(0,Math.min(5,rating+step));paint()};
