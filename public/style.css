@@ -680,3 +680,16 @@ html body .leaderboard-filters select { width: auto; min-width: 190px; margin: 0
 html body :is(input[type=search], input[type=text], input[type=password], input[type=date], input[type=email], input:not([type])) {
   padding: 11px 14px !important; font-size: 14px !important; line-height: 20px;
 }
+
+/* ---- No decorative rings, glows or halos --------------------------------- */
+/* The older layers added orbit rings, colored glow shadows and neon text.
+   Surfaces are flat; depth comes only from a plain dark shadow on dialogs. */
+html body .orbit, html body .community-category-tile::after { display: none !important; }
+html body *, html body *::before, html body *::after { text-shadow: none !important; }
+/* Exception: a dark shadow keeps white text readable over artist photos. */
+html body .artist-photo-tile :is(.poster-meta, strong, .poster-bottom) { text-shadow: 0 1px 10px rgba(0, 0, 0, .6) !important; }
+html body :is(button:hover, .button:hover, .ticket, .check-panel, .unlock-card, .artist-mark, .artist-search input,
+  .tabs button.chat-unlocked, .exclusive-chat, .topic-filters button, .tag-choice input + span, .online-dot,
+  .community-category-tile, .thread-preview, .carousel-dots button, .profile-tabs button, .history-checked-in) { box-shadow: none !important; }
+html body dialog { box-shadow: 0 24px 60px rgba(0, 0, 0, .55) !important; }
+html body :is(.brand .souvenue-logo, .unlock-lock rect) { filter: none !important; }
