@@ -597,3 +597,21 @@ button.text-action:not([aria-pressed]):not(.menu-toggle):hover { color: var(--in
 main button:not([aria-pressed]):not(.menu-toggle):not(.text-action), main .button { line-height: 20px; }
 /* An old layer indented the rating and "artists seen" lines 15px in history tiles. */
 .history > p { margin-left: 0; }
+
+/* ---- Header: identical on the home page and every other page ------------ */
+/* The cream layer gave the home header a smaller logo, nav, account button
+   and a wider max-width, so the banner shrank when you clicked the logo. */
+body.souvenue-home header { max-width: 1280px; }
+body.souvenue-home header #account { border-radius: 6px; }
+body.souvenue-home header .brand .souvenue-logo { filter: brightness(1.08) drop-shadow(0 0 5px rgba(186, 203, 255, .2)); }
+@media (min-width: 761px) {
+  body.souvenue-home header .brand .souvenue-logo { width: 76px; height: 60px; }
+  body.souvenue-home header #account { font-size: 14px; padding: 13px 21px; }
+}
+@media (min-width: 1051px) {
+  body.souvenue-home header { height: 91px; padding: 0 48px; }
+  body.souvenue-home header nav { gap: 32px; font-size: 14px; }
+}
+@media (max-width: 760px) {
+  body.souvenue-home header nav { gap: 12px 15px; font-size: 11px; }
+}
