@@ -681,6 +681,10 @@ html body :is(input[type=search], input[type=text], input[type=password], input[
   padding: 11px 14px !important; font-size: 14px !important; line-height: 20px;
 }
 
+/* Friend actions on a member's profile page. */
+html body .profile-friend-actions { margin: 4px 0 8px; }
+html body .friend-status { color: var(--muted); font-size: 14px; font-weight: 600; }
+
 /* ---- No decorative rings, glows or halos --------------------------------- */
 /* The older layers added orbit rings, colored glow shadows and neon text.
    Surfaces are flat; depth comes only from a plain dark shadow on dialogs. */
