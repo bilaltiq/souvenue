@@ -1081,3 +1081,12 @@ html body .community-category-tile:focus-visible { outline: 2px solid var(--ink)
 html body .community-category-tile strong { color: var(--ink) !important; }
 html body .community-category-tile:hover strong { color: var(--accent) !important; }
 html body .community-category-tile[aria-pressed="true"] strong { color: var(--pink) !important; }
+
+/* Home "Find a show to go to.": the same photo grid as the Artists page (no panel bars). */
+html body .home-artist-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 28px 20px; margin: 28px 0 0; padding: 0; background: none; }
+html body .home-artist-grid .artist-directory-row { display: flex; flex-direction: column; align-items: stretch; gap: 12px; padding: 0; border: 0; border-radius: 0; background: none; }
+html body .home-artist-grid .directory-open { display: none; }
+html body .explore-artists-cta { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 20px; margin-top: 28px; }
+html body .home-artist-credit { color: var(--muted); font-size: 12px; }
+@media (max-width: 1050px) { html body .home-artist-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { html body .home-artist-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; } }

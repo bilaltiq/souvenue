@@ -34,7 +34,7 @@ function home(){
   </section>
   <section class="home-carousel-section" id="home-carousel" aria-labelledby="home-carousel-heading">
    <div class="home-carousel-heading">
-    <div><h2 id="home-carousel-heading">Find your people in the music.</h2></div>
+    <div><h2 id="home-carousel-heading">Built for fans, by fans.</h2></div>
     <div class="home-carousel-controls" aria-label="Featured photo controls"><button type="button" class="home-carousel-prev" aria-label="Previous photos"><svg class="icon-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><button type="button" class="home-carousel-next" aria-label="Next photos"><svg class="icon-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div>
    </div>
    <div class="flex-carousel" role="region" aria-roledescription="carousel" aria-label="Featured fan photos">
@@ -47,8 +47,8 @@ function home(){
     <div><h2>Find a show to go to.</h2></div>
     <span class="muted">Choose an artist to see listed dates.</span>
    </div>
-   <div class="home-artist-preview"><div class="cards home-artists">${artistList().slice(0,6).map(artistCard).join('')}</div></div>
-   <div class="explore-artists-cta"><a class="text-link" href="/artists">Browse all ${artistList().length} artists</a></div>
+   <div class="artist-directory-list home-artist-grid">${artistList().slice(0,6).map(artistDirectoryRow).join('')}</div>
+   <div class="explore-artists-cta"><a class="text-link" href="/artists">Browse all ${artistList().length} artists</a><small class="home-artist-credit">Artist photos via Ticketmaster.</small></div>
   </section>
   <section class="how">
    <div><h2>Talk about the night with people who were there.</h2><p>Share photos and memories in conversations built around shows and artists.</p><a href="/communities">Explore communities</a></div>
