@@ -103,7 +103,7 @@ function artistDirectoryRow(e){const count=upcoming(e.artist_slug).length;return
 // ---- Artists page: a floating row of overlapped tour posters -------------------
 // Only real tour posters Sofia supplies (public/posters/<slug>.jpg). Add one by dropping the
 // file in and listing its slug here; a missing file just drops out of the row.
-const TOUR_POSTERS=['olivia-rodrigo','noah-kahan','harry-styles','tame-impala'];
+const TOUR_POSTERS=['olivia-rodrigo','noah-kahan','harry-styles','phoebe-bridgers','tame-impala'];
 function posterStageMarkup(){const artists=new Map(artistList().map(a=>[a.artist_slug,a]));
  return `<section class="poster-stage" aria-label="Tour posters"><div class="poster-row">${TOUR_POSTERS.filter(slug=>artists.has(slug)).map(slug=>`<a class="tour-poster" href="/artist/${esc(slug)}" aria-label="${esc(artists.get(slug).artist)} tour poster"><span class="tour-poster-face"><img src="/posters/${esc(slug)}.jpg" alt="" draggable="false" data-poster></span></a>`).join('')}</div><p class="poster-hint" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M8 3v10M4 9l4 4 4-4"/></svg>Scroll for every artist</p></section>`}
 // Posters float, part around the cursor, and fan out of the way as you scroll down to the list.
