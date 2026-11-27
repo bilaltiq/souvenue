@@ -671,6 +671,10 @@ class Handler(BaseHTTPRequestHandler):
    return self.reply(404,{'error':'Not found'})
   if p in ('/souvenue-logo.svg','/souvenue-wordmark-art.svg','/souvenue-logo-header.png'):
    b=(ROOT/'public'/Path(p).name).read_bytes();self.send_response(200);self.send_header('Content-Type',{'.png':'image/png','.webp':'image/webp'}.get(Path(p).suffix,'image/svg+xml'));self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
+  if p.startswith('/posters/'):
+   file=ROOT/'public'/'posters'/Path(p).name
+   if not file.is_file() or file.suffix!='.jpg':return self.reply(404,{'error':'Poster not found.'})
+   b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','image/jpeg');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
   if p.startswith('/marks/'):
    file=ROOT/'public'/'marks'/Path(p).name
    if not file.is_file() or file.suffix!='.svg':return self.reply(404,{'error':'Mark not found.'})
