@@ -30,7 +30,7 @@ function home(){
      <a class="text-link" href="/concerts">View your concert history</a>
     </div>
    </div>
-   <figure class="hero-artwork"><img src="/souvenue-wordmark-art.svg" alt="Souvenue’s hand-drawn logo" width="500" height="500"></figure>
+   <figure class="hero-artwork"><img src="/souvenue-art.webp" alt="Souvenue’s hand-drawn logo" width="500" height="500"></figure>
   </section>
   <section class="home-carousel-section" id="home-carousel" aria-labelledby="home-carousel-heading">
    <div class="home-carousel-heading">

@@ -335,8 +335,8 @@ class Handler(BaseHTTPRequestHandler):
       if hosted() and post['photo']:post['photo']='/api/media/post/'+post['id']
      return self.reply(200,posts)
    return self.reply(404,{'error':'Not found'})
-  if p in ('/souvenue-logo.svg','/souvenue-wordmark-art.svg'):
-   b=(ROOT/'public'/Path(p).name).read_bytes();self.send_response(200);self.send_header('Content-Type','image/svg+xml');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
+  if p in ('/souvenue-logo.svg','/souvenue-wordmark-art.svg','/souvenue-logo-header.png','/souvenue-art.webp'):
+   b=(ROOT/'public'/Path(p).name).read_bytes();self.send_response(200);self.send_header('Content-Type',{'.png':'image/png','.webp':'image/webp'}.get(Path(p).suffix,'image/svg+xml'));self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
   if p.startswith('/artists/'):
    file=ROOT/'public'/'artists'/Path(p).name
    if not file.is_file() or file.suffix!='.jpg':return self.reply(404,{'error':'Photo not found.'})
