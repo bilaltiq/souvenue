@@ -819,10 +819,31 @@ button:has(> .icon-chevron) { display: inline-grid; place-items: center; }
 html { overflow-x: clip; }
 html body .home-carousel-section .flex-carousel { width: 100vw; max-width: none; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); }
 
-/* Home hero: words only, filling the width (the big logo illustration is gone). */
-html body.souvenue-home .hero { display: block; min-height: 0; padding: clamp(44px, 7vw, 104px) 0 clamp(52px, 6vw, 88px); }
-html body.souvenue-home .hero-copy { max-width: none; }
-html body.souvenue-home .hero-copy { container-type: inline-size; }
-/* One line, sized to the column: the headline spans the full width at every screen size. */
-html body.souvenue-home .hero h1 { white-space: nowrap; font-size: 8.2vw; font-size: 8.8cqi; line-height: 1; letter-spacing: -.035em !important; margin: 0 0 clamp(20px, 3vw, 40px); }
-html body.souvenue-home .hero-description { max-width: 600px; }
+/* Home hero: fills the first screen. A centred two-line headline sits under a
+   blanket of confetti (canvas, public/confetti-floor.js) you sweep away with the
+   cursor; the description and buttons sit above the confetti. */
+html body.souvenue-home .hero { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+  min-height: calc(100svh - 92px); padding: clamp(28px, 4vh, 56px) 0 clamp(36px, 6vh, 72px); margin-bottom: 24px; touch-action: pan-y; }
+html body.souvenue-home .hero-copy { width: 100%; max-width: none; display: flex; flex-direction: column; align-items: center; position: static !important; z-index: auto !important; isolation: auto; }
+html body.souvenue-home .hero h1 { position: relative; z-index: 0; white-space: nowrap; font-size: 15vw; line-height: .9; letter-spacing: -.035em !important; margin: 0 0 clamp(20px, 3.5vh, 40px); text-wrap: nowrap; }
+html body.souvenue-home .hero-description, html body.souvenue-home .hero-actions { position: relative; z-index: 2; }
+html body.souvenue-home .hero-description { max-width: 560px; margin: 0 auto 24px; }
+html body.souvenue-home .hero-actions { justify-content: center; }
+.confetti-floor { position: absolute; top: 0; bottom: 0; left: calc(50% - 50vw); width: 100vw; height: 100%; z-index: 1; pointer-events: none; display: block; }
+html body.souvenue-home .hero h1 .br-phone { display: none; }
+/* The headline may run wider than the content column, up to the screen edges. */
+html body.souvenue-home .hero h1 { width: max-content; max-width: none; position: relative; left: 50%; transform: translateX(-50%); align-self: flex-start; margin-left: 0; margin-right: 0; }
+@media (max-width: 760px) {
+  html body.souvenue-home .hero { padding-top: 14px; padding-bottom: 22px; }
+  html body.souvenue-home .hero h1 { margin-bottom: 16px; line-height: .86; }
+  html body.souvenue-home .hero-description { margin-bottom: 18px; }
+}
+/* 761–1050px: the header wraps to two rows, so the hero gets a little less height. */
+@media (min-width: 761px) and (max-width: 1050px) { html body.souvenue-home .hero { min-height: calc(100svh - 120px); } }
+/* Phones: four short lines so the headline can grow to fill the screen. */
+@media (max-width: 760px) {
+  html body.souvenue-home .hero { min-height: calc(100svh - 65px); }
+  html body.souvenue-home .hero h1 .br-phone { display: inline; }
+}
+/* Confetti sits beneath the headline (the words stay on top). */
+html body.souvenue-home .hero h1 { z-index: 3; }

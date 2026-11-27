@@ -423,7 +423,7 @@ class Handler(BaseHTTPRequestHandler):
    b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','image/jpeg');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
   # Vercel serves public/ from its CDN and omits it from the Python bundle.
   # Page navigation must read a template that ships with the server instead.
-  file=ROOT/'public'/p.lstrip('/') if p in ('/app.js','/style.css','/flex-carousel.js','/tear-ticket.js') else ROOT/'templates'/'index.html'
+  file=ROOT/'public'/p.lstrip('/') if p in ('/app.js','/style.css','/flex-carousel.js','/tear-ticket.js','/confetti-floor.js') else ROOT/'templates'/'index.html'
   b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','text/javascript' if file.suffix=='.js' else 'text/css' if file.suffix=='.css' else 'text/html');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b)
  def readable(self,c,u,scope):
   if scope.startswith('community:'):return bool(c.execute('SELECT 1 FROM communities WHERE id=?',(scope[10:],)).fetchone())
