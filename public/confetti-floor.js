@@ -93,7 +93,7 @@ export default function mountConfettiFloor(canvas, { focus, avoid, blockedBy } =
     const f = focus?.();
     const box = f ? { x: f.left - r.left, y: f.top - r.top, w: f.width, h: f.height } : { x: W * 0.1, y: H * 0.25, w: W * 0.8, h: H * 0.4 };
     const pad = Math.min(60, box.w * 0.05);
-    const count = Math.round(Math.min(600, Math.max(100, (W * H) / 3500 + (box.w * box.h) / 1750)));
+    const count = Math.round(Math.min(380, Math.max(70, (W * H) / 5600 + (box.w * box.h) / 2800)));
     const clear = (avoid?.() || []).map(a => ({ x: a.left - r.left - 18, y: a.top - r.top - 14, w: a.width + 36, h: a.height + 28 }));
     const letters = blockedBy?.() || null;
     const blocked = (x, y, m) => clear.some(a => x > a.x - m && x < a.x + a.w + m && y > a.y - m && y < a.y + a.h + m) || (letters ? letters(x, y, m) : false);
