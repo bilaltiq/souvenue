@@ -176,6 +176,12 @@ class Flow(unittest.TestCase):
     self.assertEqual([(x['venue'],x['fans']) for x in page['shows']],[('Forest Hills Stadium',1)])
     self.assertEqual(Response('GET','/api/mb-artist/not-an-id').status,404)
    finally:server.open_get,server.fetch_artist_profile,server.listen_post=real_get,real_fetch,real_post
+ def test_artist_marks_listed(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'test.sqlite3';server.initialize()
+   artists=Response('GET','/api/state').data['artists']
+   self.assertTrue(artists and all(a['artist_mark']==f"/marks/{a['artist_slug']}.svg" for a in artists))
+   for a in artists:self.assertTrue((Path(server.ROOT)/'public'/a['artist_mark'].lstrip('/')).exists())
  def test_profile_with_missing_details(self):
   real=server.open_get
   server.open_get=lambda url,**k:{'id':'f8c0e145-2d97-4c6f-a746-2fe8b33582eb','name':'Mimicking Mars','type':'Group','life-span':{'begin':None},'begin-area':None,'relations':[],'genres':[]}

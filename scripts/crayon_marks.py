@@ -295,4 +295,6 @@ if __name__ == '__main__':
   offsets = json.loads(OFFSETS.read_text()) if OFFSETS.exists() else {}
   for slug, make in SYMBOLS.items():
     (OUT / f'{slug}.svg').write_text(render(slug, make(), offsets.get(slug, (0, 0))), encoding='utf-8')
+  # The server reads this list (Vercel serves public/ from its CDN, out of the server's reach).
+  (OUT.parent.parent / 'artist-marks.json').write_text(json.dumps(sorted(SYMBOLS), indent=1) + '\n', encoding='utf-8')
   print(len(SYMBOLS), 'marks written to', OUT)

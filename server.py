@@ -426,12 +426,13 @@ def artist_records(c):
  for event in event_records(c):
   if event['artist_slug'] not in catalog:catalog[event['artist_slug']]=event
  choices=photo_choices()
+ marks_file=ROOT/'artist-marks.json';marks=set(json.loads(marks_file.read_text(encoding='utf-8'))) if marks_file.exists() else set()  # drawn by scripts/crayon_marks.py
  for slug,artist in catalog.items():
-  mark=ROOT/'public'/'marks'/f'{slug}.svg'
-  photo=None if mark.exists() else choices.get(slug)  # crayon marks replace photos; otherwise only photos picked in the studio: freely licensed and credited (no Ticketmaster images)
+  mark=slug in marks
+  photo=None if mark else choices.get(slug)  # crayon marks replace photos; otherwise only photos picked in the studio: freely licensed and credited (no Ticketmaster images)
   artist['artist_photo']=photo['path'] if photo else ''
   artist['photo_credit']={k:photo.get(k) for k in ('author','license','license_url','page')} if photo else None
-  artist['artist_mark']=f'/marks/{slug}.svg' if mark.exists() else ''  # crayon symbol, drawn by scripts/crayon_marks.py
+  artist['artist_mark']=f'/marks/{slug}.svg' if mark else ''  # crayon symbol, drawn by scripts/crayon_marks.py
   artist['genres']=[category['name'] for category in genres.get(slug,{}).get('categories',[])]
  return list(catalog.values())
 
