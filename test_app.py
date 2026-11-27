@@ -139,6 +139,50 @@ class Flow(unittest.TestCase):
    with server.db() as c:c.execute("INSERT INTO users(id,name,password,salt) VALUES(?,?,'x','y')",(uid,name))
    server.initialize()
    with server.db() as c:self.assertIsNotNone(c.execute('SELECT 1 FROM users WHERE id=?',(uid,)).fetchone())
+ def test_artist_profile_cache(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'test.sqlite3';server.initialize()
+   calls=[];real=server.fetch_artist_profile
+   server.fetch_artist_profile=lambda name,*a,**k:(calls.append(name),{'found':True,'name':name,'genres':['pop'],'links':[],'albums':[],'sources':{'musicbrainz':'https://musicbrainz.org/artist/x'}})[1]
+   try:
+    slug=Response('GET','/api/state').data['artists'][0]['artist_slug']
+    first=Response('GET','/api/artist-profile/'+slug).data;second=Response('GET','/api/artist-profile/'+slug).data
+    self.assertTrue(first['found']);self.assertEqual(first['genres'],['pop']);self.assertEqual(len(calls),1)  # cached after the first fetch
+    self.assertEqual(Response('GET','/api/artist-profile/not-a-real-artist').status,404)
+    server.fetch_artist_profile=lambda name,*a,**k:(_ for _ in ()).throw(OSError('offline'))
+    with server.db() as c:c.execute('UPDATE artist_profiles SET fetched=0')
+    self.assertEqual(Response('GET','/api/artist-profile/'+slug).data['genres'],['pop'])  # stale copy survives an outage
+   finally:server.fetch_artist_profile=real
+ def test_search_any_artist(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'test.sqlite3';server.initialize();server._artist_search_cache.clear()
+   mbid='3ceeddbd-fba5-4bdb-99f7-2d028ed5afda';urls=[];real_get,real_fetch=server.open_get,server.fetch_artist_profile
+   tribute='00000000-0000-0000-0000-000000000001';real_post=server.listen_post;server._listens_this_year.clear()
+   def fake_get(url,**k):
+    if 'listenbrainz' in url:return {'payload':{'total_listen_count':9000 if mbid in url else 5}}
+    urls.append(url);return {'artists':[{'id':tribute,'name':'Boygenius tribute','score':100,'tags':[{}]*9},{'id':mbid,'name':'boygenius','score':90,'country':'US'}]}
+   server.open_get=fake_get
+   server.listen_post=lambda url,payload:[{'artist_mbid':mbid,'total_listen_count':50000},{'artist_mbid':tribute,'total_listen_count':40}]
+   server.fetch_artist_profile=lambda name,mbid=None,photo=True:{'found':True,'mbid':mbid,'name':'boygenius','genres':['indie rock'],'links':[],'members':[],'sources':{'musicbrainz':'https://musicbrainz.org/artist/'+mbid}}
+   try:
+    found=Response('GET','/api/artist-search?q=boyg').data['results']
+    self.assertEqual(found[0]['name'],'boygenius')  # the more-listened artist ranks first
+    Response('GET','/api/artist-search?q=BOYG');self.assertEqual(len(urls),1)  # cached, case-insensitive
+    self.assertEqual(Response('GET','/api/artist-search?q=b').data['results'],[])
+    cookie=Response('POST','/api/register',{'name':'Ana','password':'demo-pass-123'}).headers['Set-Cookie'].split(';')[0]
+    Response('POST','/api/concert-log',{'artist':'boygenius','venue':'Forest Hills Stadium','city':'Queens','date':'2023-07-01','artists_seen':[{'artist':'boygenius'}]},cookie)
+    page=Response('GET','/api/mb-artist/'+mbid).data
+    self.assertEqual(page['name'],'boygenius');self.assertIsNone(page['slug'])
+    self.assertEqual([(x['venue'],x['fans']) for x in page['shows']],[('Forest Hills Stadium',1)])
+    self.assertEqual(Response('GET','/api/mb-artist/not-an-id').status,404)
+   finally:server.open_get,server.fetch_artist_profile,server.listen_post=real_get,real_fetch,real_post
+ def test_profile_with_missing_details(self):
+  real=server.open_get
+  server.open_get=lambda url,**k:{'id':'f8c0e145-2d97-4c6f-a746-2fe8b33582eb','name':'Mimicking Mars','type':'Group','life-span':{'begin':None},'begin-area':None,'relations':[],'genres':[]}
+  try:
+   profile=server.fetch_artist_profile('',mbid='f8c0e145-2d97-4c6f-a746-2fe8b33582eb',photo=False)
+   self.assertTrue(profile['found']);self.assertIsNone(profile['active_since'])  # small bands often have no start year
+  finally:server.open_get=real
  def test_featured_photos(self):
   with tempfile.TemporaryDirectory() as tmp:
    server.DB=Path(tmp)/'test.sqlite3';server.initialize()

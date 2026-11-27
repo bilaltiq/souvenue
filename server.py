@@ -1,6 +1,8 @@
 import os,json,sqlite3,secrets,hashlib,hmac,time,re,unicodedata,math,base64
 from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
-from urllib.parse import urlparse,unquote,parse_qs
+from urllib.parse import urlparse,unquote,parse_qs,quote
+import urllib.request,urllib.error
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from datetime import datetime,timedelta
 from zoneinfo import ZoneInfo
@@ -147,6 +149,7 @@ def initialize():
   c.execute("CREATE TABLE IF NOT EXISTS feed_posts(id TEXT PRIMARY KEY,user TEXT,body TEXT,photo TEXT,event_id TEXT,category TEXT,created REAL)")
   if 'extra_photos' not in [r[1] for r in c.execute('PRAGMA table_info(feed_posts)')]:c.execute("ALTER TABLE feed_posts ADD COLUMN extra_photos TEXT NOT NULL DEFAULT '[]'")
   if 'featured' not in [r[1] for r in c.execute('PRAGMA table_info(feed_posts)')]:c.execute("ALTER TABLE feed_posts ADD COLUMN featured INTEGER NOT NULL DEFAULT 0")
+  c.execute('CREATE TABLE IF NOT EXISTS artist_profiles(slug TEXT PRIMARY KEY,data TEXT,fetched REAL)')
   strip_stored_photo_metadata(c)
   remove_requested_accounts(c)
   c.executescript("""CREATE TABLE IF NOT EXISTS friendships(low TEXT,high TEXT,sender TEXT,status TEXT,created REAL,PRIMARY KEY(low,high));
@@ -199,14 +202,236 @@ def seed_more_communities(c):
 def source_snapshots():
  paths=[ROOT/'ticketmaster-events.json',*sorted((ROOT/'imports').glob('*.json'))]
  return [json.loads(path.read_text(encoding='utf-8')) for path in paths if path.exists()]
+
+# ---- Open-data artist profiles ---------------------------------------------
+# Facts, official links and a freely licensed photo from MusicBrainz (CC0),
+# Wikidata (CC0) and Wikimedia Commons (per-photo licence, credited). Fetched once per artist, cached, refreshed about monthly.
+OPEN_DATA_UA='Souvenue/0.1 ( https://souvenue.com )'
+PROFILE_TTL=30*86400
+PROFILE_RETRY_TTL=86400
+_musicbrainz_last=[0.0]
+def open_get(url,musicbrainz=False,tries=3):
+ for attempt in range(tries):
+  if musicbrainz:  # MusicBrainz asks for at most one request per second
+   wait=1.1-(time.time()-_musicbrainz_last[0])
+   if wait>0:time.sleep(wait)
+   _musicbrainz_last[0]=time.time()
+  try:
+   request=urllib.request.Request(url,headers={'User-Agent':OPEN_DATA_UA,'Accept':'application/json'})
+   with urllib.request.urlopen(request,timeout=12) as response:return json.loads(response.read())
+  except urllib.error.HTTPError as error:
+   if error.code in (429,502,503,504) and attempt<tries-1:time.sleep(1.5*(attempt+1));continue
+   if error.code==404:return None
+   raise
+  except (urllib.error.URLError,TimeoutError,OSError):  # slow or dropped connection: retry, then give up
+   if attempt<tries-1:time.sleep(1.5*(attempt+1));continue
+   raise
+ return None
+def _plain(text):return re.sub(r'\s+',' ',re.sub(r'<[^>]+>','',str(text or ''))).strip()
+def _norm_name(value):return re.sub(r'[^a-z0-9]','',unicodedata.normalize('NFKD',str(value)).encode('ascii','ignore').decode().lower())
+LINK_LABELS=[('instagram.com','Instagram'),('tiktok.com','TikTok'),('youtube.com','YouTube'),('open.spotify.com','Spotify'),('music.apple.com','Apple Music'),('bandcamp.com','Bandcamp'),('soundcloud.com','SoundCloud'),('twitter.com','X'),('x.com','X'),('facebook.com','Facebook')]
+def fetch_artist_profile(name,mbid=None,photo=True):
+ if not mbid:
+  found=open_get('https://musicbrainz.org/ws/2/artist/?query='+quote(f'artist:"{name}"')+'&fmt=json&limit=5',musicbrainz=True) or {}
+  candidates=[a for a in found.get('artists',[]) if a.get('score',0)>=90]
+  exact=[a for a in candidates if _norm_name(a.get('name'))==_norm_name(name) or any(_norm_name(alias.get('name'))==_norm_name(name) for alias in a.get('aliases',[]))]
+  pick=(exact or candidates or [None])[0]
+  if not pick:return {'found':False}
+  mbid=pick['id']
+ artist=open_get(f'https://musicbrainz.org/ws/2/artist/{mbid}?inc=url-rels+artist-rels+genres&fmt=json',musicbrainz=True)
+ if not artist:return {'found':False}
+ name=artist.get('name',name)
+ relations=artist.get('relations',[])
+ links,seen,wikidata=[],set(),None
+ for rel in relations:
+  url=(rel.get('url') or {}).get('resource','')
+  if not url or rel.get('ended'):continue
+  if rel.get('type')=='wikidata':wikidata=url.rstrip('/').rsplit('/',1)[-1];continue
+  label='Official site' if rel.get('type')=='official homepage' else next((l for d,l in LINK_LABELS if d in url),None)
+  if label and label not in seen:seen.add(label);links.append({'label':label,'url':url})
+ members=[rel['artist']['name'] for rel in relations if rel.get('type')=='member of band' and rel.get('direction')=='backward' and not rel.get('ended') and rel.get('artist')]
+ genres=[g['name'] for g in sorted(artist.get('genres',[]),key=lambda g:-g.get('count',0))][:4]
+ profile={'found':True,'mbid':mbid,'name':artist.get('name',name),'type':artist.get('type'),
+  'origin':(artist.get('begin-area') or artist.get('area') or {}).get('name'),'country':artist.get('country'),
+  'active_since':((artist.get('life-span') or {}).get('begin') or '')[:4] or None if artist.get('type')=='Group' else None,
+  'members':list(dict.fromkeys(members))[:8],'genres':genres,'links':links[:8],'photo':None,
+  'sources':{'musicbrainz':f'https://musicbrainz.org/artist/{mbid}'}}
+ if wikidata:
+  entity=((open_get(f'https://www.wikidata.org/wiki/Special:EntityData/{wikidata}.json') or {}).get('entities') or {}).get(wikidata) or {}
+  profile['sources']['wikidata']=f'https://www.wikidata.org/wiki/{wikidata}'
+  image=next((claim['mainsnak']['datavalue']['value'] for claim in (entity.get('claims') or {}).get('P18',[]) if claim.get('mainsnak',{}).get('datavalue')),None)
+  if image and photo:
+   info=open_get('https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=900&titles='+quote('File:'+image,safe=''))
+   page=next(iter(((info or {}).get('query') or {}).get('pages',{}).values()),{})
+   meta=(page.get('imageinfo') or [{}])[0]
+   ext=meta.get('extmetadata') or {}
+   licence=_plain((ext.get('LicenseShortName') or {}).get('value'))
+   if meta.get('thumburl') and licence and 'non-free' not in licence.lower():
+    profile['photo']={'url':meta['thumburl'],'page':meta.get('descriptionurl'),'author':_plain((ext.get('Artist') or {}).get('value'))[:120] or 'Wikimedia Commons','license':licence,'license_url':_plain((ext.get('LicenseUrl') or {}).get('value')) or None}
+ return profile
+def artist_profile(c,slug,name,mbid=None):  # mbid given: a searched artist (no photo lookup)
+ row=c.execute('SELECT data,fetched FROM artist_profiles WHERE slug=?',(slug,)).fetchone()
+ if row:
+  data=json.loads(row['data']);age=time.time()-row['fetched']
+  if age<(PROFILE_TTL if data.get('found') else PROFILE_RETRY_TTL):return data
+ try:data=fetch_artist_profile(name,mbid,photo=not mbid)
+ except Exception:
+  if row:return json.loads(row['data'])
+  return {'found':False,'unavailable':True}  # a failed lookup is not cached as "not found"
+ data['fetched_at']=int(time.time())
+ c.execute('DELETE FROM artist_profiles WHERE slug=?',(slug,))
+ c.execute('INSERT INTO artist_profiles(slug,data,fetched) VALUES(?,?,?)',(slug,json.dumps(data),time.time() if data.get('found') else time.time()))
+ return data
+
+# ---- Search any artist ------------------------------------------------------
+# The artists page lists a curated set; the search box also suggests any artist in
+# MusicBrainz (about 2 million). Searched artists are not added to the list: they get
+# a page at /artist/mb/<id> with open-data details and the shows fans have logged.
+MBID_RE=re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
+_artist_search_cache={}
+_listens_this_year={}
+def listen_post(url,payload):
+ request=urllib.request.Request(url,data=json.dumps(payload).encode(),headers={'User-Agent':OPEN_DATA_UA,'Accept':'application/json','Content-Type':'application/json'})
+ with urllib.request.urlopen(request,timeout=8) as response:return json.loads(response.read())
+def listens_this_year(mbid):
+ hit=_listens_this_year.get(mbid)
+ if hit and time.time()-hit[0]<86400:return hit[1]
+ try:data=(open_get(f'https://api.listenbrainz.org/1/stats/artist/{mbid}/listeners?range=this_year',tries=1) or {}).get('payload') or {}
+ except Exception:return None
+ count=data.get('total_listen_count') or 0
+ if len(_listens_this_year)>20000:_listens_this_year.clear()
+ _listens_this_year[mbid]=(time.time(),count)
+ return count
+def search_artists(query):
+ query=re.sub(r'\s+',' ',str(query or '')).strip()[:80]
+ words=[re.sub(r'([+\-!(){}\[\]^"~*?:\\/&|])',r'\\\1',w) for w in query.split(' ') if w]
+ if len(query)<2 or not words:return []
+ key=query.casefold();hit=_artist_search_cache.get(key)
+ if hit and time.time()-hit[0]<86400:return hit[1]
+ phrase=' '.join(words)
+ lucene=f'artist:"{phrase}"^4 OR alias:"{phrase}"^2 OR ('+' AND '.join(f'artist:{w}' for w in words[:-1])+(' AND ' if words[:-1] else '')+f'artist:{words[-1]}*)'
+ found=open_get('https://musicbrainz.org/ws/2/artist/?query='+quote(lucene)+'&fmt=json&limit=50',musicbrainz=True) or {}
+ typed=[_norm_name(w) for w in query.split(' ') if _norm_name(w)]
+ def matches(a):  # every typed word appears in the name or an alias (drops fuzzy look-alikes)
+  names=[_norm_name(a.get('name'))]+[_norm_name(x.get('name')) for x in a.get('aliases') or []]
+  return a.get('score',0)==100 or any(all(w in n for w in typed) for n in names)
+ people=[a for a in found.get('artists',[]) if a.get('score',0)>=50 and a.get('type') not in ('Character','Choir','Orchestra') and matches(a)]
+ # Popularity from ListenBrainz (MetaBrainz's open listening data): all-time listens for every
+ # match, then this year's listens for the leaders, so current artists beat old ones.
+ popularity={}
+ try:popularity={p['artist_mbid']:p.get('total_listen_count') or 0 for p in listen_post('https://api.listenbrainz.org/1/popularity/artist',{'artist_mbids':[a['id'] for a in people]}) or []}
+ except Exception:pass
+ if popularity:
+  leaders=sorted(people,key=lambda a:-popularity.get(a['id'],0))[:10]
+  with ThreadPoolExecutor(max_workers=10) as pool:recent=dict(zip([a['id'] for a in leaders],pool.map(listens_this_year,[a['id'] for a in leaders])))
+  score=lambda a:2*math.log10(1+(recent.get(a['id']) or 0))+math.log10(1+popularity.get(a['id'],0))
+  people.sort(key=lambda a:(-score(a),-a.get('score',0)))
+ else:
+  people.sort(key=lambda a:(-(a.get('score',0)>=95),-min(len(a.get('tags') or []),12),-a.get('score',0)))
+ results=[{'mbid':a['id'],'name':a.get('name',''),'disambiguation':a.get('disambiguation',''),'country':a.get('country',''),'type':a.get('type','')} for a in people[:8]]
+ if len(_artist_search_cache)>2000:_artist_search_cache.clear()
+ _artist_search_cache[key]=(time.time(),results)
+ return results
+def fan_logged_shows(c,name):
+ target=artist_identity(name);shows={}
+ for log in rows(c,'SELECT artist,venue,city,date,artists_seen FROM concert_logs'):
+  try:seen=json.loads(log.get('artists_seen') or 'null') or []
+  except (TypeError,ValueError):seen=[]
+  if artist_identity(log['artist'])!=target and not any(artist_identity(x.get('artist',''))==target for x in seen if isinstance(x,dict)):continue
+  key=concert_identity(log['artist'],log['venue'],log['city'],log['date'])
+  show=shows.setdefault(key,{'headliner':log['artist'],'venue':log['venue'],'city':log['city'],'date':log['date'],'fans':0});show['fans']+=1
+ return sorted(shows.values(),key=lambda x:x['date'],reverse=True)[:100]
+
+# ---- Artist photo picker (local Demo studio only) ---------------------------
+# Candidates come from the artist's Wikimedia Commons category and Openverse,
+# limited to licences that allow any use. A chosen photo is downloaded, resized
+# with macOS `sips`, saved to public/artists/<slug>.jpg, and credited in
+# artist-photo-choices.json; both ship with the site.
+PHOTO_CHOICES=ROOT/'artist-photo-choices.json'
+FREE_LICENSES=('cc0','public domain','pdm','cc by','cc-by','by','by-sa')
+def photo_choices():
+ try:return json.loads(PHOTO_CHOICES.read_text(encoding='utf-8'))
+ except (OSError,ValueError):return {}
+def _free_license(name):
+ n=(name or '').lower().replace('-',' ').strip()
+ if not n or 'nc' in n.split() or 'nd' in n.split() or 'non commercial' in n or 'noncommercial' in n or 'no derivatives' in n:return False
+ return n.startswith(('cc0','public domain','pdm','cc by','by'))
+NOT_A_PHOTO=re.compile(r'logo|logotipo|signature|firma|\bsig\b|cover|album|poster|flag|\bmap\b|tracklist|screenshot|ticket',re.I)
+def _commons_files(params):
+ data=open_get('https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url|size|mime|extmetadata&iiurlwidth=640&'+params) or {}
+ return ((data.get('query') or {}).get('pages') or {}).values()
+def photo_candidates(name,profile):
+ out,seen=[],set()
+ def key(url):return unquote(url.rsplit('/',1)[-1]).lower().replace(' ','_')
+ def add(c):
+  if re.search(r'getty|associated press|\breuters\b|\bafp\b',c.get('author') or '',re.I):return  # agency photos are often mislabelled uploads
+  keys={key(c['url']),re.sub(r'^\d+px-','',key(c['url'])),_norm_name(re.sub(r'\.(jpe?g|png)$','',c['title'] or '',flags=re.I))}
+  if keys&seen or NOT_A_PHOTO.search(c['title'] or ''):return
+  seen.update(keys);out.append(c)
+ def from_commons(page,pinned=False):
+  info=(page.get('imageinfo') or [{}])[0];ext=info.get('extmetadata') or {}
+  licence=_plain((ext.get('LicenseShortName') or {}).get('value'))
+  if info.get('mime')!='image/jpeg' or min(info.get('width',0),info.get('height',0))<600 or not _free_license(licence):return
+  add({'source':'Wikimedia Commons','thumb':info.get('thumburl') or info['url'],'url':info['url'],'page':info.get('descriptionurl'),'title':page.get('title','').replace('File:',''),'pinned':pinned,
+   'author':_plain((ext.get('Artist') or {}).get('value'))[:120] or 'Wikimedia Commons','license':licence,'license_url':_plain((ext.get('LicenseUrl') or {}).get('value')) or None,'width':info.get('width'),'height':info.get('height')})
+ qid=((profile or {}).get('sources') or {}).get('wikidata','').rstrip('/').rsplit('/',1)[-1]
+ claims={}
+ if qid:claims=((((open_get(f'https://www.wikidata.org/wiki/Special:EntityData/{qid}.json') or {}).get('entities') or {}).get(qid) or {}).get('claims') or {})
+ value=lambda prop:next((c['mainsnak']['datavalue']['value'] for c in claims.get(prop,[]) if c.get('mainsnak',{}).get('datavalue')),None)
+ main,category=value('P18'),value('P373')
+ if main:
+  for page in _commons_files('titles='+quote('File:'+main,safe='')):from_commons(page,pinned=True)
+ categories=['Category:'+category] if category else []
+ if category:
+  subs=open_get('https://commons.wikimedia.org/w/api.php?action=query&format=json&list=categorymembers&cmtype=subcat&cmlimit=20&cmtitle='+quote('Category:'+category,safe='')) or {}
+  categories+=[m['title'] for m in ((subs.get('query') or {}).get('categorymembers') or [])][:8]
+ for cat in categories:
+  for page in _commons_files('generator=categorymembers&gcmtype=file&gcmlimit=50&gcmtitle='+quote(cat,safe='')):from_commons(page)
+ # Commons full-text search finds photos filed outside the artist's category.
+ for page in _commons_files('generator=search&gsrnamespace=6&gsrlimit=30&gsrsearch='+quote(f'"{name}" filetype:bitmap')):
+  if _norm_name(name) in _norm_name(page.get('title','')):from_commons(page)
+ try:data=open_get('https://api.openverse.org/v1/images/?license_type=commercial&page_size=20&q='+quote(name)) or {}  # anonymous limit: 20 per page
+ except Exception:data={}  # Openverse is optional
+ for r in data.get('results',[]):
+  if _norm_name(name) not in _norm_name(r.get('title','')) or not str(r.get('url','')).lower().endswith(('.jpg','.jpeg')):continue
+  licence=f"CC {r.get('license','').upper()} {r.get('license_version','')}".replace('CC CC0','CC0').replace('CC PDM','Public domain').strip()
+  if not _free_license(licence) or min(r.get('width') or 0,r.get('height') or 0)<600:continue
+  add({'source':'Flickr' if r.get('source')=='flickr' else 'Wikimedia Commons' if r.get('source')=='wikimedia' else (r.get('source') or 'Openverse').title(),
+   'thumb':r.get('thumbnail') or r.get('url'),'url':r.get('url'),'page':r.get('foreign_landing_url'),'title':r.get('title',''),'pinned':False,
+   'author':(r.get('creator') or 'Unknown')[:120],'license':licence,'license_url':r.get('license_url'),'width':r.get('width'),'height':r.get('height')})
+ # The main Wikidata photo first, then portrait-ish and larger photos (they crop best).
+ out.sort(key=lambda c:(-int(c['pinned']),-(1 if 0.55<=(c['width'] or 1)/(c['height'] or 1)<=1.1 else 0),-((c['width'] or 0)*(c['height'] or 0))))
+ return out[:24]
+def save_photo_choice(slug,choice):
+ import subprocess,tempfile
+ url=str(choice.get('url',''))
+ if not url.startswith('https://'):raise ValueError('Choose a photo from the list.')
+ request=urllib.request.Request(url,headers={'User-Agent':OPEN_DATA_UA})
+ with urllib.request.urlopen(request,timeout=30) as response:
+  if not (response.headers.get('Content-Type') or '').startswith('image/'):raise ValueError('That link is not an image.')
+  raw=response.read(30_000_000)
+ target=ROOT/'public'/'artists'/f'{slug}.jpg'
+ with tempfile.TemporaryDirectory() as tmp:
+  src=Path(tmp)/'src';src.write_bytes(raw);out=Path(tmp)/'out.jpg'
+  subprocess.run(['sips','-s','format','jpeg','-s','formatOptions','82','-Z','1200',str(src),'--out',str(out)],check=True,capture_output=True)
+  target.write_bytes(out.read_bytes())
+ choices=photo_choices()
+ choices[slug]={'path':f'/artists/{slug}.jpg?v={int(time.time())}','source':choice.get('source'),'page':choice.get('page'),'author':choice.get('author'),'license':choice.get('license'),'license_url':choice.get('license_url'),'chosen':time.strftime('%Y-%m-%d')}
+ PHOTO_CHOICES.write_text(json.dumps(choices,indent=1,ensure_ascii=False)+'\n',encoding='utf-8')
+ return choices[slug]
 def artist_records(c):
  photo_file=ROOT/'artist-photos.json';photos=json.loads(photo_file.read_text(encoding='utf-8')) if photo_file.exists() else {}
  genre_file=ROOT/'artist-genres.json';genres=json.loads(genre_file.read_text(encoding='utf-8')) if genre_file.exists() else {}
  catalog={s['slug']:{'artist_slug':s['slug'],'id':s['slug'],'artist':s['artist'],'source':'Ticketmaster','source_url':s['source_url'],'imported_at':s['imported_at'],'image':s.get('image','violet'),'tour_label':s.get('tour_label','Upcoming shows & appearances')} for s in source_snapshots()}
  for event in event_records(c):
   if event['artist_slug'] not in catalog:catalog[event['artist_slug']]=event
+ choices=photo_choices()
  for slug,artist in catalog.items():
-  artist['artist_photo']=photos.get(slug,{}).get('path','')
+  mark=ROOT/'public'/'marks'/f'{slug}.svg'
+  photo=None if mark.exists() else choices.get(slug)  # crayon marks replace photos; otherwise only photos picked in the studio: freely licensed and credited (no Ticketmaster images)
+  artist['artist_photo']=photo['path'] if photo else ''
+  artist['photo_credit']={k:photo.get(k) for k in ('author','license','license_url','page')} if photo else None
+  artist['artist_mark']=f'/marks/{slug}.svg' if mark.exists() else ''  # crayon symbol, drawn by scripts/crayon_marks.py
   artist['genres']=[category['name'] for category in genres.get(slug,{}).get('categories',[])]
  return list(catalog.values())
 
@@ -393,6 +618,30 @@ class Handler(BaseHTTPRequestHandler):
      pid=p[len('/api/photo-post/'):]
      visible=feed_records(c,'WHERE feed_posts.id=?',(pid,),viewer=u['id'] if u else '')
      return self.reply(200,visible[0]) if visible else self.reply(404,{'error':'This post is unavailable or belongs to a private profile.'})
+    if p.startswith('/api/studio/photo-candidates/'):
+     if hosted():return self.reply(403,{'error':'The photo picker only runs locally.'})
+     slug=unquote(p[len('/api/studio/photo-candidates/'):])
+     artist=next((a for a in artist_records(c) if a['artist_slug']==slug),None)
+     if not artist:return self.reply(404,{'error':'Artist not found.'})
+     try:return self.reply(200,{'candidates':photo_candidates(artist['artist'],artist_profile(c,slug,artist['artist']))})
+     except Exception as error:return self.reply(502,{'error':'Could not reach the photo sources. Try again.'})
+    if p=='/api/artist-search':
+     query=(parse_qs(urlparse(self.path).query).get('q') or [''])[0]
+     try:return self.reply(200,{'results':search_artists(query)})
+     except Exception:return self.reply(502,{'error':'Artist search is unavailable right now. Try again in a moment.'})
+    if p.startswith('/api/mb-artist/'):
+     mbid=p[len('/api/mb-artist/'):]
+     if not MBID_RE.match(mbid):return self.reply(404,{'error':'Artist not found.'})
+     profile=artist_profile(c,'mb:'+mbid,'',mbid)
+     if profile.get('unavailable'):return self.reply(502,{'error':'We couldn’t load this artist right now. Try again in a moment.'})
+     if not profile.get('found'):return self.reply(404,{'error':'Artist not found.'})
+     local=next((a['artist_slug'] for a in artist_records(c) if artist_identity(a['artist'])==artist_identity(profile['name'])),None)
+     return self.reply(200,{**profile,'slug':local,'shows':fan_logged_shows(c,profile['name'])})
+    if p.startswith('/api/artist-profile/'):
+     slug=unquote(p[len('/api/artist-profile/'):])
+     artist=next((a for a in artist_records(c) if a['artist_slug']==slug),None)
+     if not artist:return self.reply(404,{'error':'Artist not found.'})
+     return self.reply(200,artist_profile(c,slug,artist['artist']))
     if p=='/api/featured-photos':
      posts=feed_records(c,"WHERE feed_posts.featured=1 AND users.visibility='public'",(),viewer='')[:12]
      return self.reply(200,[{'id':x['id'],'photo':x['photo'],'name':x['name'],'artist':x.get('artist'),'venue':x.get('venue'),'city':x.get('city')} for x in posts])
@@ -421,6 +670,10 @@ class Handler(BaseHTTPRequestHandler):
    return self.reply(404,{'error':'Not found'})
   if p in ('/souvenue-logo.svg','/souvenue-wordmark-art.svg','/souvenue-logo-header.png'):
    b=(ROOT/'public'/Path(p).name).read_bytes();self.send_response(200);self.send_header('Content-Type',{'.png':'image/png','.webp':'image/webp'}.get(Path(p).suffix,'image/svg+xml'));self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
+  if p.startswith('/marks/'):
+   file=ROOT/'public'/'marks'/Path(p).name
+   if not file.is_file() or file.suffix!='.svg':return self.reply(404,{'error':'Mark not found.'})
+   b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','image/svg+xml');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
   if p.startswith('/artists/'):
    file=ROOT/'public'/'artists'/Path(p).name
    if not file.is_file() or file.suffix!='.jpg':return self.reply(404,{'error':'Photo not found.'})
@@ -466,6 +719,14 @@ class Handler(BaseHTTPRequestHandler):
      token=secrets.token_urlsafe(32);c.execute('INSERT INTO sessions VALUES(?,?,?)',(token,uid,time.time()+86400*7));c.commit();self.send_response(200);self.send_header('Set-Cookie',f'session={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800'+('; Secure' if hosted() else ''));self.send_header('Content-Type','application/json');self.end_headers();self.wfile.write(b'{}');return
     if p=='/api/logout':
      token=next((v.strip()[8:] for v in self.headers.get('Cookie','').split(';') if v.strip().startswith('session=')), '');c.execute('DELETE FROM sessions WHERE token=?',(token,));return self.reply(200,{})
+    if p in ('/api/studio/photo-choice','/api/studio/photo-clear'):
+     if hosted():return self.reply(403,{'error':'The photo picker only runs locally.'})
+     slug=str(data.get('slug',''))
+     if not any(a['artist_slug']==slug for a in artist_records(c)):return self.reply(404,{'error':'Artist not found.'})
+     if p=='/api/studio/photo-clear':
+      choices=photo_choices();choices.pop(slug,None);PHOTO_CHOICES.write_text(json.dumps(choices,indent=1,ensure_ascii=False)+'\n',encoding='utf-8');return self.reply(200,{'ok':True})
+     try:return self.reply(200,save_photo_choice(slug,data.get('choice') or {}))
+     except Exception as error:return self.reply(400,{'error':str(error) if isinstance(error,ValueError) else 'Could not save that photo. Try another.'})
     if not u:return self.reply(401,{'error':'Sign in to continue.'})
     if p=='/api/concert-log':
      event_id=data.get('event_id','');event=None
