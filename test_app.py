@@ -105,6 +105,40 @@ class Flow(unittest.TestCase):
    server.initialize()
    with server.db() as c:stored=c.execute('SELECT photo FROM feed_posts WHERE id=?',(pid,)).fetchone()[0]
    self.assertNotIn(b'GPSLatitude',base64.b64decode(stored.split(',',1)[1]))
+ def test_names_are_case_insensitive(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'test.sqlite3';server.initialize()
+   self.assertEqual(Response('POST','/api/register',{'name':'gob','password':'demo-pass-123'}).status,200)
+   self.assertEqual(Response('POST','/api/register',{'name':'Gob','password':'demo-pass-456'}).status,409)
+   self.assertEqual(Response('POST','/api/register',{'name':'GOB ','password':'demo-pass-456'}).status,409)
+   for typed in ('gob','Gob','GOB'):self.assertEqual(Response('POST','/api/login',{'name':typed,'password':'demo-pass-123'}).status,200)
+   self.assertEqual(Response('POST','/api/login',{'name':'GOB','password':'wrong-pass-1'}).status,401)
+   # Older data with two accounts differing only by case: exact match wins.
+   with server.db() as c:c.execute("INSERT INTO users(id,name,password,salt) SELECT 'legacy','Gob',password,salt FROM users WHERE name='gob'")
+   cookie=Response('POST','/api/login',{'name':'Gob','password':'demo-pass-123'}).headers['Set-Cookie'].split(';')[0]
+   self.assertEqual(Response('GET','/api/state',cookie=cookie).data['user']['id'],'legacy')
+ def test_requested_account_removal(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'test.sqlite3';server.initialize()
+   uid,name=server.REMOVED_ACCOUNTS[0]
+   with server.db() as c:
+    c.execute('DELETE FROM maintenance')
+    c.execute("INSERT INTO users(id,name,password,salt) VALUES(?,?,'x','y')",(uid,name))
+    c.execute("INSERT INTO users(id,name,password,salt) VALUES('keep','gob','x','y')")
+    c.execute("INSERT INTO users(id,name,password,salt) VALUES('same-name-other-id','Gob2','x','y')")
+    c.execute("INSERT INTO sessions VALUES('t1',?,9e9)",(uid,))
+    c.execute("INSERT INTO friendships VALUES(?,?,?,'accepted',0)",('keep',uid,uid))
+   server.initialize()
+   with server.db() as c:
+    self.assertIsNone(c.execute('SELECT 1 FROM users WHERE id=?',(uid,)).fetchone())
+    self.assertIsNotNone(c.execute("SELECT 1 FROM users WHERE id='keep'").fetchone())
+    self.assertIsNotNone(c.execute("SELECT 1 FROM users WHERE id='same-name-other-id'").fetchone())
+    self.assertIsNone(c.execute('SELECT 1 FROM sessions WHERE user=?',(uid,)).fetchone())
+    self.assertIsNone(c.execute('SELECT 1 FROM friendships WHERE low=? OR high=?',(uid,uid)).fetchone())
+   # Runs once: a new account reusing the id later is not touched.
+   with server.db() as c:c.execute("INSERT INTO users(id,name,password,salt) VALUES(?,?,'x','y')",(uid,name))
+   server.initialize()
+   with server.db() as c:self.assertIsNotNone(c.execute('SELECT 1 FROM users WHERE id=?',(uid,)).fetchone())
  def test_featured_photos(self):
   with tempfile.TemporaryDirectory() as tmp:
    server.DB=Path(tmp)/'test.sqlite3';server.initialize()

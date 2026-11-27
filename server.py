@@ -119,6 +119,19 @@ def strip_stored_photo_metadata(c):
   photo=strip_photo_metadata(row['photo'])
   if photo!=row['photo']:c.execute('UPDATE posts SET photo=? WHERE id=?',(photo,row['id']))
  c.execute("INSERT INTO maintenance(name) VALUES('strip-photo-metadata-v1')")
+# One-time account removals requested by the site owner, matched by id AND exact name.
+REMOVED_ACCOUNTS=[('acf92cbf56a731b4e15824589250f137','Gob')]   # duplicate of "gob" that differs only by case (Nov 2026)
+def remove_requested_accounts(c):
+ c.execute('CREATE TABLE IF NOT EXISTS maintenance(name TEXT PRIMARY KEY)')
+ for uid,name in REMOVED_ACCOUNTS:
+  marker='remove-account-'+uid
+  if c.execute('SELECT 1 FROM maintenance WHERE name=?',(marker,)).fetchone():continue
+  if c.execute('SELECT 1 FROM users WHERE id=? AND name=?',(uid,name)).fetchone():
+   for table in ('sessions','attendance','concert_logs','feed_posts','posts','thread_replies','threads','community_messages','community_members'):
+    c.execute(f'DELETE FROM {table} WHERE user=?',(uid,))
+   c.execute('DELETE FROM friendships WHERE low=? OR high=?',(uid,uid))
+   c.execute('DELETE FROM users WHERE id=?',(uid,))
+  c.execute('INSERT INTO maintenance(name) VALUES(?)',(marker,))
 def initialize():
  with db() as c:
   if os.environ.get('DATABASE_URL'):
@@ -135,6 +148,7 @@ def initialize():
   if 'extra_photos' not in [r[1] for r in c.execute('PRAGMA table_info(feed_posts)')]:c.execute("ALTER TABLE feed_posts ADD COLUMN extra_photos TEXT NOT NULL DEFAULT '[]'")
   if 'featured' not in [r[1] for r in c.execute('PRAGMA table_info(feed_posts)')]:c.execute("ALTER TABLE feed_posts ADD COLUMN featured INTEGER NOT NULL DEFAULT 0")
   strip_stored_photo_metadata(c)
+  remove_requested_accounts(c)
   c.executescript("""CREATE TABLE IF NOT EXISTS friendships(low TEXT,high TEXT,sender TEXT,status TEXT,created REAL,PRIMARY KEY(low,high));
   CREATE TABLE IF NOT EXISTS communities(id TEXT PRIMARY KEY,name TEXT,description TEXT,topic TEXT,creator TEXT,starter INTEGER,created REAL);
   CREATE TABLE IF NOT EXISTS community_members(community TEXT,user TEXT,joined REAL,PRIMARY KEY(community,user));
@@ -436,7 +450,9 @@ class Handler(BaseHTTPRequestHandler):
     if p in ['/api/register','/api/login']:
      name=str(data.get('name','')).strip();pw=str(data.get('password',''))
      if not 2<=len(name)<=40 or len(pw)<8:return self.reply(400,{'error':'Use a name of 2–40 characters and a password of at least 8 characters.'})
-     r=c.execute('SELECT * FROM users WHERE name=?',(name,)).fetchone()
+     # Names are case-insensitive: "Gob" and "gob" are the same name. An exact match wins
+     # where older accounts already differ only by case.
+     r=c.execute('SELECT * FROM users WHERE lower(name)=lower(?) ORDER BY CASE WHEN name=? THEN 0 ELSE 1 END LIMIT 1',(name,name)).fetchone()
      if p=='/api/register':
       if r:return self.reply(409,{'error':'Name already in use. Sign in or choose another name.'})
       salt=secrets.token_hex(16);uid=secrets.token_hex(16);digest=password_digest(pw,salt);c.execute('INSERT INTO users(id,name,password,salt) VALUES(?,?,?,?)',(uid,name,digest,salt))
