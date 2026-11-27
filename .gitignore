@@ -12,3 +12,6 @@ __pycache__/
 
 # Personal photos kept locally, never committed
 homepage photos/
+
+# Design review screenshots and reports
+.design-review/
