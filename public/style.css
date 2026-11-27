@@ -785,3 +785,21 @@ html body .event-ticket button.ticket-reset:not([aria-pressed]):is(:hover, :focu
 .ticket-reset svg { width: 20px; height: 20px; }
 .ticket-reset-arc { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
 .ticket-reset-head { fill: currentColor; stroke: currentColor; stroke-width: 1; stroke-linejoin: round; }
+
+/* Drawn chevrons for icon-only buttons (carousel prev/next, photo reorder).
+   No arrow characters in labels or links. */
+.icon-chevron { width: 20px; height: 20px; display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+button:has(> .icon-chevron) { display: inline-grid; place-items: center; }
+
+/* Phone ticket: horizontal, laid out at phone size (not scaled down). */
+.tear-ticket--compact .ticket-body { padding: 18px 16px 16px; gap: 3px; }
+.tear-ticket--compact .ticket-artist { margin-bottom: 8px; }
+.tear-ticket--compact .ticket-venue { font-size: 14px; }
+.tear-ticket--compact .ticket-city, .tear-ticket--compact .ticket-date { font-size: 12px; }
+.tear-ticket--compact .ticket-stub { padding: 12px 8px; }
+.ticket-stub-only { margin: auto 0; font-size: 14px; font-weight: 600; color: var(--ink); }
+/* Back arrow on "return" links: a drawn icon, so phones never show an emoji. */
+.icon-back { width: 14px; height: 14px; display: inline-block; vertical-align: -2px; margin-right: 6px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+/* Drawn lock (replaces the 🔒 emoji, which phones render in color). */
+.icon-lock { width: 14px; height: 14px; display: inline-block; vertical-align: -2px; margin-left: 6px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.empty > span > .icon-lock { width: 34px; height: 34px; margin: 0; stroke-width: 1.4; }
