@@ -105,14 +105,14 @@ function artistDirectoryRow(e){const count=upcoming(e.artist_slug).length;return
 // file in and listing its slug here; a missing file just drops out of the row.
 const TOUR_POSTERS=['olivia-rodrigo','noah-kahan','harry-styles','phoebe-bridgers','tame-impala'];
 function posterStageMarkup(){const artists=new Map(artistList().map(a=>[a.artist_slug,a]));
- return `<section class="poster-stage" aria-label="Tour posters"><div class="poster-row">${TOUR_POSTERS.filter(slug=>artists.has(slug)).map(slug=>`<a class="tour-poster" href="/artist/${esc(slug)}" aria-label="${esc(artists.get(slug).artist)} tour poster"><span class="tour-poster-face"><img src="/posters/${esc(slug)}.jpg" alt="" draggable="false" data-poster></span></a>`).join('')}</div><p class="poster-hint" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M8 3v10M4 9l4 4 4-4"/></svg>Scroll for every artist</p></section>`}
+ return `<section class="poster-stage" aria-label="Tour posters"><div class="poster-row">${TOUR_POSTERS.filter(slug=>artists.has(slug)).map(slug=>`<a class="tour-poster" href="/artist/${esc(slug)}" aria-label="${esc(artists.get(slug).artist)} tour poster"><span class="tour-poster-face"><img src="/posters/${esc(slug)}.jpg" alt="" draggable="false" data-poster></span></a>`).join('')}</div></section>`}
 // Posters float, part around the cursor, and fan out of the way as you scroll down to the list.
 function mountPosterStage(){const stage=document.querySelector('.poster-stage');if(!stage)return;const row=stage.querySelector('.poster-row');
  const imgs=[...row.querySelectorAll('img[data-poster]')];Promise.all(imgs.map(img=>img.decode().catch(()=>img.closest('.tour-poster').remove()))).then(()=>{if(!row.querySelector('.tour-poster')){stage.remove();return}startPosterStage(stage,row)})}
 function startPosterStage(stage,row){const cards=[...row.querySelectorAll('.tour-poster')],n=cards.length;
  const still=matchMedia('(prefers-reduced-motion: reduce)').matches,tilt=[-5,3,-2,4,-4,2,-3,5],drop=[10,-6,14,-2,8,-8,12,0];
  let W=0,pw=0,step=0,x0=0,pointer=null,raf=0,visible=true,t0=performance.now();const push=new Float32Array(n),lift=new Float32Array(n);
- function layout(){W=row.clientWidth;pw=Math.max(150,Math.min(290,W*.24));step=n>1?Math.min((W-pw)/(n-1),pw*.62):0;x0=(W-pw-step*(n-1))/2;row.style.height=pw*4/3+70+'px';cards.forEach(c=>{c.style.width=pw+'px'})}
+ function layout(){W=row.clientWidth;pw=Math.max(150,Math.min(290,W*.24));step=n>1?Math.min((W-pw-(W<600?40:0))/(n-1),pw*.62):0;x0=(W-pw-step*(n-1))/2;row.style.height=pw*4/3+70+'px';cards.forEach(c=>{c.style.width=pw+'px'})}
  function frame(now){const t=(now-t0)/1000,r=stage.getBoundingClientRect(),rest=Math.min(r.top+scrollY+r.height/2,innerHeight*.62),p=still?0:Math.min(1,Math.max(0,(rest-(r.top+r.height/2))/(r.height*.62)));let near=-1,best=1e9;
   if(pointer!==null)cards.forEach((c,i)=>{const d=Math.abs(x0+i*step+pw/2-pointer);if(d<best&&d<pw*.7){best=d;near=i}});
   cards.forEach((c,i)=>{const d=n>1?(i-(n-1)/2)/((n-1)/2):0,cx=x0+i*step+pw/2;
@@ -121,7 +121,6 @@ function startPosterStage(stage,row){const cards=[...row.querySelectorAll('.tour
    const bob=still?0:Math.sin(t*.9+i*1.3)*5,x=x0+i*step+push[i]+d*p*W*.5,y=drop[i]+bob-p*60*(1-.35*Math.abs(d))+p*Math.abs(d)*40-lift[i]*16;
    c.style.transform=`perspective(1100px) translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,${(lift[i]*70).toFixed(1)}px) rotateY(${(-d*14).toFixed(2)}deg) rotateZ(${(tilt[i%tilt.length]+d*p*20).toFixed(2)}deg) scale(${(1+lift[i]*.05).toFixed(3)})`;
    c.style.opacity=(1-p*.9).toFixed(3);c.style.zIndex=i===near?n+2:i});
-  stage.querySelector('.poster-hint').style.opacity=(1-p*3).toFixed(2);
   raf=visible&&!document.hidden&&stage.isConnected?requestAnimationFrame(frame):0}
  const wake=()=>{if(!raf&&stage.isConnected)raf=requestAnimationFrame(frame)};
  stage.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;pointer=e.clientX-row.getBoundingClientRect().left;wake()});
