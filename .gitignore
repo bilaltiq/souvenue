@@ -9,3 +9,6 @@ __pycache__/
 .vercel/
 .pytest_cache/
 .DS_Store
+
+# Personal photos kept locally, never committed
+homepage photos/

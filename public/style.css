@@ -803,3 +803,14 @@ button:has(> .icon-chevron) { display: inline-grid; place-items: center; }
 /* Drawn lock (replaces the 🔒 emoji, which phones render in color). */
 .icon-lock { width: 14px; height: 14px; display: inline-block; vertical-align: -2px; margin-left: 6px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .empty > span > .icon-lock { width: 34px; height: 34px; margin: 0; stroke-width: 1.4; }
+
+/* Opt-in to be featured on the home carousel (post form + your own post). */
+.feature-optin { display: flex; align-items: flex-start; gap: 12px; margin: 18px 0; cursor: pointer; font-size: 14px !important; font-weight: 600; }
+.feature-optin input { width: 18px; height: 18px; margin: 2px 0 0; flex: none; accent-color: var(--accent); }
+.feature-optin small { display: block; margin-top: 3px; font-weight: 400; color: var(--muted); }
+.single-photo-post + .feature-optin { max-width: 640px; margin: 4px auto 24px; }
+.home-carousel-note { margin: -6px 0 14px; font-size: 14px; color: var(--muted); }
+.home-carousel-note a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+/* Home carousel before anyone has opted in: an invitation, never placeholder photos. */
+.home-carousel-empty { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; margin: 8px 0 40px; padding: 28px; border: 1px dashed var(--line); border-radius: 16px; }
+.home-carousel-empty p { margin: 0; max-width: 560px; font-size: 16px; color: var(--muted); }

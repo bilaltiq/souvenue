@@ -18,6 +18,56 @@ def photo_bytes(photo):
  encoded=photo.partition(',')[2]
  return len(encoded)*3//4-(len(encoded)-len(encoded.rstrip('=')))
 def photo_too_large(photo):return photo_bytes(photo)>MAX_PHOTO_BYTES
+
+# ---- Photo metadata stripping --------------------------------------------
+# Phone photos carry GPS coordinates and other EXIF data. The browser re-saves
+# photos before upload (which drops all metadata); this is the server-side
+# backup for anything that arrives with metadata anyway. Pixels are untouched.
+def _strip_jpeg(raw):
+ out=bytearray(raw[:2]);i=2
+ while i+4<=len(raw):
+  if raw[i]!=0xFF:return raw
+  marker=raw[i+1]
+  if marker==0xFF:i+=1;continue
+  if marker==0xDA or marker==0xD9:out+=raw[i:];return bytes(out)
+  if 0xD0<=marker<=0xD7 or marker==0x01:out+=raw[i:i+2];i+=2;continue
+  size=int.from_bytes(raw[i+2:i+4],'big')
+  if size<2 or i+2+size>len(raw):return raw
+  if marker not in (0xE1,0xED,0xFE):out+=raw[i:i+2+size]   # drop APP1 (Exif/XMP), APP13 (IPTC), comments
+  i+=2+size
+ return raw
+def _strip_png(raw):
+ out=bytearray(raw[:8]);i=8
+ while i+12<=len(raw):
+  size=int.from_bytes(raw[i:i+4],'big');kind=raw[i+4:i+8];end=i+12+size
+  if end>len(raw):return raw
+  if kind not in (b'eXIf',b'tEXt',b'zTXt',b'iTXt',b'tIME'):out+=raw[i:end]
+  i=end
+ return bytes(out) if i==len(raw) else raw
+def _strip_webp(raw):
+ chunks=[];i=12
+ while i+8<=len(raw):
+  kind=raw[i:i+4];size=int.from_bytes(raw[i+4:i+8],'little');end=i+8+size+(size&1)
+  if end>len(raw):return raw
+  if kind not in (b'EXIF',b'XMP '):
+   chunk=bytearray(raw[i:end])
+   if kind==b'VP8X':chunk[8]&=~0x0C&0xFF   # clear the EXIF/XMP flags
+   chunks.append(bytes(chunk))
+  i=end
+ body=b'WEBP'+b''.join(chunks)
+ return b'RIFF'+len(body).to_bytes(4,'little')+body
+def strip_photo_metadata(photo):
+ if not isinstance(photo,str) or not photo.startswith('data:image/') or ',' not in photo:return photo
+ head,b64=photo.split(',',1)
+ try:raw=base64.b64decode(b64,validate=True)
+ except Exception:return photo
+ try:
+  if raw[:2]==b'\xff\xd8':clean=_strip_jpeg(raw)
+  elif raw[:8]==b'\x89PNG\r\n\x1a\n':clean=_strip_png(raw)
+  elif raw[:4]==b'RIFF' and raw[8:12]==b'WEBP':clean=_strip_webp(raw)
+  else:return photo
+ except Exception:return photo
+ return photo if clean==raw else head+','+base64.b64encode(clean).decode()
 GENERAL_TOPICS={'lounge','meetups','merch','bst','box-office','questions','outfits','views','stories','travel','city-crowds'}
 POST_TAGS=('Merch','BST','Box Office','Questions','Outfits','Views','Stories')
 ROOT=Path(__file__).parent
@@ -58,6 +108,17 @@ def password_matches(password,stored,salt):
  candidate=hashlib.scrypt(raw_password,salt=raw_salt,n=16384,r=8,p=1).hex()
  return hmac.compare_digest(stored,candidate)
 
+def strip_stored_photo_metadata(c):
+ """One-time pass: remove GPS/EXIF from photos uploaded before stripping existed."""
+ c.execute('CREATE TABLE IF NOT EXISTS maintenance(name TEXT PRIMARY KEY)')
+ if c.execute("SELECT 1 FROM maintenance WHERE name='strip-photo-metadata-v1'").fetchone():return
+ for row in c.execute('SELECT id,photo,extra_photos FROM feed_posts').fetchall():
+  photo=strip_photo_metadata(row['photo']);extra=json.dumps([strip_photo_metadata(x) for x in json.loads(row['extra_photos'] or '[]')])
+  if photo!=row['photo'] or extra!=(row['extra_photos'] or '[]'):c.execute('UPDATE feed_posts SET photo=?,extra_photos=? WHERE id=?',(photo,extra,row['id']))
+ for row in c.execute("SELECT id,photo FROM posts WHERE photo IS NOT NULL AND photo!=''").fetchall():
+  photo=strip_photo_metadata(row['photo'])
+  if photo!=row['photo']:c.execute('UPDATE posts SET photo=? WHERE id=?',(photo,row['id']))
+ c.execute("INSERT INTO maintenance(name) VALUES('strip-photo-metadata-v1')")
 def initialize():
  with db() as c:
   if os.environ.get('DATABASE_URL'):
@@ -72,6 +133,8 @@ def initialize():
   if 'rating' not in [r[1] for r in c.execute('PRAGMA table_info(concert_logs)')]:c.execute("ALTER TABLE concert_logs ADD COLUMN rating REAL")
   c.execute("CREATE TABLE IF NOT EXISTS feed_posts(id TEXT PRIMARY KEY,user TEXT,body TEXT,photo TEXT,event_id TEXT,category TEXT,created REAL)")
   if 'extra_photos' not in [r[1] for r in c.execute('PRAGMA table_info(feed_posts)')]:c.execute("ALTER TABLE feed_posts ADD COLUMN extra_photos TEXT NOT NULL DEFAULT '[]'")
+  if 'featured' not in [r[1] for r in c.execute('PRAGMA table_info(feed_posts)')]:c.execute("ALTER TABLE feed_posts ADD COLUMN featured INTEGER NOT NULL DEFAULT 0")
+  strip_stored_photo_metadata(c)
   c.executescript("""CREATE TABLE IF NOT EXISTS friendships(low TEXT,high TEXT,sender TEXT,status TEXT,created REAL,PRIMARY KEY(low,high));
   CREATE TABLE IF NOT EXISTS communities(id TEXT PRIMARY KEY,name TEXT,description TEXT,topic TEXT,creator TEXT,starter INTEGER,created REAL);
   CREATE TABLE IF NOT EXISTS community_members(community TEXT,user TEXT,joined REAL,PRIMARY KEY(community,user));
@@ -312,6 +375,9 @@ class Handler(BaseHTTPRequestHandler):
      pid=p[len('/api/photo-post/'):]
      visible=feed_records(c,'WHERE feed_posts.id=?',(pid,),viewer=u['id'] if u else '')
      return self.reply(200,visible[0]) if visible else self.reply(404,{'error':'This post is unavailable or belongs to a private profile.'})
+    if p=='/api/featured-photos':
+     posts=feed_records(c,"WHERE feed_posts.featured=1 AND users.visibility='public'",(),viewer='')[:12]
+     return self.reply(200,[{'id':x['id'],'photo':x['photo'],'name':x['name'],'artist':x.get('artist'),'venue':x.get('venue'),'city':x.get('city')} for x in posts])
     if p=='/api/feed':return self.reply(200,feed_records(c,viewer=u['id'] if u else ''))
     if p.startswith('/api/feed/'):
      uid=p[len('/api/feed/'):]
@@ -498,15 +564,21 @@ class Handler(BaseHTTPRequestHandler):
      if not isinstance(photos,list) or not 1<=len(photos)<=10 or any(not isinstance(image,str) or not image.startswith(('data:image/jpeg;base64,','data:image/png;base64,','data:image/webp;base64,')) for image in photos):return self.reply(400,{'error':'Choose 1–10 JPEG, PNG, or WebP photos.'})
      if any(photo_too_large(image) for image in photos):return self.reply(413,{'error':'A photo exceeds the deployment upload limit.'})
      if sum(photo_bytes(image) for image in photos)>MAX_POST_PHOTO_BYTES:return self.reply(413,{'error':'The photos exceed the deployment total upload limit.'})
-     photo=photos[0]
+     photos=[strip_photo_metadata(image) for image in photos];photo=photos[0]
      if len(body)>2000:return self.reply(400,{'error':'Keep your caption under 2,000 characters.'})
      if not photo.startswith(('data:image/jpeg;base64,','data:image/png;base64,','data:image/webp;base64,')):return self.reply(400,{'error':'Add a JPEG, PNG, or WebP photo.'})
      if event is not None and not isinstance(event,str):return self.reply(400,{'error':'Choose a valid show.'})
      if event and not c.execute('SELECT 1 FROM events WHERE id=?',(event,)).fetchone():return self.reply(400,{'error':'Choose a show from the event list.'})
      if category not in ('general','merch') or (category=='merch' and not event):return self.reply(400,{'error':'Tag a show for a merch-stand photo.'})
-     postid=secrets.token_hex(16)
-     c.execute('INSERT INTO feed_posts(id,user,body,photo,event_id,category,created,extra_photos) VALUES(?,?,?,?,?,?,?,?)',(postid,u['id'],body,photo,event,category,time.time(),json.dumps(photos[1:])))
+     postid=secrets.token_hex(16);featured=1 if data.get('featured') is True else 0
+     c.execute('INSERT INTO feed_posts(id,user,body,photo,event_id,category,created,extra_photos,featured) VALUES(?,?,?,?,?,?,?,?,?)',(postid,u['id'],body,photo,event,category,time.time(),json.dumps(photos[1:]),featured))
      return self.reply(200,{'id':postid})
+    if p=='/api/feed-post-feature':
+     pid=data.get('id');on=data.get('featured')
+     if not isinstance(pid,str) or not isinstance(on,bool):return self.reply(400,{'error':'Choose a photo post.'})
+     if not c.execute('SELECT 1 FROM feed_posts WHERE id=? AND user=?',(pid,u['id'])).fetchone():return self.reply(404,{'error':'Only the person who posted this photo can change that.'})
+     c.execute('UPDATE feed_posts SET featured=? WHERE id=? AND user=?',(1 if on else 0,pid,u['id']))
+     return self.reply(200,{'ok':True,'featured':on})
     if p=='/api/post':
      scope=str(data.get('scope',''));body=str(data.get('body','')).strip();photo=str(data.get('photo',''))
      if photo_too_large(photo):return self.reply(413,{'error':'A photo exceeds the deployment upload limit.'})
@@ -520,7 +592,7 @@ class Handler(BaseHTTPRequestHandler):
      if tags and not scope.startswith(('show:','chat:')):return self.reply(400,{'error':'Tags belong to show-night discussions.'})
      tags=list(dict.fromkeys(tags))
      if category=='merch' and 'Merch' not in tags:tags.append('Merch')
-     c.execute('INSERT INTO posts(id,user,scope,body,photo,created,category,tags) VALUES(?,?,?,?,?,?,?,?)',(secrets.token_hex(16),u['id'],scope,body,photo,time.time(),category,json.dumps(tags)));return self.reply(200,{'ok':True})
+     c.execute('INSERT INTO posts(id,user,scope,body,photo,created,category,tags) VALUES(?,?,?,?,?,?,?,?)',(secrets.token_hex(16),u['id'],scope,body,strip_photo_metadata(photo),time.time(),category,json.dumps(tags)));return self.reply(200,{'ok':True})
     if p=='/api/event':
      if hosted():return self.reply(403,{'error':'The local event editor is disabled on hosted deployments.'})
      # Local founder tool only; production requires a separate administrator role.

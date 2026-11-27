@@ -1,3 +1,4 @@
+import base64
 """Exercise real request handlers and database without needing a network port."""
 import unittest,tempfile,io,json
 from pathlib import Path
@@ -75,6 +76,52 @@ class Flow(unittest.TestCase):
    self.assertEqual(Response('GET','/api/state',cookie=other).data['points'],0)
    server.initialize();self.assertEqual(len(Response('GET','/api/state',cookie=other).data['concert_history']),1)
    self.assertEqual(Response('GET','/api/state').data['concert_history'],[])
+ def test_photo_metadata_is_stripped(self):
+  # A tiny JPEG: SOI, an Exif block holding fake GPS text, APP0, then image data.
+  exif=b'Exif\x00\x00GPSLatitude=40.7504'
+  app1=b'\xff\xe1'+(len(exif)+2).to_bytes(2,'big')+exif
+  app0=b'\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00'
+  scan=b'\xff\xda\x00\x08\x01\x01\x00\x00?\x00PIXELS\xff\xd9'
+  jpeg=b'\xff\xd8'+app1+app0+scan
+  url='data:image/jpeg;base64,'+base64.b64encode(jpeg).decode()
+  clean=base64.b64decode(server.strip_photo_metadata(url).split(',',1)[1])
+  self.assertNotIn(b'GPSLatitude',clean);self.assertIn(b'JFIF',clean);self.assertTrue(clean.endswith(b'PIXELS\xff\xd9'))
+  # PNG eXIf chunk and WebP EXIF chunk are removed too.
+  chunk=lambda kind,data:len(data).to_bytes(4,'big')+kind+data+b'\0\0\0\0'
+  png=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',b'x'*13)+chunk(b'eXIf',b'GPS!')+chunk(b'IDAT',b'pix')+chunk(b'IEND',b'')
+  self.assertNotIn(b'GPS!',base64.b64decode(server.strip_photo_metadata('data:image/png;base64,'+base64.b64encode(png).decode()).split(',',1)[1]))
+  body=b'WEBP'+b'VP8 '+(4).to_bytes(4,'little')+b'pixs'+b'EXIF'+(4).to_bytes(4,'little')+b'GPS!'
+  webp=base64.b64decode(server.strip_photo_metadata('data:image/webp;base64,'+base64.b64encode(b'RIFF'+len(body).to_bytes(4,'little')+body).decode()).split(',',1)[1])
+  self.assertNotIn(b'GPS!',webp);self.assertEqual(int.from_bytes(webp[4:8],'little'),len(webp)-8)
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'test.sqlite3';server.initialize()
+   cookie=Response('POST','/api/register',{'name':'Gps','password':'demo-pass-123'}).headers['Set-Cookie'].split(';')[0]
+   pid=Response('POST','/api/feed-post',{'photos':[url,url]},cookie).data['id']
+   post=Response('GET','/api/photo-post/'+pid,cookie=cookie).data
+   for photo in post['photos']:self.assertNotIn(b'GPSLatitude',base64.b64decode(photo.split(',',1)[1]))
+   # Photos stored before stripping existed are cleaned once on startup.
+   with server.db() as c:
+    c.execute("UPDATE feed_posts SET photo=? WHERE id=?",(url,pid));c.execute("DELETE FROM maintenance")
+   server.initialize()
+   with server.db() as c:stored=c.execute('SELECT photo FROM feed_posts WHERE id=?',(pid,)).fetchone()[0]
+   self.assertNotIn(b'GPSLatitude',base64.b64decode(stored.split(',',1)[1]))
+ def test_featured_photos(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'test.sqlite3';server.initialize()
+   pix='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+   def account(name):return Response('POST','/api/register',{'name':name,'password':'demo-pass-123'}).headers['Set-Cookie'].split(';')[0]
+   ana,ben=account('Ana'),account('Ben')
+   post=lambda cookie,featured:Response('POST','/api/feed-post',{'photos':[pix],'featured':featured},cookie).data['id']
+   shown,hidden=post(ana,True),post(ana,False)
+   featured=lambda:[x['id'] for x in Response('GET','/api/featured-photos').data]
+   self.assertEqual(featured(),[shown])
+   self.assertEqual(Response('POST','/api/feed-post-feature',{'id':shown,'featured':False},ben).status,404)
+   self.assertEqual(featured(),[shown])
+   self.assertEqual(Response('POST','/api/feed-post-feature',{'id':hidden,'featured':True},ana).status,200)
+   self.assertEqual(sorted(featured()),sorted([shown,hidden]))
+   Response('POST','/api/privacy',{'visibility':'private'},ana)
+   self.assertEqual(featured(),[])
+   self.assertEqual(Response('POST','/api/feed-post-feature',{'id':shown,'featured':'yes'},ana).status,400)
  def test_concert_rating(self):
   with tempfile.TemporaryDirectory() as tmp:
    server.DB=Path(tmp)/'test.sqlite3';server.initialize()
