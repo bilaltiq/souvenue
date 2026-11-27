@@ -1318,3 +1318,8 @@ html body #app .checkin-tile .checkin-tile-glow { background-image:
   html body #app .community .tabs { display: grid; grid-template-columns: 1fr 1fr; overflow: visible; border-radius: 24px; width: 100%; }
   html body #app .community .tabs button { justify-content: center; }
 }
+
+/* Torn ticket: the stage keeps its full 460px box after the stub flies off and the body
+   recentres, which pushed phones 30px wide. Clip only sideways overflow so the glow above
+   and below stays. */
+html body .tear-ticket[data-used] { overflow-x: clip; overflow-clip-margin: 24px; }

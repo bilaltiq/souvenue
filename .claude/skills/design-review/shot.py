@@ -20,10 +20,10 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class Tab:
-    def __init__(self, port):
+    def __init__(self, port, gl=False):
         self.dir = tempfile.mkdtemp(prefix='souv-review-')
         self.proc = subprocess.Popen([CHROME, '--headless', '--disable-gpu', '--hide-scrollbars', f'--remote-debugging-port={port}',
-                                      f'--user-data-dir={self.dir}', 'about:blank'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                      f'--user-data-dir={self.dir}', *(['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--run-all-compositor-stages-before-draw'] if gl else []), 'about:blank'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for _ in range(60):
             try:
                 url = next(t['webSocketDebuggerUrl'] for t in json.load(urllib.request.urlopen(f'http://127.0.0.1:{port}/json')) if t['type'] == 'page')
@@ -81,12 +81,14 @@ class Tab:
         self.call('Emulation.setDeviceMetricsOverride', width=width, height=height, deviceScaleFactor=1, mobile=width < 500)
         self.call('Page.navigate', url=url); time.sleep(wait)
 
-    def shot(self, path, full=True):
+    def shot(self, path, full=True, max_height=6000):
+        # Capture beyond the viewport instead of resizing it, so 100vh sections keep their real height.
+        params = {'format': 'png'}
         if full:
-            h = int(self.js('Math.min(document.documentElement.scrollHeight, 9000)') or 900)
-            w = int(self.js('window.innerWidth'))
-            self.call('Emulation.setDeviceMetricsOverride', width=w, height=h, deviceScaleFactor=1, mobile=w < 500); time.sleep(0.8)
-        path.write_bytes(base64.b64decode(self.call('Page.captureScreenshot', format='png')['data']))
+            w = int(self.js('document.documentElement.clientWidth'))
+            h = int(self.js(f'Math.min(document.documentElement.scrollHeight, {max_height})') or 900)
+            params.update(captureBeyondViewport=True, clip={'x': 0, 'y': 0, 'width': w, 'height': h, 'scale': 1})
+        path.write_bytes(base64.b64decode(self.call('Page.captureScreenshot', **params)['data']))
 
     def close(self):
         self.proc.kill()
@@ -101,7 +103,7 @@ MEASURE = r"""(() => {
  const textEls = cs.filter(([e]) => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()));
  return {
   url: location.pathname, width: innerWidth, layoutWidth: document.documentElement.scrollWidth,
-  widestElements: innerWidth < 500 ? [...document.querySelectorAll('#app *')].map(e => [e, e.getBoundingClientRect()]).filter(([, r]) => r.right > Math.min(innerWidth, screen.width) + 1).sort((x, y) => y[1].right - x[1].right).slice(0, 5).map(([e, r]) => (e.tagName.toLowerCase() + '.' + (typeof e.className === 'string' ? e.className.split(' ')[0] : '')) + ' right=' + Math.round(r.right)) : [],
+  widestElements: innerWidth < 500 ? [...document.querySelectorAll('#app *')].map(e => [e, e.getBoundingClientRect()]).filter(([, r]) => r.right > (innerWidth < 500 ? Math.min(innerWidth, screen.width) : innerWidth) + 1).sort((x, y) => y[1].right - x[1].right).slice(0, 5).map(([e, r]) => (e.tagName.toLowerCase() + '.' + (typeof e.className === 'string' ? e.className.split(' ')[0] : '')) + ' right=' + Math.round(r.right)) : [],
   fonts: count(textEls.map(([, s]) => s.fontFamily.split(',')[0].replace(/["']/g, ''))),
   fontSizes: count(textEls.map(([, s]) => s.fontSize)),
   tooSmallText: textEls.filter(([, s]) => parseFloat(s.fontSize) < 12).map(([e, s]) => label(e) + ' ' + s.fontSize).slice(0, 15),
@@ -115,7 +117,7 @@ MEASURE = r"""(() => {
   smallTapTargets: [...document.querySelectorAll('#app a, #app button, #app input, #app select, header a, header button')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && (r.height < 44 || r.width < 44); }).map(e => { const r = e.getBoundingClientRect(); return label(e) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height); }).slice(0, 20),
   uppercaseLabels: textEls.filter(([, s]) => s.textTransform === 'uppercase' && parseFloat(s.letterSpacing) > 0.5).map(([e]) => label(e)).slice(0, 10),
   textGlyphIcons: textEls.filter(([e]) => /^[★☆✓✔＋+→←✕×♥❤️✨🎉🎶🎤]\s?$/u.test((e.textContent || '').trim().slice(0, 2))).map(([e]) => label(e)).slice(0, 10),
-  horizontalScroll: document.documentElement.scrollWidth > Math.min(innerWidth, screen.width) + 1,
+  horizontalScroll: document.documentElement.scrollWidth > (innerWidth < 500 ? Math.min(innerWidth, screen.width) : innerWidth) + 1,
   imagesWithoutAlt: [...document.querySelectorAll('img:not([alt])')].length,
  };
 })()"""
@@ -131,10 +133,11 @@ def main():
     ap.add_argument('--signin', action='store_true', help='register or sign in a throwaway "Design Review" account first')
     ap.add_argument('--checkin', action='store_true', help='with --signin: check in to each /event/ page via its demo tap link')
     ap.add_argument('--no-measure', action='store_true')
+    ap.add_argument('--gl', action='store_true', help='software WebGL, for the home carousel and other canvas effects (slower)')
     ap.add_argument('--port', type=int, default=9400 + os.getpid() % 90)
     a = ap.parse_args()
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
-    tab = Tab(a.port); report = []
+    tab = Tab(a.port, a.gl); report = []
     try:
         if a.signin:
             tab.open(a.base + '/', 1280, wait=2)
