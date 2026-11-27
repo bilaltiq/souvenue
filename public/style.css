@@ -857,3 +857,227 @@ html body.souvenue-home .hero h1 { z-index: 3; }
   html body.souvenue-home .hero-description { justify-self: center; margin-top: 8px; }
   html body.souvenue-home .hero-actions { justify-self: center; }
 }
+
+/* Stage beams (public/stage-lights.js): beneath the confetti and the headline. */
+.stage-lights { position: absolute; top: 0; bottom: 0; left: calc(50% - 50vw); width: 100vw; height: 100%; z-index: 0; pointer-events: none; display: block; }
+
+/* Hero calls to action: a matched pair of pills, same height, type and baseline.
+   Primary is filled blue; secondary is outlined (no detached underline). */
+html body.souvenue-home .hero-actions { gap: 12px; align-items: center; }
+html body.souvenue-home .hero-actions :is(.button, .text-link) {
+  display: inline-flex; align-items: center; justify-content: center; height: 52px; padding: 0 26px !important; margin: 0; min-width: 0;
+  border-radius: 999px; font-size: 16px !important; font-weight: 600 !important; line-height: 1; letter-spacing: -.01em;
+  text-decoration: none; white-space: nowrap; transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+html body.souvenue-home .hero-actions .text-link {
+  color: var(--ink) !important; background: transparent; border: 1px solid rgba(242, 241, 255, .3) !important;
+}
+html body.souvenue-home .hero-actions .text-link:hover { border-color: var(--ink) !important; background: rgba(242, 241, 255, .07); }
+html body.souvenue-home .hero-actions .button:hover { filter: none; background: #8fd6ff !important; border-color: #8fd6ff !important; }
+html body.souvenue-home .hero-actions :is(.button, .text-link):active { transform: translateY(1px); }
+html body.souvenue-home .hero-actions :is(.button, .text-link):focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+/* Phones: two equal, full-width pills stacked. */
+@media (max-width: 520px) {
+  html body.souvenue-home .hero-actions { flex-direction: column; align-items: stretch; width: min(100%, 340px); gap: 10px; }
+  html body.souvenue-home .hero-actions :is(.button, .text-link) { width: 100%; height: 50px; font-size: 15px !important; }
+}
+
+/* ---- Buttons: one style on every page ------------------------------------ */
+/* Pills. Primary is filled blue; .secondary is outlined. Chips ([aria-pressed]),
+   tabs, carousel arrows, icon buttons, stars and text links keep their own styles. */
+html body :is(main, dialog) :is(button, a.button, input[type=submit]):not([aria-pressed]):not([role=tab]):not(.menu-toggle):not(.text-action):not(.star):not(.rating-close):not(.close):not(.ticket-reset):not(.home-carousel-prev):not(.home-carousel-next):not(:has(> svg:only-child)):not(.hero-actions > *) {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 22px !important;
+  border-radius: 999px !important; font-size: 15px !important; font-weight: 600 !important; line-height: 1.15; letter-spacing: -.01em;
+  text-align: center; text-decoration: none; transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+html body :is(main, dialog) :is(button, a.button):not([aria-pressed]):not([role=tab]):not(.secondary):not(.text-action):not(.star):not(.rating-close):not(.close):not(.ticket-reset):hover { background: #8fd6ff !important; border-color: #8fd6ff !important; filter: none; }
+html body :is(main, dialog) :is(button, a.button).secondary:not([aria-pressed]) {
+  background: transparent !important; border: 1px solid rgba(242, 241, 255, .3) !important; color: var(--ink) !important;
+}
+html body :is(main, dialog) :is(button, a.button).secondary:not([aria-pressed]):hover { border-color: var(--ink) !important; background: rgba(242, 241, 255, .07) !important; filter: none; }
+html body :is(main, dialog) :is(button, a.button):not([aria-pressed]):not([role=tab]):active { transform: translateY(1px); }
+html body :is(main, dialog) :is(button, a.button):not([aria-pressed]):focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+html body :is(main, dialog) button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+/* The header's account button takes the pill shape but keeps its size. */
+html body header #account { border-radius: 999px !important; }
+
+/* Header divider runs edge to edge (the header content stays in its column). */
+html body header { border-bottom-color: transparent !important; position: relative; }
+html body header::after { content: ''; position: absolute; left: 50%; bottom: -1px; width: 100vw; height: 1px; transform: translateX(-50%); background: var(--line); pointer-events: none; }
+
+/* ---- Leaderboard ---------------------------------------------------------- */
+/* No outlined boxes: open list with --line dividers, panel fill only for your own row
+   and hover. Podium for the top three (2–1–3), bold numerals, tabular figures. */
+.lb-head { max-width: 760px; margin: 48px 0 26px; }
+.lb-head h1 { margin: 0 0 12px; }
+.lb-sub { margin: 0 0 22px; color: var(--muted); font-size: 18px !important; }
+.lb-standing { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin: 0 0 16px; }
+.lb-standing p { margin: 0; font-size: 18px; color: var(--ink); }
+.lb-standing strong { color: var(--pink); font-family: var(--font-display) !important; font-weight: 700 !important; font-size: 22px; }
+.lb-stats { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 22px; margin: 0; color: var(--muted); font-size: 15px; }
+.lb-stats strong { margin-right: 4px; color: var(--ink); font-family: var(--font-display) !important; font-weight: 700 !important; font-size: 24px; font-variant-numeric: tabular-nums; }
+.lb-filters { display: flex; flex-wrap: wrap; gap: 10px 20px; margin: 10px 0 36px; }
+.lb-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.lb-board { max-width: 760px; }
+.lb-podium { list-style: none; margin: 0 0 28px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: end; }
+.lb-place-1 { order: 2; } .lb-place-2 { order: 1; } .lb-place-3 { order: 3; }
+.lb-place a { display: flex; flex-direction: column; gap: 6px; color: inherit; text-decoration: none; }
+.lb-photo { display: grid; place-items: center; width: 100%; aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: var(--panel); transition: transform .25s cubic-bezier(.22, 1, .36, 1); }
+.lb-place-1 .lb-photo { aspect-ratio: 4 / 5; }
+.lb-place a:hover .lb-photo { transform: translateY(-3px); }
+.lb-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+html body .lb-initial.lb-photo { font-family: var(--font-display) !important; font-weight: 700 !important; font-size: 64px; color: var(--muted); }
+html body .lb-place .lb-rank { margin-top: 6px; font-family: var(--font-display) !important; font-weight: 700 !important; font-size: 44px; line-height: .9; color: var(--accent); font-variant-numeric: tabular-nums; }
+html body .lb-place-1 .lb-rank { font-size: 56px; color: var(--pink); }
+html body .lb-place .lb-name { font-family: var(--font-display) !important; font-weight: 700 !important; font-size: 19px; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.lb-place .lb-points { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.lb-list { border-top: 1px solid var(--line); }
+.lb-row { display: grid; grid-template-columns: 44px 36px minmax(0, 1fr) auto auto; align-items: center; gap: 14px; padding: 12px 12px; border-bottom: 1px solid var(--line); color: inherit; text-decoration: none; transition: background-color .15s ease; }
+.lb-row:hover { background: var(--panel); }
+html body .lb-row .lb-rank { font-family: var(--font-display) !important; font-weight: 700 !important; font-size: 22px; color: var(--muted); font-variant-numeric: tabular-nums; }
+html body .lb-initial { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--panel); font-family: var(--font-display) !important; font-weight: 700 !important; font-size: 15px; color: var(--ink); }
+.lb-row .lb-name { font-size: 16px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-shows { min-width: 64px; text-align: right; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.lb-row .lb-points { min-width: 72px; text-align: right; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lb-row .lb-points small { color: var(--muted); font-weight: 500; font-size: 12px; }
+.lb-row.lb-me { background: var(--panel); }
+html body .lb-row.lb-me .lb-rank { color: var(--pink); }
+.lb-you { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--pink); color: var(--paper); font-size: 12px !important; font-weight: 700; letter-spacing: 0; vertical-align: 2px; }
+.lb-gap { padding: 6px 0; text-align: center; color: var(--muted); letter-spacing: .3em; border-bottom: 1px solid var(--line); }
+.lb-count { margin: 16px 0 0; color: var(--muted); font-size: 14px; }
+.lb-rules { max-width: 760px; margin: 40px 0 8px; color: var(--muted); }
+.lb-rules summary { cursor: pointer; color: var(--ink); font-weight: 600; font-size: 14px; }
+.lb-rules p { margin: 10px 0 0; font-size: 14px; line-height: 1.6; max-width: 62ch; }
+.lb-skeleton span { display: block; height: 60px; border-bottom: 1px solid var(--line); animation: lb-pulse 1.2s ease-in-out infinite alternate; background: var(--panel); opacity: .35; }
+@keyframes lb-pulse { to { opacity: .7; } }
+@media (prefers-reduced-motion: reduce) { .lb-skeleton span { animation: none; } .lb-photo { transition: none; } }
+@media (max-width: 600px) {
+  .lb-head { margin-top: 32px; }
+  .lb-podium { gap: 10px; }
+  html body .lb-place .lb-rank { font-size: 34px; } html body .lb-place-1 .lb-rank { font-size: 44px; }
+  html body .lb-place .lb-name { font-size: 15px; }
+  .lb-place .lb-points { font-size: 12px; }
+  .lb-row { grid-template-columns: 34px 32px minmax(0, 1fr) auto; gap: 10px; padding: 12px 6px; }
+  .lb-shows { display: none; }
+  html body .lb-initial { width: 32px; height: 32px; font-size: 14px; }
+}
+html body .lb-row.lb-me .lb-initial { background: var(--line); }
+
+/* ---- No outlined boxes: feed, friends, communities, profile --------------- */
+/* Same approach as the leaderboard: content sits on the page, separated by space
+   and faint --line dividers; panel fills only on hover/selected. */
+
+/* Photo feed: photo-first posts, no frame. Author above, rounded photo, caption below. */
+html body .feed-post { border: 0 !important; box-shadow: none !important; background: none !important; border-radius: 0 !important; overflow: visible !important; }
+html body .feed-post .feed-post-head { padding: 0 2px 12px !important; border: 0 !important; background: none !important; }
+html body .feed-post :is(.post-photo-link, .photo-carousel) { border-radius: 14px; overflow: hidden; background: var(--panel); }
+html body .feed-post .feed-post-copy { padding: 14px 2px 0 !important; border: 0 !important; }
+html body .community-photo-feed { display: grid; gap: 56px; }
+html body .profile-feed-grid { row-gap: 48px; }
+/* In feeds, photos fill a rounded square frame (no letterbox bars); the post page shows them whole. */
+html body :is(.community-photo-feed, .profile-feed-grid, .show-photo-gallery) .feed-post .carousel-slide { aspect-ratio: 1; background: none; }
+html body :is(.community-photo-feed, .profile-feed-grid, .show-photo-gallery) .feed-post .carousel-slide .feed-image { width: 100%; height: 100%; max-height: none; object-fit: cover; }
+html body .feed-post .open-photo-post { color: var(--muted); font-size: 14px; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+
+/* Find friends: an open list — avatar + name, status, action on the right. */
+html body .people-grid { display: block !important; max-width: 760px; border-top: 1px solid var(--line); margin: 8px 0 24px; }
+html body .person-card { display: grid !important; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "who act" "status act"; align-items: center; column-gap: 16px; row-gap: 2px;
+  padding: 14px 10px !important; margin: 0 !important; border: 0 !important; border-bottom: 1px solid var(--line) !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; transition: background-color .15s ease; }
+html body .person-card:hover { background: var(--panel) !important; }
+html body .person-card > .feed-author { grid-area: who; }
+html body .person-card > p { grid-area: status; margin: 0 0 0 48px !important; font-size: 14px; }
+html body .person-card > .person-actions { grid-area: act; margin: 0 !important; justify-content: flex-end; }
+html body .person-card .person-actions :is(button, .button) { min-height: 40px !important; padding: 0 18px !important; font-size: 14px !important; }
+
+/* Communities: the four categories as a big typographic menu, not boxed tiles. */
+html body .community-category-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 28px !important; margin: 36px 0 28px !important; }
+html body .community-category-tile { display: flex !important; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 0 !important; padding: 18px 0 0 !important;
+  border: 0 !important; border-top: 1px solid var(--line) !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; text-align: left; color: var(--ink) !important; }
+html body .community-category-tile .category-symbol { order: 0; font-size: 22px !important; position: static !important; }
+html body .community-category-tile strong { order: 1; font-family: var(--font-display) !important; font-weight: 700 !important; font-size: clamp(30px, 3.4vw, 44px) !important; letter-spacing: -.03em; line-height: 1; transition: color .15s ease; }
+html body .community-category-tile .category-count { order: 2; position: static !important; color: var(--muted); }
+html body .community-category-tile .category-description { order: 3; max-width: 26ch; color: var(--muted); }
+html body .community-category-tile .category-open { display: none !important; }
+html body .community-category-tile:hover strong { color: var(--accent); }
+html body .community-category-tile[aria-pressed="true"] { border-top-color: var(--pink) !important; }
+html body .community-category-tile[aria-pressed="true"] strong { color: var(--pink); }
+/* Community results: an open list; the repeated "#" glyph is gone. */
+html body .community-grid { display: block !important; max-width: 900px; border-top: 1px solid var(--line); }
+html body .community-card { display: grid !important; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "name name act" "desc desc act" "meta pill act"; align-items: center; column-gap: 20px; row-gap: 4px;
+  padding: 18px 10px !important; margin: 0 !important; min-height: 0 !important; border: 0 !important; border-bottom: 1px solid var(--line) !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; transition: background-color .15s ease; }
+html body .community-card:hover { background: var(--panel) !important; }
+html body .community-card .community-symbol { display: none !important; }
+html body .community-card h3 { grid-area: name; margin: 0 !important; font-size: 22px !important; }
+html body .community-card p { grid-area: desc; margin: 0 !important; color: var(--muted); font-size: 14px !important; }
+html body .community-card small { grid-area: meta; margin: 0 !important; }
+html body .community-card .pill { grid-area: pill; justify-self: start; margin-left: 6px; border: 0 !important; background: none !important; padding: 0 !important; color: var(--muted); font-size: 12px !important; }
+html body .community-card .pill::before { content: '· '; }
+html body .community-card button { grid-area: act; min-height: 40px !important; padding: 0 18px !important; font-size: 14px !important; }
+html body .create-community { border: 0 !important; background: none !important; padding: 0 !important; margin: 32px 0 !important; }
+html body .create-community summary { display: inline-flex; align-items: center; min-height: 46px; padding: 0 22px; border: 1px solid rgba(242, 241, 255, .3); border-radius: 999px; font-weight: 600; cursor: pointer; list-style: none; }
+html body .create-community summary::-webkit-details-marker { display: none; }
+html body .create-community[open] summary { margin-bottom: 18px; }
+
+/* Profile: text tabs, one stats line, and a compact concert ledger. */
+html body .profile-tabs { gap: 24px !important; border-bottom: 1px solid var(--line) !important; margin: 18px 0 28px !important; }
+html body .profile-tabs button[role=tab] { background: none !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; padding: 10px 0 12px !important; min-height: 0; color: var(--muted) !important; font-size: 15px !important; font-weight: 600 !important; margin-bottom: -1px; border-bottom: 2px solid transparent !important; }
+html body .profile-tabs button[role=tab][aria-selected="true"] { color: var(--ink) !important; border-bottom-color: var(--pink) !important; }
+html body .profile-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 22px !important; }
+.stat-strip { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 26px; margin: 0 0 8px; color: var(--muted); font-size: 15px; }
+html body .stat-strip strong { margin-right: 4px; color: var(--ink); font-family: var(--font-display) !important; font-weight: 700 !important; font-size: 26px; font-variant-numeric: tabular-nums; }
+.stat-links { display: flex; gap: 18px; margin: 0 0 40px; font-size: 14px; }
+.stat-links a { color: var(--muted); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+.stat-links a:hover { color: var(--ink); }
+html body .profile-feed-grid > .empty { border: 0 !important; background: none !important; padding: 24px 0 !important; text-align: left; }
+html body .concert-history-list { gap: 0 !important; margin: 18px 0 32px !important; border-top: 1px solid var(--line); max-width: 900px; }
+html body .concert-history-list .history { padding: 22px 6px !important; margin: 0 !important; border: 0 !important; border-bottom: 1px solid var(--line) !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; }
+html body .history .history-night { padding: 0 !important; }
+html body .history :is(.checkin-history-label, .manual-history-label) { text-transform: none !important; letter-spacing: 0 !important; font-size: 13px !important; font-weight: 600 !important; color: var(--pink) !important; margin: 0 0 6px !important; }
+html body .history .manual-history-label { color: var(--muted) !important; }
+html body .history .history-night h3 { font-size: clamp(24px, 2.6vw, 32px) !important; margin: 0 0 6px !important; color: var(--ink) !important; line-height: 1.05 !important; }
+html body .history .history-night-details { font-family: var(--font-text) !important; font-size: 16px !important; font-weight: 600 !important; gap: 4px 14px !important; line-height: 1.4 !important; }
+html body .history .history-night-details > * { color: var(--ink) !important; }
+html body .history .history-night .history-venue { margin: 2px 0 8px !important; color: var(--muted) !important; font-size: 15px !important; }
+html body .history :is(.history-artists-seen, .history-collected) { margin: 4px 0 0 !important; font-size: 13px !important; color: var(--muted) !important; }
+html body .history .history-rating { margin: 6px 0 0 !important; }
+html body .history a.history-night:hover h3 { color: var(--accent) !important; }
+@media (max-width: 760px) {
+  html body .community-category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 22px 18px !important; }
+  html body .community-card { grid-template-areas: "name name name" "desc desc desc" "meta pill act"; }
+  html body .person-card > p { margin-left: 0 !important; }
+}
+html body .profile-actions { margin-top: 0 !important; }
+html body main > h1:first-child { margin-top: 48px; }
+html body :is(.community-photo-feed, .profile-feed-grid, .show-photo-gallery) .feed-post :is(.post-photo-link, .photo-carousel) { background: none; }
+html body :is(.community-photo-feed, .profile-feed-grid, .show-photo-gallery) .feed-post .feed-image { display: block; width: 100%; height: auto; aspect-ratio: 1; max-height: none; object-fit: cover; border-radius: 14px; }
+html body .feed-post .feed-post-date { font-size: 12px !important; color: var(--muted); }
+
+/* Podium as a clear staircase: #1 widest and tallest, #2 a step down, #3 another. */
+html body .lb-podium { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr); gap: 28px; align-items: end; }
+html body .lb-place-1 .lb-photo { aspect-ratio: 4 / 5; }
+html body .lb-place-2 .lb-photo { aspect-ratio: 1; width: 88%; }
+html body .lb-place-3 .lb-photo { aspect-ratio: 5 / 4; width: 76%; }
+html body .lb-place-1 .lb-rank { font-size: 64px !important; }
+html body .lb-place-2 .lb-rank { font-size: 48px !important; }
+html body .lb-place-3 .lb-rank { font-size: 38px !important; }
+html body .lb-place-1 .lb-name { font-size: 22px !important; }
+html body .lb-place-3 .lb-name, html body .lb-place-3 .lb-points { opacity: .9; }
+@media (max-width: 600px) {
+  html body .lb-podium { gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1fr); }
+  html body .lb-place-1 .lb-rank { font-size: 46px !important; }
+  html body .lb-place-2 .lb-rank { font-size: 34px !important; }
+  html body .lb-place-3 .lb-rank { font-size: 28px !important; }
+  html body .lb-place-1 .lb-name { font-size: 17px !important; }
+}
+
+/* Category menu: no background block on hover/press (it hit the letters); the title
+   eases to blue and the rule above brightens. Keyboard focus gets a padded ring. */
+html body .community-category-tile, html body .community-category-tile:is(:hover, :focus, :active, [aria-pressed="true"]) { background: none !important; box-shadow: none !important; filter: none !important; transform: none !important; }
+html body .community-category-tile { transition: border-color .2s ease; outline: none; }
+html body .community-category-tile strong { transition: color .2s ease; }
+html body .community-category-tile:hover { border-top-color: rgba(242, 241, 255, .45) !important; }
+html body .community-category-tile[aria-pressed="true"]:hover { border-top-color: var(--pink) !important; }
+html body .community-category-tile:focus-visible { outline: 2px solid var(--ink); outline-offset: 10px; border-radius: 6px; }
+html body .community-category-tile strong { color: var(--ink) !important; }
+html body .community-category-tile:hover strong { color: var(--accent) !important; }
+html body .community-category-tile[aria-pressed="true"] strong { color: var(--pink) !important; }

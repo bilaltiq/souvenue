@@ -359,6 +359,10 @@ class Handler(BaseHTTPRequestHandler):
       if row['concerts']!=previous:rank=index+1
       previous=row['concerts'];row['rank']=rank;row['points']=row['concerts']*ATTENDANCE_POINTS
      mine=next((row for row in board if u and row['id']==u['id']),None)
+     # Podium: each of the top three gets their latest photo the viewer is allowed to see.
+     for row in board[:3]:
+      latest=feed_records(c,'WHERE feed_posts.user=?',(row['id'],),viewer=u['id'] if u else '')
+      row['photo']=latest[0]['photo'] if latest else None
      return self.reply(200,{'entries':board[:100],'participants':len(board),'mine':mine,'period':period,'scope':scope,'points_per_checkin':ATTENDANCE_POINTS})
     if p.startswith('/api/threads/'):
      scope=unquote(p[len('/api/threads/'):])
@@ -423,7 +427,7 @@ class Handler(BaseHTTPRequestHandler):
    b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','image/jpeg');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
   # Vercel serves public/ from its CDN and omits it from the Python bundle.
   # Page navigation must read a template that ships with the server instead.
-  file=ROOT/'public'/p.lstrip('/') if p in ('/app.js','/style.css','/flex-carousel.js','/tear-ticket.js','/confetti-floor.js') else ROOT/'templates'/'index.html'
+  file=ROOT/'public'/p.lstrip('/') if p in ('/app.js','/style.css','/flex-carousel.js','/tear-ticket.js','/confetti-floor.js','/stage-lights.js') else ROOT/'templates'/'index.html'
   b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','text/javascript' if file.suffix=='.js' else 'text/css' if file.suffix=='.css' else 'text/html');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b)
  def readable(self,c,u,scope):
   if scope.startswith('community:'):return bool(c.execute('SELECT 1 FROM communities WHERE id=?',(scope[10:],)).fetchone())
