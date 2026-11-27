@@ -1323,3 +1323,13 @@ html body #app .checkin-tile .checkin-tile-glow { background-image:
    recentres, which pushed phones 30px wide. Clip only sideways overflow so the glow above
    and below stays. */
 html body .tear-ticket[data-used] { overflow-x: clip; overflow-clip-margin: 24px; }
+
+/* List rows (artist tour dates, past shows on /log): no rule under every row, filled date
+   tiles, a soft hover, and a soft action instead of a solid blue button on every row. */
+html body #app :is(.tour-row, .past-show-entry) { border: 0 !important; border-radius: 22px; padding: 14px !important; margin: 0 -14px 4px; transition: background-color .2s ease; }
+html body #app :is(.tour-row, .past-show-entry):hover { background: #0f1229; }
+html body #app .tour-row .date-tile { border: 0 !important; border-radius: 18px !important; background: #171b3a !important; box-shadow: none !important; }
+html body #app .row-action { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 18px !important; border: 0 !important; border-radius: 999px !important;
+  background: rgba(112, 202, 255, .12) !important; color: var(--accent) !important; box-shadow: none !important; font-size: 14px; font-weight: 600; text-decoration: none; }
+html body #app .row-action:hover { background: rgba(112, 202, 255, .22) !important; }
+html body #app .row-action:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
