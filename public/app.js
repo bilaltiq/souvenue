@@ -23,14 +23,13 @@ function home(){
  app.innerHTML=`
   <section class="hero">
    <div class="hero-copy">
-    <h1>All the shows<br>you’ve seen.</h1>
+    <h1>All the shows you’ve seen.</h1>
     <p class="hero-description">Log the shows you’ve been to, keep the photos from those nights, and find fans who were there too.</p>
     <div class="hero-actions">
      <a class="button" href="/artists">Browse artists</a>
      <a class="text-link" href="/concerts">View your concert history</a>
     </div>
    </div>
-   <figure class="hero-artwork"><img src="/souvenue-art.webp" alt="Souvenue’s hand-drawn logo" width="500" height="500"></figure>
   </section>
   <section class="home-carousel-section" id="home-carousel" aria-labelledby="home-carousel-heading">
    <div class="home-carousel-heading">
@@ -54,6 +53,12 @@ function home(){
    <div><h2>Talk about the night with people who were there.</h2><p>Share photos and memories in conversations built around shows and artists.</p><a href="/communities">Explore communities</a></div>
   </section>
   <footer><strong>souvenue</strong><span>Independent prototype · Event listings can change</span></footer>`;
+ // Fit the one-line headline to exactly 98% of its column (the font gets wider as it
+ // gets smaller, so a single CSS ratio can't fit every screen). Two passes converge.
+ const heroBox=document.querySelector('.hero-copy'),heroTitle=heroBox?.querySelector('h1');
+ let heroWidth=0;const textWidth=el=>{const r=document.createRange();r.selectNodeContents(el);return r.getBoundingClientRect().width};
+ const fitHero=(force)=>{if(!heroTitle?.isConnected)return;const box=heroBox.clientWidth;if(!box||(!force&&box===heroWidth))return;heroWidth=box;for(let i=0;i<3;i++){const size=parseFloat(getComputedStyle(heroTitle).fontSize),w=textWidth(heroTitle);if(w)heroTitle.style.fontSize=(size*box*.98/w)+'px'}};
+ if(heroBox){document.fonts.ready.then(()=>fitHero(true));new ResizeObserver(()=>fitHero(false)).observe(heroBox)}
  const featuredCard=x=>`<a class="flex-carousel-card" href="/post/${esc(x.id)}"><img src="${esc(x.photo)}" alt="${esc('Photo by '+x.name+(x.artist?' at '+x.artist:''))}" loading="lazy"><span class="flex-carousel-card-copy"><strong>${esc(x.artist||x.name+'’s night')}</strong><small>${esc('Photo by '+x.name+(x.venue?' · '+x.venue:''))}</small></span></a>`;
  const useFanPhotos=photos=>{const region=document.querySelector('.flex-carousel'),track=region?.querySelector('.flex-carousel-track');if(!track||!photos.length)return;track.innerHTML=photos.map(featuredCard).join('');region.setAttribute('aria-label','Featured fan photos');document.querySelector('.home-carousel-controls')?.setAttribute('aria-label','Featured photo controls');document.querySelector('.home-carousel-prev')?.setAttribute('aria-label','Previous photos');document.querySelector('.home-carousel-next')?.setAttribute('aria-label','Next photos');const cap=document.querySelector('.home-carousel-caption');if(cap)cap.firstChild.textContent='Swipe to see photos from the crowd ';cap?.querySelector('span')&&(cap.querySelector('span').textContent='01 / '+String(photos.length).padStart(2,'0'));document.querySelector('.home-carousel-heading')?.insertAdjacentHTML('afterend','<p class="home-carousel-note">Photos from fans who chose to be featured. <a href="/new-post">Share yours</a></p>')};
  const startCarousel=()=>{if(location.pathname!=='/')return;const carousel=document.querySelector('.flex-carousel');

@@ -818,3 +818,11 @@ button:has(> .icon-chevron) { display: inline-grid; place-items: center; }
 /* Home carousel runs edge to edge (heading and caption stay in the column). */
 html { overflow-x: clip; }
 html body .home-carousel-section .flex-carousel { width: 100vw; max-width: none; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); }
+
+/* Home hero: words only, filling the width (the big logo illustration is gone). */
+html body.souvenue-home .hero { display: block; min-height: 0; padding: clamp(44px, 7vw, 104px) 0 clamp(52px, 6vw, 88px); }
+html body.souvenue-home .hero-copy { max-width: none; }
+html body.souvenue-home .hero-copy { container-type: inline-size; }
+/* One line, sized to the column: the headline spans the full width at every screen size. */
+html body.souvenue-home .hero h1 { white-space: nowrap; font-size: 8.2vw; font-size: 8.8cqi; line-height: 1; letter-spacing: -.035em !important; margin: 0 0 clamp(20px, 3vw, 40px); }
+html body.souvenue-home .hero-description { max-width: 600px; }
