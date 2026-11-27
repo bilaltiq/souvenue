@@ -847,3 +847,13 @@ html body.souvenue-home .hero h1 { width: max-content; max-width: none; position
 }
 /* Confetti sits beneath the headline (the words stay on top). */
 html body.souvenue-home .hero h1 { z-index: 3; }
+
+/* Phones: the headline gets the whole first screen (centred vertically, confetti
+   around it); the description and buttons sit just below the fold. */
+@media (max-width: 760px) {
+  html body.souvenue-home .hero { min-height: 0; padding-top: 0; padding-bottom: 32px; }
+  html body.souvenue-home .hero-copy { display: grid; grid-template-rows: calc(100svh - 65px) auto auto; align-items: center; justify-items: start; }
+  html body.souvenue-home .hero h1 { margin-bottom: 0; align-self: center; }
+  html body.souvenue-home .hero-description { justify-self: center; margin-top: 8px; }
+  html body.souvenue-home .hero-actions { justify-self: center; }
+}
