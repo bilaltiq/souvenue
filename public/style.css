@@ -697,3 +697,76 @@ html body :is(button:hover, .button:hover, .ticket, .check-panel, .unlock-card, 
   .community-category-tile, .thread-preview, .carousel-dots button, .profile-tabs button, .history-checked-in) { box-shadow: none !important; }
 html body dialog { box-shadow: 0 24px 60px rgba(0, 0, 0, .55) !important; }
 html body :is(.brand .souvenue-logo, .unlock-lock rect) { filter: none !important; }
+
+/* ---- TearTicket (React Bits, ported in /tear-ticket.js) ------------------ */
+/* Component styles, kept as shipped minus the image scrim (no artwork yet). */
+.tear-ticket { --tt-w: 460px; --tt-h: 250px; --tt-stub: 150px; --tt-bg: #27272a; --tt-stub-bg: #27272a; --tt-ink: #f5f5f5; --tt-edge: transparent; --tt-edge-w: 1; --tt-parallax: 6px; --tt-body-w: 310px; --tt-body-h: 250px; --tt-inset: 8px; --tt-span: .78; --tt-art-radius: 8px; --tt-fit: 1;
+  position: relative; width: min(var(--tt-w), 100%); color: var(--tt-ink); user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+.tear-ticket[data-disabled] { opacity: .6; }
+.tear-ticket__stage { position: absolute; top: 0; left: 0; width: var(--tt-w); height: var(--tt-h); transform: scale(var(--tt-fit)); transform-origin: top left; transition: transform 650ms cubic-bezier(.22, 1, .36, 1); }
+.tear-ticket[data-shift='x'] .tear-ticket__stage { transform: translateX(calc(var(--tt-stub) * var(--tt-fit) / 2)) scale(var(--tt-fit)); }
+.tear-ticket[data-shift='y'] .tear-ticket__stage { transform: translateY(calc(var(--tt-stub) * var(--tt-fit) / 2)) scale(var(--tt-fit)); }
+.tear-ticket__plane { position: absolute; inset: 0; }
+.tear-ticket__piece { position: absolute; inset: 0; pointer-events: none; }
+.tear-ticket__piece--stub { outline: none; will-change: transform; }
+.tear-ticket__piece--stub:focus-visible .tear-ticket__edge path { stroke: var(--accent); stroke-width: 2; }
+.tear-ticket__edge { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.tear-ticket__edge path { fill: none; stroke: var(--tt-edge); stroke-width: var(--tt-edge-w); }
+.tear-ticket__paper { position: absolute; inset: 0; background: var(--tt-bg); pointer-events: auto; }
+.tear-ticket__paper--stub { background: var(--tt-stub-bg); cursor: grab; touch-action: none; }
+.tear-ticket[data-grabbing] .tear-ticket__paper--stub { cursor: grabbing; }
+.tear-ticket[data-disabled] .tear-ticket__paper--stub { cursor: default; }
+.tear-ticket__content { position: absolute; top: 0; bottom: 0; left: 0; width: calc(var(--tt-w) - var(--tt-stub)); transition: opacity 500ms ease; }
+.tear-ticket[data-used] .tear-ticket__content { opacity: .55; }
+.tear-ticket__stub { position: absolute; top: 0; right: 0; bottom: 0; width: var(--tt-stub); }
+.tear-ticket[data-orientation='vertical'] .tear-ticket__content { bottom: auto; width: 100%; height: calc(var(--tt-h) - var(--tt-stub)); }
+.tear-ticket[data-orientation='vertical'] .tear-ticket__stub { top: auto; left: 0; width: auto; height: var(--tt-stub); }
+.tear-ticket[data-instant] .tear-ticket__stage, .tear-ticket[data-instant] .tear-ticket__content { transition-duration: 0ms; }
+.tear-ticket__fibres { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.tear-ticket__fibres path { fill: none; stroke: var(--tt-bg); stroke-linecap: round; opacity: 0; }
+.tear-ticket__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .tear-ticket__stage { transition: none; } }
+
+/* Show ticket content: artist, venue, city, date; the stub says Admit one + the day. */
+.event-ticket { width: 100%; display: flex; justify-content: center; }
+.ticket-body { height: 100%; display: flex; flex-direction: column; gap: 6px; padding: 30px 28px 26px; }
+html body .ticket-artist, html body .ticket-stub-day { font-family: var(--font-display) !important; font-weight: 700 !important; letter-spacing: -.035em; line-height: .98; color: #dbe7ff; text-wrap: balance; }
+.ticket-artist { margin-bottom: 14px; }
+.ticket-venue { font-size: 16px; font-weight: 600; }
+.ticket-city { font-size: 14px; color: var(--muted); }
+.ticket-date { margin-top: auto; font-size: 14px; color: var(--ink); }
+.ticket-stub { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 22px 14px; text-align: center; }
+.ticket-stub-label, .ticket-stub-hint { font-size: 12px; color: var(--muted); }
+.ticket-stub-day { font-size: 56px; margin-top: 6px; }
+.ticket-stub-month { font-size: 14px; }
+.ticket-stub-hint { margin-top: auto; }
+.tear-ticket[data-orientation='vertical'] .ticket-stub { flex-direction: row; justify-content: space-between; padding: 18px 28px; text-align: left; }
+.tear-ticket[data-orientation='vertical'] .ticket-stub-day { margin: 0; }
+.tear-ticket[data-orientation='vertical'] .ticket-stub-hint { margin: 0; }
+
+/* Torn ticket: stays bright, and a color halo slowly spins and drifts behind it.
+   The one deliberate glow on the site (asked for, Nov 2026). */
+html body .tear-ticket[data-used] .tear-ticket__content { opacity: 1; }
+@property --halo-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+html body .ticket-halo {
+  position: absolute; left: -10px; top: -10px;
+  width: calc(var(--tt-body-w) + 20px); height: calc(var(--tt-body-h) + 20px);
+  border-radius: 28px; pointer-events: none; opacity: 0;
+  background-image: conic-gradient(from var(--halo-angle), #70caff, #b48cff, #ff74cb, #ffb27a, #7af0c8, #70caff) !important;
+  filter: blur(22px);
+  transition: opacity 900ms ease 250ms;
+}
+html body .tear-ticket[data-used] .ticket-halo {
+  opacity: .85;
+  animation: halo-spin 7s linear infinite, halo-drift 5.5s ease-in-out infinite, halo-hue 14s linear infinite;
+}
+@keyframes halo-spin { to { --halo-angle: 360deg; } }
+@keyframes halo-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(5px, -4px) scale(1.03); }
+  66% { transform: translate(-4px, 4px) scale(.99); }
+}
+@keyframes halo-hue { to { filter: blur(22px) hue-rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  html body .tear-ticket[data-used] .ticket-halo { animation: none; }
+}
