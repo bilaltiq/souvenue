@@ -537,7 +537,7 @@ def concert_history(c,uid):
   for k,log in list(history.items()):
    if log.get('event_id')==e['id']:del history[k]
   seen=prior.get('artists_seen') if prior else [{'artist':e['artist'],'artist_slug':e.get('artist_slug','')}]
-  history[key]={**e,**({'artists_seen':seen,'rating':prior.get('rating')} if prior else {}),'id':'checkin-'+e['id'],'event_id':e['id'],'checked_in':True,'checkin_method':attendance['method'],'points':ATTENDANCE_POINTS,'created':attendance['created'],'start_date':day}
+  history[key]={**e,'artists_seen':seen,**({'rating':prior.get('rating')} if prior else {}),'id':'checkin-'+e['id'],'event_id':e['id'],'checked_in':True,'checkin_method':attendance['method'],'points':ATTENDANCE_POINTS,'created':attendance['created'],'start_date':day}
  return sorted(history.values(),key=lambda e:(e['start_date'],e['created']),reverse=True)
 
 class Handler(BaseHTTPRequestHandler):

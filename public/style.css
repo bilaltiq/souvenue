@@ -1362,3 +1362,317 @@ html body #app .tour-poster-face img, html body #app .tour-poster-face svg { dis
 @media (max-width: 760px) { html body #app .poster-stage { margin-inline: -8px; } }
 html body #app .poster-stage { overflow-x: clip; overflow-clip-margin: 0px; }
 html body #app .tour-poster-face img { object-position: 50% 70%; }
+
+/* Taste review fixes (2026-11-27) */
+/* 1. A soft disc holds each artist's place while its crayon mark loads, so the grid never shows holes */
+html body #app .directory-photo.has-mark { background: #171b3a !important; border-radius: 50%; }
+/* 3. Phone header: keep the wordmark on one line; signed in, the button just says "Sign out" */
+header .brand { white-space: nowrap; flex-shrink: 0; }
+@media (max-width: 760px) { #account .account-name { display: none; } }
+/* The bottom-of-page artist search opens its results upward, so they never fall below the end of the page */
+html body #app .artist-more .artist-suggest { top: auto; bottom: calc(100% + 6px); max-height: min(380px, 60vh); }
+
+/* No outlined boxes: every panel is a soft filled surface instead of a bordered rectangle (Sofia, 2026-11-27) */
+html body :is(#app, dialog) :is(.leaderboard-preference, .privacy-settings, .check-panel, .home-carousel-empty, .event-card, .event-picker, .create-photo form, .photo-upload, .community-room, .feed-post, .photo-post-callout, .profile-feed-grid > .empty, .show-photo-gallery > .post, .event-photo-tag, .selected-photo),
+html body dialog#auth {
+  border-color: transparent !important;
+  border-style: solid !important;
+  background-color: #141834 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+html body :is(#app, dialog) :is(.leaderboard-preference, .privacy-settings, .check-panel, .home-carousel-empty, .event-picker, .create-photo form, .photo-upload, .community-room, .photo-post-callout, .profile-feed-grid > .empty) { border-radius: 24px !important; }
+/* Picked performers on the log: a brighter fill marks the choice, no outline */
+html body #app .performer-option { border-color: transparent !important; }
+html body #app .performer-option:has(input:checked) { background: #1f3a5c !important; }
+/* Unselected toggle chips are filled, like the chips on event pages, never outlined */
+html body #app button[aria-pressed="false"]:not(.community-category-tile) { border-color: transparent !important; background: #1a1e3d !important; }
+html body #app button[aria-pressed="false"]:not(.community-category-tile):hover { background: #232852 !important; }
+/* Settings cards share one layout: text left, controls in the same right column, both vertically centred */
+html body #app :is(.leaderboard-preference, .privacy-settings) { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(260px, 360px) !important; gap: 24px 48px !important; align-items: center !important; padding: 32px 36px !important; }
+html body #app :is(.leaderboard-preference, .privacy-settings) h3 { font-size: 28px !important; margin: 0 0 10px !important; }
+html body #app :is(.leaderboard-preference, .privacy-settings) :is(p, small) { margin: 0 0 8px; }
+html body #app :is(.leaderboard-preference, .privacy-settings) form { display: grid; gap: 14px; justify-items: start; margin: 0; }
+html body #app :is(.leaderboard-preference, .privacy-settings) form label { width: 100%; margin: 0; }
+html body #app :is(.leaderboard-preference, .privacy-settings) form p:empty { display: none; }
+@media (max-width: 760px) { html body #app :is(.leaderboard-preference, .privacy-settings) { grid-template-columns: 1fr !important; padding: 24px 22px !important; } }
+/* New-post form: the upload and show-picker groups no longer have their own box, so their contents line up with every other field */
+html body #app .create-photo form :is(.photo-upload, .event-picker) { padding: 0 !important; margin: 24px 0 !important; border-radius: 0 !important; }
+html body #app .create-photo form .event-picker legend { padding: 0; margin-bottom: 12px; }
+/* Fields inside a filled panel sit one step darker and lose their outline */
+html body :is(#app, dialog) :is(.create-photo form, .leaderboard-preference, .privacy-settings, .check-panel, .community-room) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea),
+html body dialog#auth :is(input, select, textarea) { background-color: #0b0e20 !important; border-color: transparent !important; }
+html body #app#app :is(.create-photo form, .leaderboard-preference, .privacy-settings, .check-panel, .community-room) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="hidden"]), select, textarea),
+html body dialog#auth#auth :is(input:not([type="checkbox"]), select, textarea) { background-color: #0b0e20 !important; border-color: transparent !important; }
+html body #app#app :is(.create-photo form, .leaderboard-preference, .privacy-settings, .check-panel, .community-room) :is(input, select, textarea):focus-visible,
+html body dialog#auth#auth :is(input, select, textarea):focus-visible { box-shadow: 0 0 0 2px var(--accent) !important; outline: none; }
+
+/* Web interface guidelines pass (2026-11-27) */
+/* Images with width/height attributes keep their real shape; any class that sizes them still wins */
+:where(img[width][height]) { height: auto; }
+/* Skip link: hidden until a keyboard user tabs to it */
+.skip-link { position: fixed; left: 16px; top: 12px; z-index: 100; padding: 10px 16px; border-radius: 999px; background: var(--accent); color: #080b18; font: 600 14px/1.2 var(--font-text); text-decoration: none; transform: translateY(-200%); }
+.skip-link:focus-visible { transform: none; outline: 2px solid var(--ink); outline-offset: 2px; }
+main#app:focus { outline: none; }
+/* Mouse clicks don't draw the old field outline; keyboard focus keeps its ring */
+:is(input, textarea, select):focus:not(:focus-visible) { outline: none; }
+html body .event-ticket button.ticket-reset:not([aria-pressed]):focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 3px; border-radius: 50%; }
+/* Notched phones in landscape: keep content out of the cut-outs */
+body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+#toast { margin-bottom: env(safe-area-inset-bottom); }
+/* Jump links land with breathing room */
+main [id] { scroll-margin-top: 24px; }
+/* No double-tap zoom delay on controls */
+a, button, label, summary, [role="button"] { touch-action: manipulation; }
+/* File pickers: the browser's grey system button becomes a soft Souvenue button in the site font */
+html body :is(#app, dialog) input[type="file"] { font: 500 14px/1.4 var(--font-text) !important; color: var(--muted) !important; background: transparent !important; border: 0 !important; padding: 0 !important; width: 100%; }
+html body :is(#app, dialog) input[type="file"]::file-selector-button { font: 600 14px/1 var(--font-text); color: var(--accent); background: #1c2246; border: 0; border-radius: 999px; padding: 12px 20px; margin-right: 14px; cursor: pointer; transition: background-color .15s ease; }
+html body :is(#app, dialog) input[type="file"]::file-selector-button:hover { background: #262d5a; }
+html body :is(#app, dialog) input[type="file"]:focus-visible { outline: none; }
+html body :is(#app, dialog) input[type="file"]:focus-visible::file-selector-button { box-shadow: 0 0 0 2px var(--accent); }
+
+/* One family: Bricolage Grotesque for headings and text (Sofia chose it over Hanken, 2026-11-27).
+   Its optical-size axis tightens it at display sizes and opens it up at text sizes. */
+:root { --font-text: 'Bricolage Grotesque', Arial, sans-serif !important; --font-display: 'Bricolage Grotesque', Arial, sans-serif !important; }
+html body { font-family: var(--font-text); font-optical-sizing: auto; }
+/* The "souvenue" wordmark stays in Hanken Grotesk medium: it's the logo */
+html body header .brand, html body footer .brand, html body .footer-brand { font-family: 'Hanken Grotesk', Arial, sans-serif !important; }
+
+/* Community categories: rounded, padded soft panels (no hard blocks, no rule on top) */
+html body #app .community-category-tile { background: #141834 !important; border: 0 !important; border-radius: 24px !important; padding: 24px 26px 26px !important; transition: background-color .2s ease; }
+html body #app .community-category-tile:hover { background: #1a1f40 !important; }
+html body #app .community-category-tile[aria-pressed="true"] { background: #1c2046 !important; }
+html body #app .community-category-tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 24px; }
+
+/* ---- Button colours: pink, mint and lilac join blue (Sofia, 2026-11-27) ----------------
+   Pink = main action · mint = the selected chip · lilac = soft secondary buttons
+   Blue stays for the header account button, text links, row actions and focus rings. */
+:root { --btn-pink: #ff9fd6; --btn-pink-hover: #ffb3e0; --chip-mint: #74e4dd; --soft-lilac-bg: #cdb4ff; --soft-lilac-bg-hover: #d9c6ff; --soft-lilac-ink: #1e1240; }
+/* Same selector as the old solid-blue rule, later in the file, so every exception that beat it still does */
+button:not([aria-pressed]):not(.menu-toggle), .button, .hero .button { background: var(--btn-pink) !important; border-color: var(--btn-pink) !important; color: #1a0b18 !important; }
+button:not([aria-pressed]):not(.menu-toggle):hover, .button:hover { background: var(--btn-pink-hover) !important; border-color: var(--btn-pink-hover) !important; }
+header #account, header #account:hover { background: var(--accent) !important; border-color: var(--accent) !important; color: #080b18 !important; }
+.skip-link { background: var(--accent); }
+/* Selected chips and tags turn mint */
+main button[aria-pressed="true"]:not(.community-category-tile),
+html body #app #discussion .topic-filters button[aria-pressed="true"],
+html body #app .tag-choice input:checked + span,
+.photo-groups button[aria-pressed=true] { background: var(--chip-mint) !important; border-color: var(--chip-mint) !important; color: #04282a !important; }
+/* Soft secondary buttons go lilac */
+html body #app :is(button.secondary, .button.secondary, details.create-community > summary, #discussion details.start-thread > summary, #postform label.file),
+html body dialog button.secondary { background: var(--soft-lilac-bg) !important; color: var(--soft-lilac-ink) !important; border-color: transparent !important; }
+html body #app :is(button.secondary, .button.secondary, details.create-community > summary, #discussion details.start-thread > summary, #postform label.file):hover,
+html body dialog button.secondary:hover { background: var(--soft-lilac-bg-hover) !important; }
+html body :is(#app, dialog) input[type="file"]::file-selector-button { background: var(--soft-lilac-bg); color: var(--soft-lilac-ink); }
+html body :is(#app, dialog) input[type="file"]::file-selector-button:hover { background: var(--soft-lilac-bg-hover); }
+/* Phone menu button: no outline box, just the two lines */
+.menu-toggle, body.souvenue-home header .menu-toggle, .menu-toggle:hover, body.souvenue-home header .menu-toggle:hover { border-color: transparent !important; background: transparent !important; }
+.menu-toggle:focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 2px; border-radius: 10px; }
+/* A selected chip keeps its turquoise and dark text on hover (only a touch lighter) */
+main button[aria-pressed="true"]:not(.community-category-tile):hover,
+html body #app #discussion .topic-filters button[aria-pressed="true"]:hover,
+.photo-groups button[aria-pressed=true]:hover { background: #8aece6 !important; border-color: #8aece6 !important; color: #04282a !important; }
+
+/* Header "Log a concert": the site's main action, always one tap away (pink like other main actions) */
+html body header .log-cta { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 18px; border-radius: 999px; background: var(--btn-pink); color: #1a0b18; font: 600 14px/1 var(--font-text); text-decoration: none; white-space: nowrap; flex-shrink: 0; transition: background-color .15s ease; }
+html body header .log-cta:hover { background: var(--btn-pink-hover); }
+html body header .log-cta:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+html body header .log-cta svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+html body header .log-cta-short { display: none; }
+html body header :is(.log-cta, #account) { order: 2; }
+html body header .log-cta { margin-left: auto; }
+html body header .log-cta + #account { margin-left: 10px !important; }
+@media (max-width: 760px) {
+  html body header .log-cta { order: 0 !important; height: 38px; padding: 0 14px; font-size: 13px; }
+  html body header .log-cta + #account { order: 0 !important; margin-left: 8px !important; }
+  html body header .log-cta-long { display: none; }
+  html body header .log-cta-short { display: inline; }
+}
+/* Header fit with the Log button: nav labels and the account pill never wrap */
+html body header nav a, html body header #account { white-space: nowrap !important; }
+html body header #account { flex-shrink: 0; max-width: none !important; overflow: visible !important; }
+/* Below wide desktop, signed-in shows just "Sign out" (your name is on My profile) */
+@media (max-width: 1360px) { html body header #account .account-name { display: none; } }
+@media (max-width: 760px) {
+  html body header .brand .souvenue-logo { width: 54px !important; height: auto !important; }
+  html body header #account { height: 38px; padding: 0 12px !important; font-size: 13px !important; }
+  html body header .log-cta { padding: 0 12px; }
+}
+/* Phones: Sign in / Sign out lives in the menu, so the header row is logo · Log · menu */
+html body header nav .nav-account { display: none; }
+@media (max-width: 760px) {
+  html body header #account { display: none !important; }
+  html body header nav button.nav-account.nav-account { display: block; width: 100%; margin-top: 8px; height: 44px; border-radius: 999px !important; background: var(--accent) !important; border-color: var(--accent) !important; color: #080b18 !important; font: 600 14px/1 var(--font-text) !important; }
+  html body header .log-cta { margin-left: auto; }
+}
+
+/* Close buttons: a plain drawn X, no box (the pink button rule was catching them) */
+html body button.close.close, html body button.rating-close.rating-close { background: transparent !important; border: 0 !important; box-shadow: none !important; color: var(--muted) !important; width: 44px; height: 44px; min-height: 0 !important; padding: 0 !important; display: inline-grid !important; place-items: center; border-radius: 999px !important; }
+html body button.close.close:hover, html body button.rating-close.rating-close:hover { background: rgba(242, 241, 255, .08) !important; color: var(--ink) !important; }
+html body button.close.close:focus-visible, html body button.rating-close.rating-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.icon-close { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+
+/* ---- Header spacing (2026-11-27) ----------------------------------------------------
+   Header edges line up with the page content at every width; nothing spills past them. */
+html body header #account .account-name { display: none; }
+@media (min-width: 761px) { html body header, html body.souvenue-home header { padding-left: 48px !important; padding-right: 48px !important; } }
+@media (max-width: 760px) { html body header, html body.souvenue-home header { padding-left: 20px !important; padding-right: 20px !important; } }
+html body header .log-cta + #account { margin-left: 10px !important; }
+@media (min-width: 1241px) { html body header nav { gap: 28px !important; margin-left: 28px; } }
+/* 761–1240: nav, Log and Sign in don't fit on one row, so the nav drops to its own centred row */
+@media (min-width: 761px) and (max-width: 1240px) {
+  html body header, html body.souvenue-home header { flex-wrap: wrap !important; height: auto !important; min-height: 0 !important; padding-top: 14px !important; padding-bottom: 0 !important; row-gap: 6px !important; }
+  html body header .brand { flex: 1; }
+  html body header nav { order: 3; flex: 0 0 100%; justify-content: center; flex-wrap: nowrap; gap: 28px !important; font-size: 14px !important; padding: 6px 0 14px; margin-left: 0; overflow-x: auto; scrollbar-width: none; }
+}
+/* Community categories: no decorative glyphs; the name leads the tile */
+html body #app .community-category-tile .category-symbol { display: none !important; }
+html body #app .community-category-tile strong { margin-top: 0 !important; }
+/* Link buttons (main and secondary) share one shape: pill, same height, padding and type */
+html body #app a.button { border-radius: 999px !important; min-height: 48px; padding: 0 22px !important; font-size: 15px !important; font-weight: 600 !important; gap: 8px; display: inline-flex; align-items: center; justify-content: center; }
+html body #app a.button { height: 48px !important; min-height: 48px !important; }
+/* Main-button hover stays pink (older rules turned it light blue); secondary already lightens lavender */
+html body :is(main, dialog) :is(button, a.button):not([aria-pressed]):not([role=tab]):not(.secondary):not(.text-action):not(.star):not(.rating-close):not(.close):not(.ticket-reset):not(.row-action):hover,
+html body.souvenue-home .hero-actions .button:hover { background: var(--btn-pink-hover) !important; border-color: var(--btn-pink-hover) !important; color: #1a0b18 !important; }
+/* Secondary hover: lighter lavender everywhere (an older rule tinted it blue) */
+html body :is(main, dialog) :is(button, a.button).secondary:not([aria-pressed]):hover,
+html body #app :is(button.secondary, .button.secondary, details.create-community > summary):hover { background: var(--soft-lilac-bg-hover) !important; color: var(--soft-lilac-ink) !important; }
+html body #app#app :is(a.button.secondary, button.secondary, details.create-community > summary, details.start-thread > summary, label.file):hover,
+html body dialog#auth button.secondary:hover { background: var(--soft-lilac-bg-hover) !important; color: var(--soft-lilac-ink) !important; }
+
+/* Profile stats: four equal soft tiles, number over label, centred (Sofia picked option C) */
+html body #app .stat-strip { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px !important; max-width: 680px; margin: 36px 0 18px !important; }
+html body #app .stat-strip > span { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 20px 8px; border-radius: 20px; background: #141834; font-size: 14px !important; line-height: 1.2; color: var(--muted) !important; text-align: center; }
+html body #app .stat-strip > span > strong { font: 700 34px/1 var(--font-display) !important; letter-spacing: -.02em; color: var(--ink) !important; margin: 0 !important; }
+@media (max-width: 760px) { html body #app .stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: none; } }
+html body #app .stat-links { margin: 0 0 8px !important; }
+/* Empty "fresh roll" panel: text gets inner padding like every other panel */
+html body #app .profile-feed-grid > .empty { padding: 28px 32px !important; }
+/* Phone: profile actions stack at the same full width */
+@media (max-width: 760px) { html body #app .profile-actions { display: grid !important; grid-template-columns: 1fr; gap: 10px; } html body #app .profile-actions > a.button { width: 100%; } }
+
+/* Stage beams behind every inner page: fixed, so they run the whole length as you scroll; dim so they never compete */
+.page-lights { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; display: block; opacity: .45; }
+body.souvenue-home .page-lights { display: none; }
+
+/* Tabs (role=tab) never take a button fill: hover just brightens the label */
+html body #app button[role="tab"], html body #app button[role="tab"]:hover { background: transparent !important; }
+html body #app button[role="tab"]:hover { color: var(--ink) !important; }
+
+/* Pill buttons: one height (48px), no border, and the ink sits ~19px from every edge.
+   Text side 18px (letters carry ~1px side bearing); "+" side 17px (the icon has ~2px built-in margin). */
+html body #app#app :is(a.button, button:not([aria-pressed]):not([role=tab]):not(.menu-toggle):not(.text-action):not(.close):not(.rating-close):not(.star):not(.ticket-reset):not(.home-carousel-prev):not(.home-carousel-next):not(:has(> svg:only-child)), details.start-thread > summary, details.create-community > summary, label.file) { height: 48px !important; min-height: 48px !important; border-width: 0 !important; padding-left: 18px !important; padding-right: 18px !important; box-sizing: border-box; }
+html body #app#app#app :is(a.button, button:not([aria-pressed]):not([role=tab]):not(.menu-toggle):not(.text-action):not(.close):not(.rating-close):not(.star):not(.ticket-reset):not(.home-carousel-prev):not(.home-carousel-next):not(.carousel-arrow), details.start-thread > summary, details.create-community > summary, label.file):has(> svg:first-child) { padding-left: 17px !important; }
+html body #app#app :is(a.button, button, summary, label.file) > svg:first-child { margin: 0 !important; }
+html body dialog#auth button:not(.close) { height: 48px; border-width: 0 !important; padding-left: 18px !important; padding-right: 18px !important; }
+/* Header pills are shorter, so their side gap shrinks to match their vertical gap */
+html body header .log-cta { border: 0; padding: 0 16px 0 15px !important; }
+html body header #account { border-width: 0 !important; padding-left: 16px !important; padding-right: 16px !important; }
+@media (max-width: 760px) { html body header .log-cta { padding: 0 13px 0 12px !important; } }
+/* Compact row buttons (42px, "Open show" / "Log show"): side gap matches their ~16px top gap */
+html body #app#app#app :is(a.button.row-action, button.row-action) { height: 42px !important; min-height: 42px !important; padding-left: 15px !important; padding-right: 15px !important; }
+html body #app#app#app :is(a.button.row-action, button.row-action):has(> svg:first-child) { padding-left: 14px !important; }
+html body #app#app#app#app :is(a.button.row-action, button.row-action):has(> svg:first-child) { padding-left: 14px !important; }
+
+/* Concert history: each night is a soft filled panel on the page's left edge; no divider rules */
+html body #app .concert-history-list { border-top: 0 !important; gap: 12px !important; max-width: 900px; }
+html body #app .concert-history-list .history { border: 0 !important; border-bottom: 0 !important; border-radius: 24px !important; background: #141834 !important; padding: 24px 28px !important; margin: 0 !important; }
+html body #app .concert-history-list .history-night { display: block; color: inherit; text-decoration: none; }
+html body #app .concert-history-list a.history-night:hover h3 { color: var(--accent) !important; }
+html body #app .concert-history-list { max-width: none !important; }
+
+/* Rating dialog: "Save show" stays pink, "Skip rating" is blue so the pair isn't all pink */
+html body #app#app#app button.rating-skip, html body dialog button.rating-skip.rating-skip { background: var(--accent) !important; border-color: var(--accent) !important; color: #080b18 !important; }
+html body #app#app#app button.rating-skip:hover, html body dialog button.rating-skip.rating-skip:hover { background: #8fd6ff !important; border-color: #8fd6ff !important; }
+html body dialog.rating-dialog button.rating-skip:not(#_):not(#_) { background: var(--accent) !important; border-color: var(--accent) !important; color: #080b18 !important; }
+html body dialog.rating-dialog button.rating-skip:not(#_):not(#_):hover { background: #8fd6ff !important; border-color: #8fd6ff !important; }
+
+/* Log / rating popups: both action buttons blue (Sofia, 2026-11-27) */
+html body dialog.rating-dialog button:not(.star):not(.rating-close):not(.close):not([aria-pressed]):not(#_):not(#_) { background: var(--accent) !important; border-color: var(--accent) !important; color: #080b18 !important; }
+html body dialog.rating-dialog button:not(.star):not(.rating-close):not(.close):not([aria-pressed]):not(#_):not(#_):hover { background: #8fd6ff !important; border-color: #8fd6ff !important; }
+/* Rating stars are icons, never filled buttons (the pink button rule was reaching them) */
+html body button.star:not(#_), html body button.star:not(#_):hover { background: transparent !important; border-color: transparent !important; box-shadow: none !important; padding: 0 !important; }
+
+/* Log page: two choices, one panel at a time */
+html body .log-choice{display:grid !important;grid-template-columns:1fr 1fr !important;gap:12px !important;max-width:760px !important;margin:28px 0 36px !important}
+html body .log-choice button:not(#_){display:flex !important;flex-direction:column !important;align-items:flex-start !important;gap:6px !important;text-align:left !important;min-height:96px !important;padding:22px 24px !important;border:0 !important;border-radius:20px !important;background:#141834 !important;color:var(--ink) !important;box-shadow:none !important;transform:none !important;font:inherit !important;cursor:pointer !important;transition:background .2s ease !important}
+html body .log-choice button:not(#_):hover{background:#1c2045 !important}
+html body .log-choice button:not(#_) strong{font-family:var(--font-display) !important;font-size:20px !important;font-weight:700 !important;line-height:1.2 !important}
+html body .log-choice button:not(#_) span{font-size:14px !important;color:var(--muted) !important;font-weight:400 !important}
+html body .log-choice button[aria-selected="true"]:not(#_){background:rgba(116,228,221,.14) !important}
+html body .log-choice button[aria-selected="true"]:not(#_) strong{color:var(--chip-mint) !important}
+html body .log-choice button:not(#_):focus-visible{outline:2px solid var(--accent) !important;outline-offset:3px !important}
+html body .log-browse,html body .manual-log-section{margin-top:0 !important}
+html body .log-switch{margin-top:28px !important;color:var(--muted) !important;font-size:14px !important}
+html body .log-switch .text-action{font-size:14px !important}
+@media(max-width:600px){html body .log-choice{grid-template-columns:1fr !important}html body .log-choice button:not(#_){min-height:0 !important;padding:18px 20px !important}}
+html body .log-choice button:not(#_):not(:focus-visible){outline:0 !important}
+html body .log-choice button[aria-selected="false"]:not(#_) strong{color:var(--ink) !important}
+
+/* Log search results: compact rows */
+html body #app .past-show-entry:not(#_){padding:12px 14px !important;margin:0 -14px 2px !important}
+html body #app .past-show-entry .past-show-row:not(#_){padding:0 !important;gap:16px !important;min-height:0 !important}
+html body #app .past-show-row h3:not(#_){font-size:22px !important;line-height:1.2 !important;margin:0 0 4px !important}
+html body #app .past-show-row p:not(#_){margin:0 0 2px !important;font-size:15px !important;line-height:1.4 !important}
+html body #app .past-show-row small:not(#_){line-height:1.4 !important}
+html body #app .past-show-entry [data-lineup-panel]:not([hidden]){margin-top:14px}
+@media(max-width:600px){html body #app .past-show-entry .past-show-row:not(#_){gap:10px !important}}
+@media(max-width:600px){html body #app .past-show-entry .past-show-row:not(#_){flex-direction:row !important;align-items:center !important}html body #app .past-show-row button:not(#_){width:auto !important;padding:0 14px !important;min-height:44px !important}html body #app .past-show-row h3:not(#_){font-size:20px !important}}
+
+/* Log search: floating artist and show pills */
+html body .show-cloud-search{display:block;max-width:560px;font-weight:600}
+html body .show-cloud-search input{display:block;width:100%;margin-top:8px}
+html body .cloud-head{display:flex;align-items:baseline;gap:20px;flex-wrap:wrap;margin:28px 0 0}
+html body .cloud-head:empty{display:none}
+html body .cloud-head h2{margin:0;font-size:32px}
+html body .cloud-head .text-action{display:inline-flex;align-items:center;gap:6px;font-size:14px}
+html body .show-cloud{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:14px 12px;padding:36px 0 20px;max-width:1080px;margin:0 auto}
+html body .show-cloud .float-pill:not(#_){display:inline-flex;flex-direction:column;align-items:center;gap:2px;min-height:0 !important;padding:12px 20px !important;border:0 !important;border-radius:999px !important;background:#1a1e3d !important;color:var(--ink) !important;font:600 16px/1.2 var(--font-text) !important;box-shadow:none !important;cursor:pointer;animation:float-bob 4.2s ease-in-out infinite;animation-delay:calc(var(--i) * -.37s);transition:background-color .2s ease,color .2s ease}
+html body .show-cloud .float-pill:not(#_) span{font-size:12px;font-weight:400;color:var(--muted)}
+html body .show-cloud .float-pill:nth-child(3n+1):not(#_){animation-duration:5s}
+html body .show-cloud .float-pill:nth-child(3n+2):not(#_){animation-duration:3.6s;margin-top:14px}
+html body .show-cloud .float-pill-big:not(#_){font-size:20px !important;padding:16px 26px !important;font-family:var(--font-display) !important;font-weight:700 !important}
+html body .show-cloud .float-pill:not(#_):hover{background:#262b55 !important;animation-play-state:paused}
+html body .show-cloud .float-pill[aria-expanded="true"]:not(#_){background:var(--chip-mint) !important;color:#04282a !important;animation-play-state:paused}
+html body .show-cloud .float-pill[aria-expanded="true"]:not(#_) span{color:#0d4a47}
+html body .show-cloud .float-pill:not(#_):focus-visible{outline:2px solid var(--accent) !important;outline-offset:3px}
+@keyframes float-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@media(prefers-reduced-motion:reduce){html body .show-cloud .float-pill:not(#_){animation:none}}
+html body .show-pick-panel{max-width:760px;margin:8px auto 0;padding:24px 28px;border-radius:24px;background:#12152c}
+html body .show-pick-panel h3{margin:0 0 4px;font-size:24px}
+html body .show-pick-panel > p{margin:0 0 16px;color:var(--muted);font-size:14px}
+html body .source-note{font-size:12px !important;text-align:center;margin-top:8px}
+html body #log-search .log-switch{text-align:center}
+@media(max-width:600px){html body .show-cloud{gap:10px 8px;padding-top:24px}html body .show-cloud .float-pill:not(#_){padding:10px 16px !important;font-size:15px !important}html body .show-cloud .float-pill-big:not(#_){font-size:17px !important;padding:12px 20px !important}html body .show-pick-panel{padding:20px}}
+html body .show-cloud .more-pill:not(#_){background:transparent !important;color:var(--accent) !important;font-size:14px !important}
+html body .show-cloud .more-pill:not(#_):hover{background:#141834 !important}
+
+/* Log search: shows drift across the screen and come back */
+html body .show-cloud.show-field{position:relative;display:block;width:100vw;max-width:none;margin:12px 0 0 calc(50% - 50vw);height:440px;padding:0;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+html body .show-field .float-slot{position:absolute;left:0;top:calc(var(--lane) * 20% + 10%);transform:translateY(-50%);animation:drift-across var(--dur) linear infinite;will-change:transform}
+html body .show-field .float-slot:hover,html body .show-field .float-slot:focus-within,html body .show-field .float-slot:has([aria-expanded="true"]){animation-play-state:paused}
+@keyframes drift-across{from{transform:translate(100vw,-50%)}to{transform:translate(-100%,-50%)}}
+html body .show-cloud .float-pill:not(#_){align-items:flex-start;white-space:nowrap;text-align:left}
+html body .show-cloud .float-pill:not(#_) strong{font-family:var(--font-display);font-size:17px;font-weight:700}
+html body .show-cloud .float-pill:not(#_) span{font-size:13px}
+html body .show-cloud.show-results .float-pill:not(#_){animation:none}
+html body .show-cloud .results-note{flex-basis:100%;text-align:center;margin:8px 0 0}
+@media(prefers-reduced-motion:reduce){html body .show-field .float-slot{animation-duration:calc(var(--dur) * 3)}}
+@media(max-width:600px){html body .show-cloud.show-field{height:400px}html body .show-cloud .float-pill:not(#_) strong{font-size:15px}}
+/* bigger, closer, allowed to overlap */
+html body .show-cloud.show-field{height:400px}
+html body .show-field .float-slot{top:calc(var(--lane) * 17% + 14% + var(--jy, 0px))}
+html body .show-field .float-pill:not(#_){padding:18px 30px !important;background:#1d2148 !important;box-shadow:0 10px 30px rgba(4,6,20,.55) !important;gap:4px}
+html body .show-field .float-pill:not(#_) strong{font-size:24px}
+html body .show-field .float-pill:not(#_) span{font-size:15px}
+html body .show-field .float-pill:not(#_):hover{background:#2a2f63 !important}
+html body .show-field .float-slot:hover{z-index:20 !important}
+@media(max-width:600px){html body .show-cloud.show-field{height:380px}html body .show-field .float-pill:not(#_){padding:14px 22px !important}html body .show-field .float-pill:not(#_) strong{font-size:19px}html body .show-field .float-pill:not(#_) span{font-size:13px}}
+/* floating show bubbles: much larger, with real breathing room (beats the 48px pill-height rule) */
+html body #app .show-field .float-pill:not(#_):not(#__){height:auto !important;min-height:0 !important;max-height:none !important;padding:26px 44px 28px !important;border-radius:999px !important;gap:6px !important;line-height:1.15 !important}
+html body #app .show-field .float-pill:not(#_):not(#__) strong{font-size:32px !important;line-height:1.1 !important}
+html body #app .show-field .float-pill:not(#_):not(#__) span{font-size:17px !important;line-height:1.3 !important}
+html body .show-cloud.show-field{height:600px}
+html body .show-field .float-slot{top:calc(var(--lane) * 19% + 11% + var(--jy, 0px))}
+@media(max-width:600px){html body #app .show-field .float-pill:not(#_):not(#__){padding:20px 30px 22px !important}html body #app .show-field .float-pill:not(#_):not(#__) strong{font-size:24px !important}html body #app .show-field .float-pill:not(#_):not(#__) span{font-size:15px !important}html body .show-cloud.show-field{height:520px}}
+@media(min-width:601px){html body #app .show-field .float-pill:not(#_):not(#__){padding:34px 60px 36px !important;gap:8px !important}html body #app .show-field .float-pill:not(#_):not(#__) strong{font-size:44px !important}html body #app .show-field .float-pill:not(#_):not(#__) span{font-size:20px !important}html body .show-cloud.show-field{height:760px}}

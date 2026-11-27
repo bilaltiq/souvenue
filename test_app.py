@@ -235,6 +235,8 @@ class Flow(unittest.TestCase):
    self.assertEqual(Response('POST','/api/post',{'scope':'chat:olivia-rodrigo','body':'Denied'},cookie).status,403)
    for _ in range(2):self.assertEqual(Response('POST','/api/checkin',{'event':'noah-kahan'},cookie).status,200)
    state=Response('GET','/api/state',cookie=cookie).data;self.assertEqual(len(state['attendance']),1)
+   # A check-in with no manual log still counts its headliner as an artist seen
+   self.assertEqual(state['concert_history'][0]['artists_seen'][0]['artist'],'Noah Kahan');self.assertEqual(state['artists_seen_count'],1)
    self.assertEqual(Response('GET','/api/posts/chat:noah-kahan',cookie=cookie).status,200)
    self.assertEqual(Response('GET','/api/posts/chat:olivia-rodrigo',cookie=cookie).status,403)
    self.assertEqual(Response('POST','/api/post',{'scope':'show:noah-kahan','body':'Hello!','photo':'data:image/png;base64,abcd'},cookie).status,200)
