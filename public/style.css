@@ -770,7 +770,18 @@ html body .tear-ticket[data-used] .ticket-halo {
 @media (prefers-reduced-motion: reduce) {
   html body .tear-ticket[data-used] .ticket-halo { animation: none; }
 }
-/* Reset link under a torn ticket: brings the stub back to tear again. */
-.event-ticket { flex-direction: column; align-items: center; gap: 18px; }
+/* Reset arrow in the top-right corner of the ticket's area (off the ticket):
+   shows once the stub is torn and brings it back. */
+.event-ticket { position: relative; }
 .event-ticket-host { width: 100%; display: flex; justify-content: center; }
-html body .ticket-reset { font-size: 14px !important; }
+html body .event-ticket button.ticket-reset:not([aria-pressed]) {
+  position: absolute; top: -68px; right: 0; z-index: 2;
+  width: 32px; height: 32px; padding: 0 !important; margin: 0; display: grid; place-items: center;
+  background: transparent !important; border: 0 !important; box-shadow: none !important; outline: none; border-radius: 50%; color: var(--muted) !important;
+  cursor: pointer; visibility: hidden; opacity: 0; pointer-events: none; transition: opacity 300ms ease, color 150ms ease;
+}
+html body .event-ticket:has(.tear-ticket[data-used]) button.ticket-reset:not([aria-pressed]) { visibility: visible; opacity: 1; pointer-events: auto; transition-delay: 500ms, 0ms; }
+html body .event-ticket button.ticket-reset:not([aria-pressed]):is(:hover, :focus-visible) { color: var(--ink) !important; background: transparent !important; filter: none; outline: none; }
+.ticket-reset svg { width: 20px; height: 20px; }
+.ticket-reset-arc { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.ticket-reset-head { fill: currentColor; stroke: currentColor; stroke-width: 1; stroke-linejoin: round; }
