@@ -1989,3 +1989,7 @@ html body #app#app button#block-user.text-action:focus-visible { outline: 2px so
 html body #toast:not(:empty) { bottom: 28px; padding: 12px 22px; border: 0 !important; border-radius: 999px; background: #262b55 !important; color: var(--ink) !important; font: 500 14px/1.4 var(--font-text); text-align: center; box-shadow: 0 14px 34px -10px rgba(0, 0, 0, .6) !important; animation: toast-in .22s ease-out; }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
 @media (prefers-reduced-motion: reduce) { html body #toast:not(:empty) { animation: none; } }
+
+/* Field focus: no outline or ring. The field's fill lifts a step instead (soft surfaces, no outlined boxes).
+   The :not(#_) pair outranks the older ring rules (#app#app, dialog#auth#auth). */
+html body :is(#app, dialog):not(#_):not(#_) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]), select, textarea):focus-visible { outline: none !important; border-color: transparent !important; box-shadow: none !important; background-color: #1d2147 !important; }

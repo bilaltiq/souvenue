@@ -7,24 +7,32 @@
 
 const COLORS = ['#ff9fd6', '#9ed9ff', '#cdb4ff', '#a8ecd0', '#b5c7ff', '#e2b8ff'];
 const TAU = Math.PI * 2;
-const SCALE = 0.4; // the beams are soft by design, so they render at reduced resolution
+// The beams are soft by design, so they render at reduced resolution; phones get more pixels
+// because their 3x screens stretch a 0.4x canvas too far.
+const scaleFor = w => (w < 761 ? 0.8 : 0.4);
 
-function rgba(hex, a) {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
-}
-
+// Built per pixel rather than with ctx.filter blur, which iOS Safari ignores (that left hard,
+// jagged edges once the low-res canvas was stretched). A little noise dithers away banding.
 function beamSprite(b) {
   const w = 256, h = 512, c = document.createElement('canvas');
   c.width = w; c.height = h;
   const g = c.getContext('2d'), half = Math.tan(b.spread) * h * 0.5;
-  g.filter = 'blur(10px)';
-  const grad = g.createLinearGradient(0, 0, 0, h);
-  grad.addColorStop(0, rgba(b.color, b.alpha * 1.6));
-  grad.addColorStop(0.45, rgba(b.color, b.alpha * 0.55));
-  grad.addColorStop(1, rgba(b.color, 0));
-  g.fillStyle = grad;
-  g.beginPath(); g.moveTo(w / 2 - 4, 0); g.lineTo(w / 2 - half, h); g.lineTo(w / 2 + half, h); g.lineTo(w / 2 + 4, 0); g.closePath(); g.fill();
+  const n = parseInt(b.color.slice(1), 16), R = (n >> 16) & 255, G = (n >> 8) & 255, B = n & 255;
+  const img = g.createImageData(w, h), d = img.data;
+  for (let y = 0; y < h; y++) {
+    const v = y / h;
+    const fade = v < 0.45 ? 1.6 + (0.55 - 1.6) * (v / 0.45) : 0.55 * (1 - (v - 0.45) / 0.55);
+    const rowA = b.alpha * fade * Math.min(1, v * 12 + 0.25); // soft start at the lamp
+    const hw = 4 + (half - 4) * v, soft = 8 + 20 * v;
+    for (let x = 0; x < w; x++) {
+      let e = (hw + soft - Math.abs(x + 0.5 - w / 2)) / (2 * soft);
+      e = e <= 0 ? 0 : e >= 1 ? 1 : e * e * (3 - 2 * e);
+      const i = (y * w + x) * 4;
+      d[i] = R; d[i + 1] = G; d[i + 2] = B;
+      d[i + 3] = e ? Math.max(0, Math.min(255, rowA * e * 255 + Math.random() - 0.5)) : 0;
+    }
+  }
+  g.putImageData(img, 0, 0);
   return c;
 }
 
@@ -44,6 +52,7 @@ export default function mountStageLights(canvas) {
   function size() {
     const r = canvas.getBoundingClientRect();
     W = r.width; H = r.height;
+    const SCALE = scaleFor(W);
     canvas.width = Math.max(1, Math.round(W * SCALE));
     canvas.height = Math.max(1, Math.round(H * SCALE));
     ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
