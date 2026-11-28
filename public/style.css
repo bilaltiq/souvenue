@@ -1909,7 +1909,7 @@ html body #app .person-card .person-names{display:flex;flex-direction:column;gap
 html body #app .person-card .person-handle{font-size:14px;font-weight:400;line-height:1.3;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html body #app .profile-handle{margin:-8px 0 8px;font-size:14px;color:var(--muted)}
 /* Bricolage's @ looks like a circled "a" (reads as ®/©); draw the @ in the system face */
-html body #app .at{font-family:system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif !important;font-weight:400 !important;margin-right:1px}
+html body #app .at{font-family:"Souvenue At",var(--font-text) !important;font-weight:400 !important;margin-right:1px}
 /* Same fix inside the people search box (placeholder and typed text): a font that only covers "@" */
 @font-face{font-family:"Souvenue At";src:local("Helvetica Neue"),local("HelveticaNeue"),local("Arial"),local("ArialMT");unicode-range:U+0040}
 html body #app #people-search,html body #app #people-search::placeholder{font-family:"Souvenue At",var(--font-text) !important}
