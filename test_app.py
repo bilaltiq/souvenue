@@ -145,7 +145,7 @@ class Flow(unittest.TestCase):
     c.execute("INSERT INTO users(id,name,password,salt) VALUES('keep','gob','x','y')")
     c.execute("INSERT INTO users(id,name,password,salt) VALUES('same-name-other-id','Gob2','x','y')")
     c.execute("INSERT INTO sessions VALUES('t1',?,9e9)",(uid,))
-    c.execute("INSERT INTO friendships VALUES(?,?,?,'accepted',0)",('keep',uid,uid))
+    c.execute("INSERT INTO friendships(low,high,sender,status,created) VALUES(?,?,?,'accepted',0)",('keep',uid,uid))
    server.initialize()
    with server.db() as c:
     self.assertIsNone(c.execute('SELECT 1 FROM users WHERE id=?',(uid,)).fetchone())
@@ -347,7 +347,7 @@ class Flow(unittest.TestCase):
    self.assertEqual(Response('GET','/api/posts/show:noah-kahan').data,[])
    self.assertEqual(Response('GET','/api/state',cookie=alice).data['attendance'],[])
    self.assertEqual(Response('GET','/api/posts/chat:noah-kahan',cookie=alice).status,403)
-   self.assertEqual(set(Response('GET','/api/profile/'+alice_id).data),{'id','name','username','visibility','can_view','relationship','blocked'})
+   self.assertEqual(set(Response('GET','/api/profile/'+alice_id).data),{'id','name','username','visibility','can_view','relationship','blocked','stats'})
    self.assertEqual(Response('GET','/api/profile/unknown').status,404)
    self.assertEqual(Response('POST','/api/feed-post',{**payload,'event_id':'unknown'},alice).status,400)
    self.assertEqual(Response('POST','/api/feed-post',{**payload,'photo':''},alice).status,400)
@@ -356,6 +356,66 @@ class Flow(unittest.TestCase):
    self.assertTrue(all(p['attended'] for p in Response('GET','/api/feed/'+alice_id).data))
    self.assertFalse(Response('GET','/api/feed/'+bob_id).data[0]['attended'])
    server.initialize();self.assertEqual(len(Response('GET','/api/feed').data),3)
+ def test_notifications(self):
+  import time
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'bell.sqlite3';server.initialize()
+   def account(name):
+    cookie=Response('POST','/api/register',{'name':name,'password':'password-test-123'}).headers['Set-Cookie'].split(';')[0]
+    return cookie,Response('GET','/api/state',cookie=cookie).data['user']['id']
+   maya,mid=account('Maya');leo,lid=account('Leo');troll,tid=account('Troll')
+   self.assertEqual(Response('GET','/api/notifications').status,401)
+   self.assertEqual(Response('POST','/api/notifications-seen').status,401)
+   self.assertEqual(Response('GET','/api/notifications',cookie=leo).data,{'items':[],'unread':0})
+   # A request shows up for the recipient only, unread
+   Response('POST','/api/friend',{'user':lid,'action':'request'},maya)
+   bell=Response('GET','/api/notifications',cookie=leo).data
+   self.assertEqual(bell['unread'],1);self.assertEqual([(i['kind'],i['user']['id'],i['unread']) for i in bell['items']],[('request',mid,True)])
+   self.assertNotIn('password',bell['items'][0]['user'])
+   self.assertEqual(Response('GET','/api/notifications',cookie=maya).data['items'],[])
+   # Opening the panel marks everything seen; the request stays listed so it can be answered
+   self.assertEqual(Response('POST','/api/notifications-seen',{},leo).status,200)
+   bell=Response('GET','/api/notifications',cookie=leo).data
+   self.assertEqual(bell['unread'],0);self.assertEqual(len(bell['items']),1);self.assertFalse(bell['items'][0]['unread'])
+   # Accepting tells the sender and clears the request for the recipient
+   time.sleep(0.01);Response('POST','/api/friend',{'user':mid,'action':'accept'},leo)
+   self.assertEqual(Response('GET','/api/notifications',cookie=leo).data['items'],[])
+   bell=Response('GET','/api/notifications',cookie=maya).data
+   self.assertEqual(bell['unread'],1);self.assertEqual([(i['kind'],i['user']['name']) for i in bell['items']],[('accepted','Leo')])
+   # A declined request disappears
+   Response('POST','/api/friend',{'user':lid,'action':'request'},troll)
+   self.assertEqual(Response('GET','/api/notifications',cookie=leo).data['unread'],1)
+   Response('POST','/api/friend',{'user':tid,'action':'decline'},leo)
+   self.assertEqual(Response('GET','/api/notifications',cookie=leo).data['items'],[])
+   # Blocked people (either direction) produce no notifications
+   Response('POST','/api/block',{'user':tid,'blocked':True},leo)
+   self.assertEqual(Response('POST','/api/friend',{'user':lid,'action':'request'},troll).status,403)
+   with server.db() as c:
+    low,high=sorted([lid,tid]);c.execute("INSERT INTO friendships(low,high,sender,status,created) VALUES(?,?,?,'pending',?)",(low,high,tid,time.time()))
+   self.assertEqual(Response('GET','/api/notifications',cookie=leo).data,{'items':[],'unread':0})
+   Response('POST','/api/block',{'user':tid,'blocked':False},leo)
+   self.assertEqual(Response('GET','/api/notifications',cookie=leo).data['unread'],1)
+   Response('POST','/api/block',{'user':lid,'blocked':True},troll)
+   with server.db() as c:c.execute("INSERT INTO friendships(low,high,sender,status,created) VALUES(?,?,?,'pending',?)",(low,high,tid,time.time()))
+   self.assertEqual(Response('GET','/api/notifications',cookie=leo).data['items'],[])
+ def test_profile_stats_visibility(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'stats.sqlite3';server.initialize()
+   def account(name):
+    cookie=Response('POST','/api/register',{'name':name,'password':'password-test-123'}).headers['Set-Cookie'].split(';')[0]
+    return cookie,Response('GET','/api/state',cookie=cookie).data['user']['id']
+   owner,uid=account('Owner');friend,fid=account('Friend');stranger,sid=account('Stranger')
+   Response('POST','/api/checkin',{'event':'noah-kahan'},owner)
+   stats=Response('GET','/api/profile/'+uid,cookie=stranger).data['stats']   # public: anyone sees them
+   self.assertEqual((stats['events'],stats['points'],stats['checkins']),(1,100,1))
+   self.assertIn('stats',Response('GET','/api/profile/'+uid).data)
+   Response('POST','/api/privacy',{'visibility':'private'},owner)
+   for cookie in ('',stranger,friend):self.assertNotIn('stats',Response('GET','/api/profile/'+uid,cookie=cookie).data)
+   Response('POST','/api/friend',{'user':uid,'action':'request'},friend);Response('POST','/api/friend',{'user':fid,'action':'accept'},owner)
+   self.assertEqual(Response('GET','/api/profile/'+uid,cookie=friend).data['stats']['checkins'],1)
+   self.assertNotIn('stats',Response('GET','/api/profile/'+uid,cookie=stranger).data)
+   Response('POST','/api/privacy',{'visibility':'public'},owner);Response('POST','/api/block',{'user':sid,'blocked':True},owner)
+   self.assertNotIn('stats',Response('GET','/api/profile/'+uid,cookie=stranger).data)
  def test_friends_and_communities(self):
   with tempfile.TemporaryDirectory() as tmp:
    server.DB=Path(tmp)/'social.sqlite3';server.initialize()

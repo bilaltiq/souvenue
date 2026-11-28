@@ -218,6 +218,7 @@ def initialize():
     c.execute('INSERT INTO events(id,artist,venue,city,date,image,metadata) VALUES(?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET artist=excluded.artist,venue=excluded.venue,city=excluded.city,date=excluded.date,image=excluded.image,metadata=excluded.metadata',(event['id'],event['artist'],event['venue'],event['city'],event['date'],event['image'],json.dumps(metadata)))
   seed_more_communities(c)
   add_moderation(c)
+  add_notifications(c)
 
 # ---- Moderation --------------------------------------------------------------
 # Reports and blocks, a hidden flag on everything people write, and admin/banned
@@ -239,6 +240,26 @@ def add_moderation(c):
  # ADMIN_USERNAMES (comma-separated @usernames) promotes accounts to admin; it never demotes anyone.
  for handle in [clean_username(x) for x in os.environ.get('ADMIN_USERNAMES','').split(',') if x.strip()]:
   c.execute('UPDATE users SET is_admin=1 WHERE username=?',(handle,))
+# ---- Notifications ------------------------------------------------------------
+# The header bell. Built from friendships (no separate table): a pending request
+# someone sent you, and a request you sent that was accepted (friendships.accepted).
+# users.notifications_seen is when the bell panel was last opened; newer ones are unread.
+NOTIFICATION_LIMIT=20
+ACCEPTED_NOTICE_SECONDS=30*86400
+def add_notifications(c):
+ if 'accepted' not in [r[1] for r in c.execute('PRAGMA table_info(friendships)')]:c.execute('ALTER TABLE friendships ADD COLUMN accepted REAL')
+ if 'notifications_seen' not in [r[1] for r in c.execute('PRAGMA table_info(users)')]:c.execute('ALTER TABLE users ADD COLUMN notifications_seen REAL')
+def notifications(c,uid):
+ seen=(c.execute('SELECT notifications_seen FROM users WHERE id=?',(uid,)).fetchone() or [None])[0] or 0
+ other="CASE WHEN friendships.low=? THEN friendships.high ELSE friendships.low END"
+ found=rows(c,f'''SELECT n.kind,n.happened,users.id,users.name,users.username FROM (
+  SELECT 'request' AS kind,{other} AS other,friendships.created AS happened FROM friendships WHERE status='pending' AND sender!=? AND (low=? OR high=?)
+  UNION ALL
+  SELECT 'accepted' AS kind,{other} AS other,friendships.accepted AS happened FROM friendships WHERE status='accepted' AND sender=? AND accepted IS NOT NULL AND accepted>? AND (low=? OR high=?)
+ ) n JOIN users ON users.id=n.other WHERE users.banned=0 AND NOT EXISTS(SELECT 1 FROM blocks WHERE (blocker=? AND blocked=users.id) OR (blocker=users.id AND blocked=?))
+ ORDER BY n.happened DESC LIMIT {NOTIFICATION_LIMIT}''',(uid,uid,uid,uid,uid,uid,time.time()-ACCEPTED_NOTICE_SECONDS,uid,uid,uid,uid))
+ items=[{'kind':r['kind'],'user':{'id':r['id'],'name':r['name'],'username':r['username']},'created':r['happened'],'unread':bool(r['happened'] and r['happened']>seen)} for r in found]
+ return {'items':items,'unread':sum(i['unread'] for i in items)}
 def blocked_between(c,a,b):
  return bool(a and b and a!=b and c.execute('SELECT 1 FROM blocks WHERE (blocker=? AND blocked=?) OR (blocker=? AND blocked=?)',(a,b,b,a)).fetchone())
 def visible_sql(table,viewer):
@@ -711,6 +732,9 @@ class Handler(BaseHTTPRequestHandler):
       rel=next((r for r in relations if person['id'] in (r['low'],r['high'])),None)
       person['relationship']='friend' if rel and rel['status']=='accepted' else ('sent' if rel['sender']==u['id'] else 'received') if rel else 'none'
      return self.reply(200,people)
+    if p=='/api/notifications':
+     if not u:return self.reply(401,{'error':'Sign in to see notifications.'})
+     return self.reply(200,notifications(c,u['id']))
     if p=='/api/communities':
      return self.reply(200,rows(c,"SELECT communities.*, (SELECT COUNT(*) FROM community_members WHERE community=communities.id) AS members,EXISTS(SELECT 1 FROM community_members WHERE community=communities.id AND user=?) AS joined FROM communities ORDER BY starter DESC,name COLLATE NOCASE",(u['id'] if u else '',)))
     if p.startswith('/api/community/'):
@@ -781,6 +805,9 @@ class Handler(BaseHTTPRequestHandler):
      uid=p[len('/api/profile/'):];person=c.execute('SELECT id,name,username,visibility,banned FROM users WHERE id=?',(uid,)).fetchone()
      if not person or (person['banned'] and not (u and u.get('is_admin'))):return self.reply(404,{'error':'Profile not found.'})
      result=dict(person);result.pop('banned');result['can_view']=can_view_profile(c,uid,u['id'] if u else '')
+     if result['can_view']:   # same rule as their photos: public profiles, accepted friends, and yourself
+      history=concert_history(c,uid);checkins=c.execute('SELECT COUNT(*) FROM attendance WHERE user=?',(uid,)).fetchone()[0]
+      result['stats']={'events':len(history),'artists':logged_artist_count(history),'points':checkins*ATTENDANCE_POINTS,'checkins':checkins}
      result['blocked']=bool(u and c.execute('SELECT 1 FROM blocks WHERE blocker=? AND blocked=?',(u['id'],uid)).fetchone())
      rel=c.execute('SELECT sender,status FROM friendships WHERE (low=? AND high=?) OR (low=? AND high=?)',(uid,u['id'],u['id'],uid)).fetchone() if u else None
      result['relationship']='self' if u and u['id']==uid else 'friend' if rel and rel['status']=='accepted' else ('sent' if rel['sender']==u['id'] else 'received') if rel else 'none'
@@ -991,16 +1018,18 @@ class Handler(BaseHTTPRequestHandler):
      visibility=data.get('visibility')
      if visibility not in ('public','private'):return self.reply(400,{'error':'Choose Public or Private.'})
      c.execute('UPDATE users SET visibility=? WHERE id=?',(visibility,u['id']));return self.reply(200,{'visibility':visibility})
+    if p=='/api/notifications-seen':
+     c.execute('UPDATE users SET notifications_seen=? WHERE id=?',(time.time(),u['id']));return self.reply(200,{'unread':0})
     if p=='/api/friend':
      target=data.get('user');action=data.get('action')
      if not isinstance(target,str) or target==u['id'] or not c.execute('SELECT 1 FROM users WHERE id=?',(target,)).fetchone():return self.reply(400,{'error':'Choose another member.'})
      low,high=sorted([u['id'],target]);rel=c.execute('SELECT * FROM friendships WHERE low=? AND high=?',(low,high)).fetchone()
      if action=='request' and blocked_between(c,u['id'],target):return self.reply(403,{'error':'You can’t send a friend request to this member.'})
      if action=='request':
-      if not rel:c.execute('INSERT INTO friendships VALUES(?,?,?,?,?)',(low,high,u['id'],'pending',time.time()))
+      if not rel:c.execute('INSERT INTO friendships(low,high,sender,status,created) VALUES(?,?,?,?,?)',(low,high,u['id'],'pending',time.time()))
      elif action=='accept':
       if not rel or rel['status']!='pending' or rel['sender']==u['id']:return self.reply(403,{'error':'Only the recipient can accept a request.'})
-      c.execute("UPDATE friendships SET status='accepted' WHERE low=? AND high=?",(low,high))
+      c.execute("UPDATE friendships SET status='accepted',accepted=? WHERE low=? AND high=?",(time.time(),low,high))
      elif action in ('decline','cancel','remove'):
       if not rel:return self.reply(200,{})
       if (action=='decline' and (rel['status']!='pending' or rel['sender']==u['id'])) or (action=='cancel' and (rel['status']!='pending' or rel['sender']!=u['id'])) or (action=='remove' and rel['status']!='accepted'):return self.reply(403,{'error':'This action is not available.'})

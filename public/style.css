@@ -1993,3 +1993,63 @@ html body #toast:not(:empty) { bottom: 28px; padding: 12px 22px; border: 0 !impo
 /* Field focus: no outline or ring. The field's fill lifts a step instead (soft surfaces, no outlined boxes).
    The :not(#_) pair outranks the older ring rules (#app#app, dialog#auth#auth). */
 html body :is(#app, dialog):not(#_):not(#_) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]), select, textarea):focus-visible { outline: none !important; border-color: transparent !important; box-shadow: none !important; background-color: #1d2147 !important; }
+
+/* "Remove friend": quiet muted text that turns into a soft gray pill on hover (no pink fill, no underline). */
+html body #app:not(#_):not(#_) :is(.person-actions, .profile-friend-actions) button.text-action:is([data-action="remove"], [data-profile-friend="remove"]) { display: inline-flex !important; align-items: center; height: 36px !important; min-height: 36px !important; padding: 0 14px !important; border: 0 !important; border-radius: 999px !important; background: transparent !important; color: var(--muted) !important; font: 600 14px/1 var(--font-text) !important; text-decoration: none !important; box-shadow: none !important; filter: none !important; transform: none !important; }
+html body #app:not(#_):not(#_) :is(.person-actions, .profile-friend-actions) button.text-action:is([data-action="remove"], [data-profile-friend="remove"]):is(:hover, :focus-visible) { background: rgba(178, 181, 209, .16) !important; color: var(--ink) !important; }
+html body #app:not(#_):not(#_) :is(.person-actions, .profile-friend-actions) button.text-action:is([data-action="remove"], [data-profile-friend="remove"]):focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 2px; }
+
+/* ---- Notification bell (2026-11-28) -------------------------------------------------
+   Header bell beside the account button (phones: logo · Log · bell · menu). Soft filled
+   round button, pink count badge, and a filled dropdown panel. No outlines anywhere. */
+html body header .notif[hidden] { display: none !important; }
+html body header .notif { order: 2; position: relative; display: flex; align-items: center; flex-shrink: 0; margin-left: 10px; }
+html body header:not(#_):not(#_) button.notif-bell { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; min-height: 0; padding: 0 !important; border: 0 !important; border-radius: 999px !important; background: #1a1e3d !important; color: var(--ink) !important; box-shadow: none !important; filter: none !important; cursor: pointer; transition: background-color .15s ease; }
+html body header:not(#_):not(#_) button.notif-bell:hover, html body header:not(#_):not(#_) button.notif-bell[aria-expanded="true"] { background: #262b55 !important; }
+html body header:not(#_):not(#_) button.notif-bell:focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 2px; }
+html body header .notif-bell .icon-bell { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linejoin: round; stroke-linecap: round; }
+html body header .notif-badge { position: absolute; top: 2px; right: 1px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: var(--pink); color: #1a0b18; font: 700 12px/18px var(--font-text); text-align: center; box-shadow: 0 0 0 2px var(--paper); }
+html body header .notif-badge[hidden] { display: none; }
+
+html body header .notif-panel { position: absolute; top: calc(100% + 10px); right: 0; z-index: 60; width: 360px; max-height: min(480px, calc(100vh - 120px)); overflow-y: auto; padding: 18px 8px 8px; box-sizing: border-box; border: 0; border-radius: 22px; background: var(--panel); box-shadow: 0 24px 50px -12px rgba(0, 0, 0, .7); text-align: left; font: 400 14px/1.45 var(--font-text); color: var(--ink); }
+html body header .notif-panel[hidden] { display: none; }
+html body header .notif-panel h2 { margin: 0 12px 10px; font: 700 16px/1.2 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink); }
+html body header .notif-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+html body header .notif-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 16px; }
+html body header .notif-item.is-unread { background: rgba(255, 116, 203, .09); }
+html body header .notif-avatar { flex: 0 0 36px; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 999px; background: var(--soft-lilac-bg); color: var(--soft-lilac-ink); font: 700 14px/1 var(--font-display); text-decoration: none; text-transform: uppercase; }
+html body header .notif-body { min-width: 0; flex: 1; }
+html body header .notif-body p { margin: 0; font-size: 14px; color: var(--ink); overflow-wrap: anywhere; }
+html body header .notif-body p a { color: var(--ink); font-weight: 700; text-decoration: none; }
+html body header .notif-body p a:hover { color: var(--accent); }
+html body header .notif-when { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+html body header .notif-actions { display: flex; gap: 8px; margin-top: 10px; }
+html body header:not(#_):not(#_) .notif-actions button { height: 36px; min-height: 0; padding: 0 16px !important; border: 0 !important; border-radius: 999px !important; font: 600 14px/1 var(--font-text) !important; box-shadow: none !important; filter: none !important; cursor: pointer; }
+html body header:not(#_):not(#_) .notif-actions button.secondary { background: var(--soft-lilac-bg) !important; color: var(--soft-lilac-ink) !important; }
+html body header:not(#_):not(#_) .notif-actions button.secondary:hover { background: var(--soft-lilac-bg-hover) !important; }
+html body header:not(#_):not(#_) .notif-actions button:focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 2px; }
+html body header .notif-empty { padding: 6px 12px 12px; font-size: 14px; color: var(--muted); }
+@media (max-width: 760px) {
+  html body header .notif { order: 0; margin-left: 0; position: static; }
+  html body header:not(#_):not(#_) button.notif-bell { width: 38px; height: 38px; }
+  html body header .notif-bell .icon-bell { width: 19px; height: 19px; }
+  html body header .notif-badge { top: -2px; right: -3px; }
+  /* Phones: the panel spans the header width (header is position: relative) */
+  html body header .notif-panel { top: calc(100% + 8px); left: 20px; right: 20px; width: auto; }
+}
+
+/* ---- Profile "Actions" menu (2026-11-28) ---------------------------------------------
+   "✓ Friends" (or the friend button), then a quiet "Actions" toggle. Its dropdown holds
+   Remove friend, Report profile and Block. Everything is muted gray text until hovered, when
+   a soft gray pill fills in behind it. Block is red. */
+html body #app .profile-friend-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+html body #app .profile-more { position: relative; }
+html body #app:not(#_):not(#_):not(#_) .profile-more :is(.profile-more-toggle, .profile-more-item) { display: inline-flex !important; align-items: center; gap: 6px; height: 36px !important; min-height: 36px !important; padding: 0 14px !important; border: 0 !important; border-radius: 999px !important; background: transparent !important; color: var(--muted) !important; font: 600 14px/1 var(--font-text) !important; text-decoration: none !important; box-shadow: none !important; filter: none !important; outline: none; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+html body #app:not(#_):not(#_):not(#_) .profile-more :is(.profile-more-toggle, .profile-more-item):is(:hover, :focus-visible), html body #app:not(#_):not(#_):not(#_) .profile-more .profile-more-toggle[aria-expanded="true"] { background: rgba(178, 181, 209, .16) !important; color: var(--ink) !important; }
+html body #app:not(#_):not(#_):not(#_) .profile-more :is(.profile-more-toggle, .profile-more-item):focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 2px; }
+html body #app:not(#_):not(#_):not(#_) .profile-more .profile-more-item.is-danger, html body #app:not(#_):not(#_):not(#_) .profile-more .profile-more-item.is-danger:is(:hover, :focus-visible) { color: #ff7a8a !important; }
+html body #app .profile-more .icon-caret { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s ease; }
+html body #app .profile-more-toggle[aria-expanded="true"] .icon-caret { transform: rotate(180deg); }
+html body #app .profile-more-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; display: grid; gap: 2px; min-width: 200px; padding: 6px; border: 0; border-radius: 18px; background: var(--panel); box-shadow: 0 20px 40px -12px rgba(0, 0, 0, .7); }
+html body #app .profile-more-menu[hidden] { display: none; }
+html body #app:not(#_):not(#_):not(#_) .profile-more .profile-more-item { width: 100%; justify-content: flex-start; white-space: nowrap; }
