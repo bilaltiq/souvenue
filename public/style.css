@@ -1885,3 +1885,6 @@ html body #app .person-card .person-actions{align-items:center}
 html body #app .polaroid a.polaroid-caption:hover,html body #app .polaroid a.polaroid-caption:focus{color:#22223a !important;text-decoration:none !important;background:none !important}
 
 html body #app .polaroid[data-frame="dark"] a.polaroid-caption:hover{color:#f2f1ff !important}
+
+/* Homepage carousel: no 06 / 11 counter (2026-11-27) */
+html body .home-carousel-caption span{display:none !important}
