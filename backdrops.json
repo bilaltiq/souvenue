@@ -1,0 +1,8 @@
+[
+ {"id": "pink", "name": "Pink", "color": "#ffd3e8"},
+ {"id": "lavender", "name": "Lavender", "color": "#ddd0ff"},
+ {"id": "mint", "name": "Mint", "color": "#c8f1e4"},
+ {"id": "butter", "name": "Butter", "color": "#fff0b5"},
+ {"id": "sky", "name": "Sky", "color": "#cfe6ff"},
+ {"id": "black", "name": "Black", "color": "#17171f", "dark": true}
+]

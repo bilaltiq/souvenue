@@ -241,9 +241,9 @@ class Flow(unittest.TestCase):
    self.assertEqual(Response('GET','/api/posts/chat:olivia-rodrigo',cookie=cookie).status,403)
    self.assertEqual(Response('POST','/api/post',{'scope':'show:noah-kahan','body':'Hello!','photo':'data:image/png;base64,abcd'},cookie).status,200)
    self.assertEqual(Response('GET','/api/posts/show:noah-kahan').data[0]['attended'],1)
+   # The Merch stand category is gone: an old client sending it just makes a normal post.
    self.assertEqual(Response('POST','/api/post',{'scope':'show:noah-kahan','body':'Merch stand display','photo':'data:image/png;base64,abcd','category':'merch'},cookie).status,200)
-   self.assertEqual(Response('GET','/api/posts/show:noah-kahan').data[-1]['category'],'merch')
-   self.assertEqual(Response('POST','/api/post',{'scope':'show:noah-kahan','body':'Missing photo','category':'merch'},cookie).status,400)
+   self.assertEqual(Response('GET','/api/posts/show:noah-kahan').data[-1]['category'],'general')
    self.assertEqual(Response('GET','/api/posts/show:olivia-rodrigo').data[0]['attended'],0)
    self.assertEqual(Response('POST','/api/checkin',{'event':'missing'},cookie).status,404)
    data=dict(next(event for event in state['events'] if event['id']=='noah-kahan'));data['artist']='Editable artist';self.assertEqual(Response('POST','/api/event',data,cookie).status,200)
@@ -257,8 +257,7 @@ class Flow(unittest.TestCase):
    self.assertEqual(Response('POST','/api/post',{**tagged,'tags':'Merch'},cookie).status,400)
    self.assertEqual(Response('POST','/api/post',{**tagged,'scope':'chat:olivia-rodrigo'},cookie).status,403)
    self.assertFalse(any(p['body']==tagged['body'] for p in Response('GET','/api/posts/show:olivia-rodrigo').data))
-   merchphotos=[p for p in Response('GET','/api/posts/show:noah-kahan').data if p['category']=='merch']
-   self.assertTrue(all('Merch' in p['tags'] for p in merchphotos))
+   self.assertFalse([p for p in Response('GET','/api/posts/show:noah-kahan').data if p['category']=='merch'])
    self.assertEqual(Response('POST','/api/post',{**tagged,'scope':'chat:noah-kahan','tags':['Stories']},cookie).status,200)
    self.assertEqual(Response('GET','/api/posts/chat:noah-kahan',cookie=cookie).data[-1]['tags'],['Stories'])
    imported=[e for e in state['events'] if e['source']=='Ticketmaster']
@@ -334,8 +333,7 @@ class Flow(unittest.TestCase):
    self.assertEqual(Response('GET','/api/profile/unknown').status,404)
    self.assertEqual(Response('POST','/api/feed-post',{**payload,'event_id':'unknown'},alice).status,400)
    self.assertEqual(Response('POST','/api/feed-post',{**payload,'photo':''},alice).status,400)
-   self.assertEqual(Response('POST','/api/feed-post',{**payload,'event_id':None,'category':'merch'},alice).status,400)
-   self.assertEqual(Response('POST','/api/feed-post',{**payload,'category':'merch'},alice).status,200)
+   self.assertEqual(Response('POST','/api/feed-post',{**payload,'category':'merch'},alice).status,200)  # category ignored now
    self.assertEqual(Response('POST','/api/checkin',{'event':'noah-kahan'},alice).status,200)
    self.assertTrue(all(p['attended'] for p in Response('GET','/api/feed/'+alice_id).data))
    self.assertFalse(Response('GET','/api/feed/'+bob_id).data[0]['attended'])
@@ -549,4 +547,43 @@ class Flow(unittest.TestCase):
    Response('POST','/api/leaderboard-preference',{'enabled':False},alice)
    self.assertNotIn(aid,[p['id'] for p in Response('GET','/api/leaderboards').data['entries']])
    server.initialize();self.assertEqual(Response('GET','/api/state',cookie=bob).data['points'],100)
+ def test_log_photos_blurb_and_friends(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'log-details.sqlite3';server.initialize()
+   def account(name):
+    cookie=Response('POST','/api/register',{'name':name,'password':'password-test-123'}).headers['Set-Cookie'].split(';')[0]
+    return cookie,Response('GET','/api/state',cookie=cookie).data['user']['id']
+   alice,aid=account('Alice');bob,bid=account('Bob');eve,eid=account('Eve')
+   Response('POST','/api/friend',{'user':bid,'action':'request'},alice);Response('POST','/api/friend',{'user':aid,'action':'accept'},bob)
+   pix='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+   show={'artist':'boygenius','venue':'Forest Hills Stadium','city':'Queens','date':'2023-07-01'}
+   self.assertEqual(Response('POST','/api/concert-log',{**show,'friends':[eid]},alice).status,400)  # not a friend
+   self.assertEqual(Response('POST','/api/concert-log',{**show,'blurb':'x'*2001},alice).status,400)
+   self.assertEqual(Response('POST','/api/concert-log',{**show,'photos':['not a photo']},alice).status,400)
+   r=Response('POST','/api/concert-log',{**show,'rating':4.5,'blurb':' Best night. ','friends':[bid],'photos':[pix,pix]},alice);self.assertEqual(r.status,200)
+   log=Response('GET','/api/state',cookie=alice).data['concert_history'][0]
+   self.assertEqual((log['rating'],log['blurb'],log['friends'],len(log['photos'])),(4.5,'Best night.',['Bob'],2))
+   self.assertTrue(all(src.startswith('/api/media/feed/') for src in log['photos']))
+   post=next(x for x in Response('GET','/api/feed').data if x['id']==log['photo_post'])
+   self.assertEqual((post['artist'],post['city'],post['body']),('boygenius','Queens','Best night.'))
+   # Saving again without the new fields keeps them; skipping photos keeps the earlier ones.
+   self.assertEqual(Response('POST','/api/concert-log',show,alice).status,200)
+   log=Response('GET','/api/state',cookie=alice).data['concert_history'][0]
+   self.assertEqual((log['blurb'],log['friends'],len(log['photos'])),('Best night.',['Bob'],2))
+   # Editing later: new photos join the same post, the caption follows the blurb, and the cap is 10.
+   self.assertEqual(log['friend_ids'],[bid])
+   self.assertEqual(Response('POST','/api/concert-log',{**show,'blurb':'Still thinking about it.','photos':[pix]},alice).status,200)
+   log2=Response('GET','/api/state',cookie=alice).data['concert_history'][0]
+   self.assertEqual((log2['photo_post'],len(log2['photos']),log2['blurb']),(log['photo_post'],3,'Still thinking about it.'))
+   self.assertEqual(next(x for x in Response('GET','/api/feed').data if x['id']==log['photo_post'])['body'],'Still thinking about it.')
+   self.assertEqual(Response('POST','/api/concert-log',{**show,'photos':[pix]*8},alice).status,400)
+   # Polaroid background: only listed backgrounds are accepted, and it is saved on the photo post.
+   from unittest.mock import patch
+   self.assertEqual(Response('POST','/api/concert-log',{**show,'backdrop':'nope'},alice).status,400)
+   with patch.object(server,'backdrops',return_value=[{'id':'disco-balls','name':'Disco balls','url':'/backdrops/disco-balls.jpg'}]):
+    self.assertEqual(Response('POST','/api/concert-log',{**show,'backdrop':'disco-balls'},alice).status,200)
+    self.assertEqual(Response('GET','/api/state',cookie=alice).data['concert_history'][0]['backdrop'],'disco-balls')
+    self.assertEqual(next(x for x in Response('GET','/api/feed').data if x['id']==log['photo_post'])['backdrop'],'disco-balls')
+    self.assertEqual(Response('POST','/api/feed-post',{'photos':[pix],'backdrop':'disco-balls'},bob).status,200)
+    self.assertEqual(Response('POST','/api/feed-post',{'photos':[pix],'backdrop':'../etc'},bob).status,400)
 if __name__=='__main__':unittest.main()

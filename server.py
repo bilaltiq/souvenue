@@ -146,8 +146,14 @@ def initialize():
   c.execute("CREATE TABLE IF NOT EXISTS concert_logs(id TEXT PRIMARY KEY,user TEXT,identity TEXT,event_id TEXT,artist TEXT,venue TEXT,city TEXT,date TEXT,created REAL,artists_seen TEXT DEFAULT 'null',UNIQUE(user,identity))")
   if 'artists_seen' not in [r[1] for r in c.execute('PRAGMA table_info(concert_logs)')]:c.execute("ALTER TABLE concert_logs ADD COLUMN artists_seen TEXT DEFAULT 'null'")
   if 'rating' not in [r[1] for r in c.execute('PRAGMA table_info(concert_logs)')]:c.execute("ALTER TABLE concert_logs ADD COLUMN rating REAL")
+  log_cols=[r[1] for r in c.execute('PRAGMA table_info(concert_logs)')]
+  if 'blurb' not in log_cols:c.execute("ALTER TABLE concert_logs ADD COLUMN blurb TEXT NOT NULL DEFAULT ''")
+  if 'friends' not in log_cols:c.execute("ALTER TABLE concert_logs ADD COLUMN friends TEXT NOT NULL DEFAULT '[]'")
+  if 'photo_post' not in log_cols:c.execute("ALTER TABLE concert_logs ADD COLUMN photo_post TEXT NOT NULL DEFAULT ''")
   c.execute("CREATE TABLE IF NOT EXISTS feed_posts(id TEXT PRIMARY KEY,user TEXT,body TEXT,photo TEXT,event_id TEXT,category TEXT,created REAL)")
   if 'extra_photos' not in [r[1] for r in c.execute('PRAGMA table_info(feed_posts)')]:c.execute("ALTER TABLE feed_posts ADD COLUMN extra_photos TEXT NOT NULL DEFAULT '[]'")
+  if 'backdrop' not in [r[1] for r in c.execute('PRAGMA table_info(feed_posts)')]:c.execute("ALTER TABLE feed_posts ADD COLUMN backdrop TEXT NOT NULL DEFAULT ''")
+  c.execute("UPDATE feed_posts SET category='general' WHERE category='merch'")  # Merch stand category removed
   if 'featured' not in [r[1] for r in c.execute('PRAGMA table_info(feed_posts)')]:c.execute("ALTER TABLE feed_posts ADD COLUMN featured INTEGER NOT NULL DEFAULT 0")
   c.execute('CREATE TABLE IF NOT EXISTS artist_profiles(slug TEXT PRIMARY KEY,data TEXT,fetched REAL)')
   strip_stored_photo_metadata(c)
@@ -172,6 +178,7 @@ def initialize():
   if 'tags' not in [r[1] for r in c.execute('PRAGMA table_info(posts)')]:
    c.execute("ALTER TABLE posts ADD COLUMN tags TEXT NOT NULL DEFAULT '[]'")
    c.execute("UPDATE posts SET tags='[\"Merch\"]' WHERE category='merch'")
+  c.execute("UPDATE posts SET category='general' WHERE category='merch'")  # Merch stand category removed; their Merch tag stays
   if 'metadata' not in [r[1] for r in c.execute('PRAGMA table_info(events)')]:c.execute("ALTER TABLE events ADD COLUMN metadata TEXT NOT NULL DEFAULT '{}'")
   c.executemany('INSERT OR IGNORE INTO events(id,artist,venue,city,date,image) VALUES(?,?,?,?,?,?)', [('noah-kahan','Noah Kahan','Citi Field (unconfirmed)','New York','July 18 · year unconfirmed','forest'),('olivia-rodrigo','Olivia Rodrigo','Venue to confirm','Boston','October 18 · year unconfirmed','violet')])
   for snapshot in source_snapshots():
@@ -419,6 +426,20 @@ def save_photo_choice(slug,choice):
  choices[slug]={'path':f'/artists/{slug}.jpg?v={int(time.time())}','source':choice.get('source'),'page':choice.get('page'),'author':choice.get('author'),'license':choice.get('license'),'license_url':choice.get('license_url'),'chosen':time.strftime('%Y-%m-%d')}
  PHOTO_CHOICES.write_text(json.dumps(choices,indent=1,ensure_ascii=False)+'\n',encoding='utf-8')
  return choices[slug]
+# Polaroid frame choices (the border around the photo). Listed in backdrops.json,
+# which ships with the server: plain colours, or patterned images that live in
+# public/backdrops/. Locally, image entries whose file is missing are left out so
+# the picker never shows a broken swatch. '' means the default white frame.
+def backdrops():
+ path=ROOT/'backdrops.json'
+ items=json.loads(path.read_text(encoding='utf-8')) if path.exists() else []
+ folder=ROOT/'public'/'backdrops'
+ out=[]
+ for b in items:
+  if b.get('color'):out.append({'id':b['id'],'name':b['name'],'color':b['color'],'dark':bool(b.get('dark'))})
+  elif b.get('file') and (not folder.is_dir() or (folder/b['file']).is_file()):out.append({'id':b['id'],'name':b['name'],'url':'/backdrops/'+b['file']})
+ return out
+def valid_backdrop(value):return isinstance(value,str) and (value=='' or any(b['id']==value for b in backdrops()))
 def artist_records(c):
  photo_file=ROOT/'artist-photos.json';photos=json.loads(photo_file.read_text(encoding='utf-8')) if photo_file.exists() else {}
  genre_file=ROOT/'artist-genres.json';genres=json.loads(genre_file.read_text(encoding='utf-8')) if genre_file.exists() else {}
@@ -429,7 +450,7 @@ def artist_records(c):
  marks_file=ROOT/'artist-marks.json';marks=set(json.loads(marks_file.read_text(encoding='utf-8'))) if marks_file.exists() else set()  # drawn by scripts/crayon_marks.py
  for slug,artist in catalog.items():
   mark=slug in marks
-  photo=None if mark else choices.get(slug)  # crayon marks replace photos; otherwise only photos picked in the studio: freely licensed and credited (no Ticketmaster images)
+  photo=None  # no artist photos anywhere on the site (Sofia, 2026-11-27); crayon marks or the initial letter stand in
   artist['artist_photo']=photo['path'] if photo else ''
   artist['photo_credit']={k:photo.get(k) for k in ('author','license','license_url','page')} if photo else None
   artist['artist_mark']=f'/marks/{slug}.svg' if mark else ''  # crayon symbol, drawn by scripts/crayon_marks.py
@@ -499,9 +520,9 @@ def can_view_profile(c,owner,viewer):
 def feed_records(c,where='',args=(),viewer=''):
  privacy="(users.visibility='public' OR users.id=? OR EXISTS(SELECT 1 FROM friendships WHERE status='accepted' AND ((low=users.id AND high=?) OR (high=users.id AND low=?))))"
  where+=(" AND " if where else " WHERE ")+privacy
- records=rows(c,"""SELECT feed_posts.*,users.name,events.artist,events.venue,events.city,events.date,
+ records=rows(c,"""SELECT feed_posts.*,users.name,COALESCE(events.artist,logs.artist) AS artist,COALESCE(events.venue,logs.venue) AS venue,COALESCE(events.city,logs.city) AS city,COALESCE(events.date,logs.date) AS date,
  EXISTS(SELECT 1 FROM attendance WHERE attendance.user=feed_posts.user AND attendance.event=feed_posts.event_id) AS attended
- FROM feed_posts JOIN users ON users.id=feed_posts.user LEFT JOIN events ON events.id=feed_posts.event_id """+where+' ORDER BY feed_posts.created DESC,feed_posts.id DESC LIMIT 50',(*args,viewer,viewer,viewer))
+ FROM feed_posts JOIN users ON users.id=feed_posts.user LEFT JOIN events ON events.id=feed_posts.event_id LEFT JOIN concert_logs AS logs ON logs.photo_post=feed_posts.id AND logs.user=feed_posts.user """+where+' ORDER BY feed_posts.created DESC,feed_posts.id DESC LIMIT 50',(*args,viewer,viewer,viewer))
  for post in records:
   post['photos']=[post['photo'],*json.loads(post.pop('extra_photos'))]
   if hosted():
@@ -526,7 +547,15 @@ def concert_history(c,uid):
   try:seen=json.loads(log.get('artists_seen')) if log.get('artists_seen') is not None else None
   except (TypeError,ValueError):seen=None
   if seen is None:seen=[{'artist':log['artist'],'artist_slug':''}]
-  history[log['identity']]={**log,'artists_seen':seen,'checked_in':False,'points':0,'start_date':log['date']}
+  try:friend_ids=json.loads(log.get('friends') or '[]')
+  except (TypeError,ValueError):friend_ids=[]
+  friends=[r['name'] for fid in friend_ids if isinstance(fid,str) for r in [c.execute('SELECT name FROM users WHERE id=?',(fid,)).fetchone()] if r]
+  photos=[]
+  if log.get('photo_post'):
+   post=c.execute('SELECT extra_photos,backdrop FROM feed_posts WHERE id=?',(log['photo_post'],)).fetchone()
+   if post:log['backdrop']=post['backdrop'] or ''
+   if post:photos=['/api/media/feed/'+log['photo_post']+'/'+str(i) for i in range(1+len(json.loads(post['extra_photos'] or '[]')))]
+  history[log['identity']]={**log,'artists_seen':seen,'checked_in':False,'points':0,'start_date':log['date'],'blurb':log.get('blurb') or '','friends':friends,'friend_ids':[f for f in friend_ids if isinstance(f,str)],'photos':photos}
  events={e['id']:e for e in event_records(c)}
  for attendance in rows(c,'SELECT * FROM attendance WHERE user=?',(uid,)):
   e=events.get(attendance['event'])
@@ -537,7 +566,7 @@ def concert_history(c,uid):
   for k,log in list(history.items()):
    if log.get('event_id')==e['id']:del history[k]
   seen=prior.get('artists_seen') if prior else [{'artist':e['artist'],'artist_slug':e.get('artist_slug','')}]
-  history[key]={**e,'artists_seen':seen,**({'rating':prior.get('rating')} if prior else {}),'id':'checkin-'+e['id'],'event_id':e['id'],'checked_in':True,'checkin_method':attendance['method'],'points':ATTENDANCE_POINTS,'created':attendance['created'],'start_date':day}
+  history[key]={**e,'artists_seen':seen,**({k:prior.get(k) for k in ('rating','blurb','friends','friend_ids','photos','photo_post','backdrop')} if prior else {}),'id':'checkin-'+e['id'],'event_id':e['id'],'checked_in':True,'checkin_method':attendance['method'],'points':ATTENDANCE_POINTS,'created':attendance['created'],'start_date':day}
  return sorted(history.values(),key=lambda e:(e['start_date'],e['created']),reverse=True)
 
 class Handler(BaseHTTPRequestHandler):
@@ -571,7 +600,7 @@ class Handler(BaseHTTPRequestHandler):
      if mime not in ('image/jpeg','image/png','image/webp'):return self.reply(404,{'error':'Photo unavailable.'})
      self.send_response(200);self.send_header('Content-Type',mime);self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff');self.send_header('Content-Length',str(len(content)));self.end_headers();self.wfile.write(content);return
     if p=='/api/past-events':return self.reply(200,historical_catalog())
-    if p=='/api/state':return self.reply(200,{'demo_checkins_enabled':demo_checkins_enabled(),'hosted':hosted(),'max_photo_bytes':MAX_PHOTO_BYTES,'max_post_photo_bytes':MAX_POST_PHOTO_BYTES,'concert_history':concert_history(c,u['id']) if u else [],'artists_seen_count':logged_artist_count(concert_history(c,u['id'])) if u else 0,'user':u,'today':datetime.now(ZoneInfo('America/New_York')).date().isoformat(),'events':event_records(c),'artists':artist_records(c),'points':c.execute('SELECT COUNT(*) FROM attendance WHERE user=?',(u['id'],)).fetchone()[0]*ATTENDANCE_POINTS if u else 0,'points_per_checkin':ATTENDANCE_POINTS,'attendance':rows(c,'SELECT event,created,method,100 AS points FROM attendance WHERE user=? ORDER BY created DESC',(u['id'],)) if u else []})
+    if p=='/api/state':return self.reply(200,{'demo_checkins_enabled':demo_checkins_enabled(),'hosted':hosted(),'max_photo_bytes':MAX_PHOTO_BYTES,'max_post_photo_bytes':MAX_POST_PHOTO_BYTES,'backdrops':backdrops(),'concert_history':concert_history(c,u['id']) if u else [],'artists_seen_count':logged_artist_count(concert_history(c,u['id'])) if u else 0,'user':u,'today':datetime.now(ZoneInfo('America/New_York')).date().isoformat(),'events':event_records(c),'artists':artist_records(c),'points':c.execute('SELECT COUNT(*) FROM attendance WHERE user=?',(u['id'],)).fetchone()[0]*ATTENDANCE_POINTS if u else 0,'points_per_checkin':ATTENDANCE_POINTS,'attendance':rows(c,'SELECT event,created,method,100 AS points FROM attendance WHERE user=? ORDER BY created DESC',(u['id'],)) if u else []})
     if p=='/api/leaderboards':
      options=parse_qs(urlparse(self.path).query);period=options.get('period',['all'])[0];scope=options.get('scope',['all'])[0]
      if period not in ('all','month') or scope not in ('all','friends'):return self.reply(400,{'error':'Choose a valid leaderboard filter.'})
@@ -679,6 +708,14 @@ class Handler(BaseHTTPRequestHandler):
    file=ROOT/'public'/'marks'/Path(p).name
    if not file.is_file() or file.suffix!='.svg':return self.reply(404,{'error':'Mark not found.'})
    b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','image/svg+xml');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
+  if p.startswith('/stamps/'):
+   file=ROOT/'public'/'stamps'/Path(p).name
+   if not file.is_file() or file.suffix!='.png':return self.reply(404,{'error':'Stamp not found.'})
+   b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','image/png');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
+  if p.startswith('/backdrops/'):
+   file=ROOT/'public'/'backdrops'/Path(p).name
+   if not file.is_file() or file.suffix not in ('.jpg','.png','.webp'):return self.reply(404,{'error':'Background not found.'})
+   b=file.read_bytes();self.send_response(200);self.send_header('Content-Type',{'.png':'image/png','.webp':'image/webp'}.get(file.suffix,'image/jpeg'));self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
   if p.startswith('/artists/'):
    file=ROOT/'public'/'artists'/Path(p).name
    if not file.is_file() or file.suffix!='.jpg':return self.reply(404,{'error':'Photo not found.'})
@@ -686,7 +723,7 @@ class Handler(BaseHTTPRequestHandler):
   # Vercel serves public/ from its CDN and omits it from the Python bundle.
   # Page navigation must read a template that ships with the server instead.
   file=ROOT/'public'/p.lstrip('/') if p in ('/app.js','/style.css','/flex-carousel.js','/tear-ticket.js','/confetti-floor.js','/stage-lights.js') else ROOT/'templates'/'index.html'
-  b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','text/javascript' if file.suffix=='.js' else 'text/css' if file.suffix=='.css' else 'text/html');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b)
+  b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','text/javascript' if file.suffix=='.js' else 'text/css' if file.suffix=='.css' else 'text/html');self.send_header('Cache-Control','no-cache');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b)  # no-cache: always pick up edited CSS/JS locally
  def readable(self,c,u,scope):
   if scope.startswith('community:'):return bool(c.execute('SELECT 1 FROM communities WHERE id=?',(scope[10:],)).fetchone())
   return self.allowed(c,u,scope)
@@ -760,12 +797,46 @@ class Handler(BaseHTTPRequestHandler):
      if rating in (None,0):rating=None
      elif isinstance(rating,bool) or not isinstance(rating,(int,float)) or not 0.5<=rating<=5 or rating*2!=int(rating*2):return self.reply(400,{'error':'Rate the show from half a star to 5 stars.'})
      else:rating=float(rating)
-     log=c.execute('SELECT id,rating FROM concert_logs WHERE user=? AND identity=?',(u['id'],identity)).fetchone()
+     # Optional blurb, tagged friends (accepted friends only) and photos; omitted keeps what was saved.
+     blurb=data.get('blurb')
+     if blurb is not None and (not isinstance(blurb,str) or len(blurb.strip())>2000):return self.reply(400,{'error':'Keep your note under 2,000 characters.'})
+     friends=data.get('friends')
+     if friends is not None:
+      if not isinstance(friends,list) or len(friends)>30 or any(not isinstance(f,str) for f in friends):return self.reply(400,{'error':'Tag up to 30 friends.'})
+      friends=list(dict.fromkeys(friends))
+      for fid in friends:
+       low,high=sorted([u['id'],fid])
+       if not c.execute("SELECT 1 FROM friendships WHERE low=? AND high=? AND status='accepted'",(low,high)).fetchone():return self.reply(400,{'error':'You can only tag your friends.'})
+     photos=data.get('photos') or []
+     if not isinstance(photos,list) or len(photos)>10 or any(not isinstance(image,str) or not image.startswith(('data:image/jpeg;base64,','data:image/png;base64,','data:image/webp;base64,')) for image in photos):return self.reply(400,{'error':'Choose up to 10 JPEG, PNG, or WebP photos.'})
+     if any(photo_too_large(image) for image in photos):return self.reply(413,{'error':'A photo exceeds the deployment upload limit.'})
+     if sum(photo_bytes(image) for image in photos)>MAX_POST_PHOTO_BYTES:return self.reply(413,{'error':'The photos exceed the deployment total upload limit.'})
+     backdrop=data.get('backdrop')
+     if backdrop is not None and not valid_backdrop(backdrop):return self.reply(400,{'error':'Choose one of the backgrounds.'})
+     log=c.execute('SELECT id,rating,blurb,friends,photo_post FROM concert_logs WHERE user=? AND identity=?',(u['id'],identity)).fetchone()
      log_id=log['id'] if log else secrets.token_hex(16)
      if not has_rating:rating=log['rating'] if log else None
-     if not log:c.execute('INSERT INTO concert_logs(id,user,identity,event_id,artist,venue,city,date,created,artists_seen,rating) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(log_id,u['id'],identity,event_id,artist,venue,city,day,time.time(),json.dumps(normalized),rating))
-     else:c.execute('UPDATE concert_logs SET artists_seen=?,rating=? WHERE id=? AND user=?',(json.dumps(normalized),rating,log_id,u['id']))
-     return self.reply(200,{'ok':True,'artists_seen':normalized,'rating':rating})
+     blurb=blurb.strip() if blurb is not None else (log['blurb'] if log else '')
+     friends_json=json.dumps(friends) if friends is not None else (log['friends'] if log else '[]')
+     photo_post=log['photo_post'] if log else ''
+     existing=c.execute('SELECT extra_photos FROM feed_posts WHERE id=? AND user=?',(photo_post,u['id'])).fetchone() if photo_post else None
+     if photos:
+      photos=[strip_photo_metadata(image) for image in photos]
+      if existing:
+       # Adding photos later appends them to the show's existing photo post (10 at most).
+       extra=json.loads(existing['extra_photos'] or '[]')
+       if 1+len(extra)+len(photos)>10:return self.reply(400,{'error':f'A show can have 10 photos. You can add {max(0,9-len(extra))} more.'})
+       c.execute('UPDATE feed_posts SET extra_photos=? WHERE id=?',(json.dumps(extra+photos),photo_post))
+      else:
+       # Photos become a post on the user's profile, tagged to the show when it is a listed event.
+       photo_post=secrets.token_hex(16)
+       tagged=event_id if event_id and c.execute('SELECT 1 FROM events WHERE id=?',(event_id,)).fetchone() else None
+       c.execute('INSERT INTO feed_posts(id,user,body,photo,event_id,category,created,extra_photos,featured,backdrop) VALUES(?,?,?,?,?,?,?,?,?,?)',(photo_post,u['id'],blurb,photos[0],tagged,'general',time.time(),json.dumps(photos[1:]),0,backdrop or ''))
+     if existing and backdrop is not None:c.execute('UPDATE feed_posts SET backdrop=? WHERE id=?',(backdrop,photo_post))
+     if existing and data.get('blurb') is not None:c.execute('UPDATE feed_posts SET body=? WHERE id=?',(blurb,photo_post))  # the photo post's caption follows the blurb
+     if not log:c.execute('INSERT INTO concert_logs(id,user,identity,event_id,artist,venue,city,date,created,artists_seen,rating,blurb,friends,photo_post) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',(log_id,u['id'],identity,event_id,artist,venue,city,day,time.time(),json.dumps(normalized),rating,blurb,friends_json,photo_post))
+     else:c.execute('UPDATE concert_logs SET artists_seen=?,rating=?,blurb=?,friends=?,photo_post=? WHERE id=? AND user=?',(json.dumps(normalized),rating,blurb,friends_json,photo_post,log_id,u['id']))
+     return self.reply(200,{'ok':True,'artists_seen':normalized,'rating':rating,'blurb':blurb,'photo_post':photo_post})
     if p=='/api/concert-log-delete':
      c.execute('DELETE FROM concert_logs WHERE id=? AND user=?',(str(data.get('id','')),u['id']))
      return self.reply(200,{'ok':True})
@@ -855,9 +926,11 @@ class Handler(BaseHTTPRequestHandler):
      if not photo.startswith(('data:image/jpeg;base64,','data:image/png;base64,','data:image/webp;base64,')):return self.reply(400,{'error':'Add a JPEG, PNG, or WebP photo.'})
      if event is not None and not isinstance(event,str):return self.reply(400,{'error':'Choose a valid show.'})
      if event and not c.execute('SELECT 1 FROM events WHERE id=?',(event,)).fetchone():return self.reply(400,{'error':'Choose a show from the event list.'})
-     if category not in ('general','merch') or (category=='merch' and not event):return self.reply(400,{'error':'Tag a show for a merch-stand photo.'})
+     category='general'  # the Merch stand photo category was removed (2026-11-27)
      postid=secrets.token_hex(16);featured=1 if data.get('featured') is True else 0
-     c.execute('INSERT INTO feed_posts(id,user,body,photo,event_id,category,created,extra_photos,featured) VALUES(?,?,?,?,?,?,?,?,?)',(postid,u['id'],body,photo,event,category,time.time(),json.dumps(photos[1:]),featured))
+     backdrop=data.get('backdrop') or ''
+     if not valid_backdrop(backdrop):return self.reply(400,{'error':'Choose one of the backgrounds.'})
+     c.execute('INSERT INTO feed_posts(id,user,body,photo,event_id,category,created,extra_photos,featured,backdrop) VALUES(?,?,?,?,?,?,?,?,?,?)',(postid,u['id'],body,photo,event,category,time.time(),json.dumps(photos[1:]),featured,backdrop))
      return self.reply(200,{'id':postid})
     if p=='/api/feed-post-feature':
      pid=data.get('id');on=data.get('featured')
@@ -871,13 +944,11 @@ class Handler(BaseHTTPRequestHandler):
      if not self.allowed(c,u,scope):return self.reply(403,{'error':'This discussion is locked.'})
      if not body or len(body)>2000:return self.reply(400,{'error':'Write 1–2,000 characters.'})
      if photo and not photo.startswith(('data:image/jpeg;base64,','data:image/png;base64,','data:image/webp;base64,')):return self.reply(400,{'error':'Use a JPEG, PNG or WebP photo.'})
-     category=str(data.get('category','general'))
-     if category not in ('general','merch') or (category=='merch' and (not photo or not scope.startswith('show:'))):return self.reply(400,{'error':'Merch stand posts need a photo and a show.'})
+     category='general'  # the Merch stand photo category was removed (2026-11-27)
      tags=data.get('tags',[])
      if not isinstance(tags,list) or len(tags)>len(POST_TAGS) or any(not isinstance(tag,str) or tag not in POST_TAGS for tag in tags):return self.reply(400,{'error':'Choose tags from the available show topics.'})
      if tags and not scope.startswith(('show:','chat:')):return self.reply(400,{'error':'Tags belong to show-night discussions.'})
      tags=list(dict.fromkeys(tags))
-     if category=='merch' and 'Merch' not in tags:tags.append('Merch')
      c.execute('INSERT INTO posts(id,user,scope,body,photo,created,category,tags) VALUES(?,?,?,?,?,?,?,?)',(secrets.token_hex(16),u['id'],scope,body,strip_photo_metadata(photo),time.time(),category,json.dumps(tags)));return self.reply(200,{'ok':True})
     if p=='/api/event':
      if hosted():return self.reply(403,{'error':'The local event editor is disabled on hosted deployments.'})
