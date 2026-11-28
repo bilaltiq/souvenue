@@ -15,7 +15,7 @@ def response_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     response.headers['X-Frame-Options'] = 'DENY'
-    if request.path.startswith('/api/'):
+    if request.path.startswith('/api/') and not (request.path.startswith('/api/media/') and response.status_code == 200):
         response.headers['Cache-Control'] = 'no-store'
     return response
 

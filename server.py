@@ -20,6 +20,10 @@ def photo_bytes(photo):
  encoded=photo.partition(',')[2]
  return len(encoded)*3//4-(len(encoded)-len(encoded.rstrip('=')))
 def photo_too_large(photo):return photo_bytes(photo)>MAX_PHOTO_BYTES
+# A photo at /api/media/... never changes (new photos are appended at new indexes), so the
+# viewer's own browser may keep it for a year. 'private' keeps shared caches (Vercel's CDN)
+# from storing it, because some photos are only visible to certain people.
+PHOTO_CACHE='private, max-age=31536000, immutable'
 
 # ---- Photo metadata stripping --------------------------------------------
 # Phone photos carry GPS coordinates and other EXIF data. The browser re-saves
@@ -627,7 +631,7 @@ class Handler(BaseHTTPRequestHandler):
       mime=photo.split(';',1)[0].removeprefix('data:');content=base64.b64decode(photo.partition(',')[2],validate=True)
      except (ValueError,TypeError):return self.reply(404,{'error':'Photo unavailable.'})
      if mime not in ('image/jpeg','image/png','image/webp'):return self.reply(404,{'error':'Photo unavailable.'})
-     self.send_response(200);self.send_header('Content-Type',mime);self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff');self.send_header('Content-Length',str(len(content)));self.end_headers();self.wfile.write(content);return
+     self.send_response(200);self.send_header('Content-Type',mime);self.send_header('Cache-Control',PHOTO_CACHE);self.send_header('X-Content-Type-Options','nosniff');self.send_header('Content-Length',str(len(content)));self.end_headers();self.wfile.write(content);return
     if p=='/api/past-events':return self.reply(200,historical_catalog())
     if p=='/api/state':return self.reply(200,{'demo_checkins_enabled':demo_checkins_enabled(),'hosted':hosted(),'max_photo_bytes':MAX_PHOTO_BYTES,'max_post_photo_bytes':MAX_POST_PHOTO_BYTES,'backdrops':backdrops(),'concert_history':concert_history(c,u['id']) if u else [],'artists_seen_count':logged_artist_count(concert_history(c,u['id'])) if u else 0,'user':u,'today':datetime.now(ZoneInfo('America/New_York')).date().isoformat(),'events':event_records(c),'artists':artist_records(c),'points':c.execute('SELECT COUNT(*) FROM attendance WHERE user=?',(u['id'],)).fetchone()[0]*ATTENDANCE_POINTS if u else 0,'points_per_checkin':ATTENDANCE_POINTS,'attendance':rows(c,'SELECT event,created,method,100 AS points FROM attendance WHERE user=? ORDER BY created DESC',(u['id'],)) if u else []})
     if p=='/api/leaderboards':
