@@ -217,6 +217,44 @@ def initialize():
     metadata={**event,'imported_at':snapshot['imported_at'],'listed':True}
     c.execute('INSERT INTO events(id,artist,venue,city,date,image,metadata) VALUES(?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET artist=excluded.artist,venue=excluded.venue,city=excluded.city,date=excluded.date,image=excluded.image,metadata=excluded.metadata',(event['id'],event['artist'],event['venue'],event['city'],event['date'],event['image'],json.dumps(metadata)))
   seed_more_communities(c)
+  add_moderation(c)
+
+# ---- Moderation --------------------------------------------------------------
+# Reports and blocks, a hidden flag on everything people write, and admin/banned
+# flags on users. Hidden content stays stored so a moderator can restore it.
+# Each reportable kind maps to its table and the column holding its text.
+REPORT_TARGETS={'feed_post':('feed_posts','body'),'post':('posts','body'),'thread':('threads','title'),'reply':('thread_replies','body'),'message':('community_messages','body'),'user':('users','name')}
+REPORT_REASONS=('spam','harassment','hate','sexual','violence','other')
+CONTENT_TABLES=('feed_posts','posts','threads','thread_replies','community_messages')
+def add_moderation(c):
+ c.executescript("""CREATE TABLE IF NOT EXISTS reports(id TEXT PRIMARY KEY,reporter TEXT,target_type TEXT,target_id TEXT,target_user TEXT,reason TEXT,note TEXT,created REAL,status TEXT NOT NULL DEFAULT 'open',resolved_by TEXT,resolved_at REAL,UNIQUE(reporter,target_type,target_id));
+ CREATE TABLE IF NOT EXISTS blocks(blocker TEXT,blocked TEXT,created REAL,PRIMARY KEY(blocker,blocked));
+ CREATE TABLE IF NOT EXISTS mod_actions(id TEXT PRIMARY KEY,moderator TEXT,action TEXT,target_type TEXT,target_id TEXT,reason TEXT,created REAL);""")
+ for table in CONTENT_TABLES:
+  if 'hidden' not in [r[1] for r in c.execute(f'PRAGMA table_info({table})')]:c.execute(f'ALTER TABLE {table} ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0')
+ user_cols=[r[1] for r in c.execute('PRAGMA table_info(users)')]
+ if 'is_admin' not in user_cols:c.execute('ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0')
+ if 'banned' not in user_cols:c.execute('ALTER TABLE users ADD COLUMN banned INTEGER NOT NULL DEFAULT 0')
+ if 'created' not in user_cols:c.execute('ALTER TABLE users ADD COLUMN created REAL')   # NULL for accounts made before this existed
+ # ADMIN_USERNAMES (comma-separated @usernames) promotes accounts to admin; it never demotes anyone.
+ for handle in [clean_username(x) for x in os.environ.get('ADMIN_USERNAMES','').split(',') if x.strip()]:
+  c.execute('UPDATE users SET is_admin=1 WHERE username=?',(handle,))
+def blocked_between(c,a,b):
+ return bool(a and b and a!=b and c.execute('SELECT 1 FROM blocks WHERE (blocker=? AND blocked=?) OR (blocker=? AND blocked=?)',(a,b,b,a)).fetchone())
+def visible_sql(table,viewer):
+ """SQL that keeps hidden posts, banned authors and blocked people (either direction) out of a read. The query must JOIN users."""
+ return (f" {table}.hidden=0 AND users.banned=0 AND NOT EXISTS(SELECT 1 FROM blocks WHERE (blocks.blocker=? AND blocks.blocked={table}.user) OR (blocks.blocker={table}.user AND blocks.blocked=?)) ",(viewer,viewer))
+LINK_RE=re.compile(r'https?://|www\.|\b[a-z0-9-]+\.(com|net|org|io|co|ly|gg|xyz|link|me)\b',re.I)
+NEW_ACCOUNT_SECONDS=86400
+def posting_limit(c,uid,text=''):
+ """Rate limits for anything a person writes. Returns an error message, or None when they may post."""
+ row=c.execute('SELECT created FROM users WHERE id=?',(uid,)).fetchone()
+ new=bool(row and row['created'] and time.time()-row['created']<NEW_ACCOUNT_SECONDS)
+ if new and text and LINK_RE.search(text):return 'New accounts can post links after their first day.'
+ since=time.time()-60
+ recent=sum(c.execute(f'SELECT COUNT(*) FROM {table} WHERE user=? AND created>?',(uid,since)).fetchone()[0] for table in CONTENT_TABLES)
+ if recent>=(8 if new else 20):return 'You’re posting very quickly. Wait a minute and try again.'
+ return None
 
 def seed_more_communities(c):
  def add(cid,name,description,category,subcategory='lounge'):
@@ -548,14 +586,17 @@ def rows(c,q,args=()):return [dict(x) for x in c.execute(q,args)]
 def can_view_profile(c,owner,viewer):
  row=c.execute('SELECT visibility FROM users WHERE id=?',(owner,)).fetchone()
  if not row:return False
- if row['visibility']=='public' or owner==viewer:return True
+ if owner==viewer:return True
+ if blocked_between(c,owner,viewer):return False
+ if row['visibility']=='public':return True
  return bool(viewer and c.execute("SELECT 1 FROM friendships WHERE status='accepted' AND ((low=? AND high=?) OR (low=? AND high=?))",(owner,viewer,viewer,owner)).fetchone())
 def feed_records(c,where='',args=(),viewer=''):
  privacy="(users.visibility='public' OR users.id=? OR EXISTS(SELECT 1 FROM friendships WHERE status='accepted' AND ((low=users.id AND high=?) OR (high=users.id AND low=?))))"
- where+=(" AND " if where else " WHERE ")+privacy
+ hide,hide_args=visible_sql('feed_posts',viewer)
+ where+=(" AND " if where else " WHERE ")+privacy+" AND"+hide
  records=rows(c,"""SELECT feed_posts.*,users.name,COALESCE(events.artist,logs.artist) AS artist,COALESCE(events.venue,logs.venue) AS venue,COALESCE(events.city,logs.city) AS city,COALESCE(events.date,logs.date) AS date,
  EXISTS(SELECT 1 FROM attendance WHERE attendance.user=feed_posts.user AND attendance.event=feed_posts.event_id) AS attended
- FROM feed_posts JOIN users ON users.id=feed_posts.user LEFT JOIN events ON events.id=feed_posts.event_id LEFT JOIN concert_logs AS logs ON logs.photo_post=feed_posts.id AND logs.user=feed_posts.user """+where+' ORDER BY feed_posts.created DESC,feed_posts.id DESC LIMIT 50',(*args,viewer,viewer,viewer))
+ FROM feed_posts JOIN users ON users.id=feed_posts.user LEFT JOIN events ON events.id=feed_posts.event_id LEFT JOIN concert_logs AS logs ON logs.photo_post=feed_posts.id AND logs.user=feed_posts.user """+where+' ORDER BY feed_posts.created DESC,feed_posts.id DESC LIMIT 50',(*args,viewer,viewer,viewer,*hide_args))
  for post in records:
   post['photos']=[post['photo'],*json.loads(post.pop('extra_photos'))]
   if hosted():
@@ -608,7 +649,7 @@ class Handler(BaseHTTPRequestHandler):
   b=json.dumps(data).encode();self.send_response(status);self.send_header('Content-Type','application/json');self.send_header('Cache-Control','no-store');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b)
  def user(self,c):
   token=next((v.strip()[8:] for v in self.headers.get('Cookie','').split(';') if v.strip().startswith('session=')), '')
-  r=c.execute('SELECT users.id,users.name,users.username,users.visibility,users.leaderboard_opt_in FROM sessions JOIN users ON users.id=sessions.user WHERE token=? AND expires>?',(token,time.time())).fetchone();return dict(r) if r else None
+  r=c.execute('SELECT users.id,users.name,users.username,users.visibility,users.leaderboard_opt_in,users.is_admin FROM sessions JOIN users ON users.id=sessions.user WHERE token=? AND expires>? AND users.banned=0',(token,time.time())).fetchone();return dict(r) if r else None
  def do_GET(self):
   p=urlparse(self.path).path
   if hosted() and p=='/studio':return self.reply(404,{'error':'Not found'})
@@ -620,12 +661,12 @@ class Handler(BaseHTTPRequestHandler):
      photo=None
      if len(parts)==6 and parts[3]=='feed' and parts[5].isdigit():
       record=c.execute('SELECT * FROM feed_posts WHERE id=?',(parts[4],)).fetchone()
-      if record and can_view_profile(c,record['user'],u['id'] if u else ''):
+      if record and (u and u.get('is_admin') or (not record['hidden'] and can_view_profile(c,record['user'],u['id'] if u else ''))):
        photos=[record['photo'],*json.loads(record['extra_photos'])];index=int(parts[5])
        if index<len(photos):photo=photos[index]
      elif len(parts)==5 and parts[3]=='post':
       record=c.execute('SELECT * FROM posts WHERE id=?',(parts[4],)).fetchone()
-      if record and self.allowed(c,u,record['scope']):photo=record['photo']
+      if record and (u and u.get('is_admin') or (not record['hidden'] and self.allowed(c,u,record['scope']))):photo=record['photo']
      if not photo:return self.reply(404,{'error':'Photo unavailable.'})
      try:
       mime=photo.split(';',1)[0].removeprefix('data:');content=base64.b64decode(photo.partition(',')[2],validate=True)
@@ -639,7 +680,7 @@ class Handler(BaseHTTPRequestHandler):
      if period not in ('all','month') or scope not in ('all','friends'):return self.reply(400,{'error':'Choose a valid leaderboard filter.'})
      if scope=='friends' and not u:return self.reply(401,{'error':'Sign in to see your friends leaderboard.'})
      now=datetime.now(ZoneInfo('America/New_York'));cutoff=now.replace(day=1,hour=0,minute=0,second=0,microsecond=0).timestamp() if period=='month' else 0
-     board=rows(c,'SELECT users.id,users.name,COUNT(attendance.event) AS concerts FROM users JOIN attendance ON attendance.user=users.id WHERE users.leaderboard_opt_in=1 AND attendance.created>=? GROUP BY users.id ORDER BY concerts DESC,users.name COLLATE NOCASE,users.id',(cutoff,))
+     board=rows(c,'SELECT users.id,users.name,COUNT(attendance.event) AS concerts FROM users JOIN attendance ON attendance.user=users.id WHERE users.leaderboard_opt_in=1 AND users.banned=0 AND attendance.created>=? GROUP BY users.id ORDER BY concerts DESC,users.name COLLATE NOCASE,users.id',(cutoff,))
      if scope=='friends':
       friends={r['low'] if r['high']==u['id'] else r['high'] for r in rows(c,"SELECT low,high FROM friendships WHERE status='accepted' AND (low=? OR high=?)",(u['id'],u['id']))};friends.add(u['id']);board=[row for row in board if row['id'] in friends]
      previous=None;rank=0
@@ -655,15 +696,16 @@ class Handler(BaseHTTPRequestHandler):
     if p.startswith('/api/threads/'):
      scope=unquote(p[len('/api/threads/'):])
      if not self.readable(c,u,scope):return self.reply(403,{'error':'This chat is not available to your account.'})
-     return self.reply(200,rows(c,'SELECT threads.*,users.name,(SELECT COUNT(*) FROM thread_replies WHERE thread=threads.id) AS replies FROM threads JOIN users ON users.id=threads.user WHERE scope=? ORDER BY created DESC',(scope,)))
+     hide,hide_args=visible_sql('threads',u['id'] if u else '')
+     return self.reply(200,rows(c,'SELECT threads.*,users.name,(SELECT COUNT(*) FROM thread_replies WHERE thread=threads.id AND thread_replies.hidden=0) AS replies FROM threads JOIN users ON users.id=threads.user WHERE scope=? AND'+hide+'ORDER BY created DESC',(scope,*hide_args)))
     if p.startswith('/api/thread/'):
-     tid=p[len('/api/thread/'):];thread=c.execute('SELECT threads.*,users.name FROM threads JOIN users ON users.id=threads.user WHERE threads.id=?',(tid,)).fetchone()
+     tid=p[len('/api/thread/'):];hide,hide_args=visible_sql('threads',u['id'] if u else '');thread=c.execute('SELECT threads.*,users.name FROM threads JOIN users ON users.id=threads.user WHERE threads.id=? AND'+hide,(tid,*hide_args)).fetchone()
      if not thread:return self.reply(404,{'error':'Thread not found.'})
      if not self.readable(c,u,thread['scope']):return self.reply(403,{'error':'Join or unlock this chat to open its threads.'})
-     return self.reply(200,{'thread':dict(thread),'replies':rows(c,'SELECT thread_replies.*,users.name FROM thread_replies JOIN users ON users.id=thread_replies.user WHERE thread=? ORDER BY created,id',(tid,))})
+     return self.reply(200,{'thread':dict(thread),'replies':rows(c,'SELECT thread_replies.*,users.name FROM thread_replies JOIN users ON users.id=thread_replies.user WHERE thread=? AND'+visible_sql('thread_replies','')[0]+'ORDER BY created,id',(tid,*visible_sql('thread_replies',u['id'] if u else '')[1]))})
     if p=='/api/people':
      if not u:return self.reply(401,{'error':'Sign in to find friends.'})
-     people=rows(c,'SELECT id,name,username FROM users WHERE id!=? ORDER BY name COLLATE NOCASE',(u['id'],))
+     people=rows(c,'SELECT id,name,username FROM users WHERE id!=? AND banned=0 AND NOT EXISTS(SELECT 1 FROM blocks WHERE (blocker=? AND blocked=users.id) OR (blocker=users.id AND blocked=?)) ORDER BY name COLLATE NOCASE',(u['id'],u['id'],u['id']))
      relations=rows(c,'SELECT * FROM friendships WHERE low=? OR high=?',(u['id'],u['id']))
      for person in people:
       rel=next((r for r in relations if person['id'] in (r['low'],r['high'])),None)
@@ -675,7 +717,8 @@ class Handler(BaseHTTPRequestHandler):
      cid=p[len('/api/community/'):];community=c.execute('SELECT * FROM communities WHERE id=?',(cid,)).fetchone()
      if not community:return self.reply(404,{'error':'Community not found.'})
      joined=bool(u and c.execute('SELECT 1 FROM community_members WHERE community=? AND user=?',(cid,u['id'])).fetchone())
-     messages=rows(c,'SELECT community_messages.*,users.name FROM community_messages JOIN users ON users.id=community_messages.user WHERE community=? ORDER BY created DESC,id DESC LIMIT 300',(cid,))
+     hide,hide_args=visible_sql('community_messages',u['id'] if u else '')
+     messages=rows(c,'SELECT community_messages.*,users.name FROM community_messages JOIN users ON users.id=community_messages.user WHERE community=? AND'+hide+'ORDER BY created DESC,id DESC LIMIT 300',(cid,*hide_args))
      return self.reply(200,{'community':dict(community),'joined':joined,'members':c.execute('SELECT COUNT(*) FROM community_members WHERE community=?',(cid,)).fetchone()[0],'messages':list(reversed(messages))})
     if p.startswith('/api/photo-post/'):
      pid=p[len('/api/photo-post/'):]
@@ -708,14 +751,37 @@ class Handler(BaseHTTPRequestHandler):
     if p=='/api/featured-photos':
      posts=feed_records(c,"WHERE feed_posts.featured=1 AND users.visibility='public'",(),viewer='')[:12]
      return self.reply(200,[{'id':x['id'],'photo':x['photo'],'name':x['name'],'artist':x.get('artist'),'venue':x.get('venue'),'city':x.get('city')} for x in posts])
+    if p=='/api/admin/reports':
+     if not (u and u.get('is_admin')):return self.reply(403,{'error':'Only moderators can open the review queue.'})
+     closed=(parse_qs(urlparse(self.path).query).get('status') or ['open'])[0]=='closed'
+     groups=rows(c,"SELECT target_type,target_id,target_user,COUNT(*) AS reports,MAX(created) AS latest,MAX(status) AS status FROM reports WHERE "+("status!='open'" if closed else "status='open'")+" GROUP BY target_type,target_id,target_user ORDER BY "+("latest DESC LIMIT 50" if closed else "reports DESC,latest DESC LIMIT 200"))
+     for g in groups:
+      g['reasons']=rows(c,'SELECT reports.reason,reports.note,reports.created,users.name AS reporter FROM reports LEFT JOIN users ON users.id=reports.reporter WHERE target_type=? AND target_id=? ORDER BY reports.created DESC',(g['target_type'],g['target_id']))
+      author=c.execute('SELECT id,name,username,banned FROM users WHERE id=?',(g['target_user'],)).fetchone()
+      g['author']=dict(author) if author else None
+      table,_=REPORT_TARGETS[g['target_type']]
+      item=c.execute(f'SELECT * FROM {table} WHERE id=?',(g['target_id'],)).fetchone()
+      item=dict(item) if item else None
+      g['exists']=bool(item);g['hidden']=bool(item and item.get('hidden'));g['photo']=None;g['link']=None
+      kind=g['target_type']
+      g['text']=(item['title']+'\n\n'+item['body']) if item and kind=='thread' else (item.get('body') if item and kind!='user' else '')
+      if item and kind=='feed_post':g['photo']='/api/media/feed/'+item['id']+'/0';g['link']='/post/'+item['id']
+      if item and kind=='post' and item.get('photo'):g['photo']='/api/media/post/'+item['id']
+      if item and kind=='post' and item['scope'].split(':')[0] in ('show','chat'):g['link']='/event/'+item['scope'].split(':',1)[1]
+      if item and kind=='thread':g['link']='/thread/'+item['id']
+      if item and kind=='reply':g['link']='/thread/'+item['thread']
+      if item and kind=='message':g['link']='/community/'+item['community']
+      if kind=='user':g['link']='/profile/'+g['target_id']
+     return self.reply(200,{'items':groups,'status':'closed' if closed else 'open'})
     if p=='/api/feed':return self.reply(200,feed_records(c,viewer=u['id'] if u else ''))
     if p.startswith('/api/feed/'):
      uid=p[len('/api/feed/'):]
      return self.reply(200,feed_records(c,'WHERE feed_posts.user=?',(uid,),viewer=u['id'] if u else ''))
     if p.startswith('/api/profile/'):
-     uid=p[len('/api/profile/'):];person=c.execute('SELECT id,name,username,visibility FROM users WHERE id=?',(uid,)).fetchone()
-     if not person:return self.reply(404,{'error':'Profile not found.'})
-     result=dict(person);result['can_view']=can_view_profile(c,uid,u['id'] if u else '')
+     uid=p[len('/api/profile/'):];person=c.execute('SELECT id,name,username,visibility,banned FROM users WHERE id=?',(uid,)).fetchone()
+     if not person or (person['banned'] and not (u and u.get('is_admin'))):return self.reply(404,{'error':'Profile not found.'})
+     result=dict(person);result.pop('banned');result['can_view']=can_view_profile(c,uid,u['id'] if u else '')
+     result['blocked']=bool(u and c.execute('SELECT 1 FROM blocks WHERE blocker=? AND blocked=?',(u['id'],uid)).fetchone())
      rel=c.execute('SELECT sender,status FROM friendships WHERE (low=? AND high=?) OR (low=? AND high=?)',(uid,u['id'],u['id'],uid)).fetchone() if u else None
      result['relationship']='self' if u and u['id']==uid else 'friend' if rel and rel['status']=='accepted' else ('sent' if rel['sender']==u['id'] else 'received') if rel else 'none'
      return self.reply(200,result)
@@ -725,7 +791,8 @@ class Handler(BaseHTTPRequestHandler):
     if p.startswith('/api/posts/'):
      scope=unquote(p[len('/api/posts/'):])
      if not self.allowed(c,u,scope):return self.reply(403,{'error':'Check into this event to open its attendee chat.'})
-     posts=rows(c,'''SELECT posts.*,users.name,EXISTS(SELECT 1 FROM attendance WHERE attendance.user=posts.user AND attendance.event=?) AS attended FROM posts JOIN users ON users.id=posts.user WHERE scope=? ORDER BY created''',(scope.split(':')[-1] if ':' in scope else '',scope))
+     hide,hide_args=visible_sql('posts',u['id'] if u else '')
+     posts=rows(c,'''SELECT posts.*,users.name,EXISTS(SELECT 1 FROM attendance WHERE attendance.user=posts.user AND attendance.event=?) AS attended FROM posts JOIN users ON users.id=posts.user WHERE scope=? AND'''+hide+'''ORDER BY created''',(scope.split(':')[-1] if ':' in scope else '',scope,*hide_args))
      for post in posts:
       post['tags']=json.loads(post['tags'])
       if hosted() and post['photo']:post['photo']='/api/media/post/'+post['id']
@@ -785,7 +852,7 @@ class Handler(BaseHTTPRequestHandler):
      if not USERNAME_RE.fullmatch(handle):return self.reply(400,{'error':'Usernames are 3–20 characters: letters, numbers, dots and underscores.'})
      if len(pw)<8:return self.reply(400,{'error':'Use a password of at least 8 characters.'})
      if c.execute('SELECT 1 FROM users WHERE username=?',(handle,)).fetchone():return self.reply(409,{'error':'That username is taken. Try another.'})
-     salt=secrets.token_hex(16);uid=secrets.token_hex(16);digest=password_digest(pw,salt);c.execute('INSERT INTO users(id,name,username,password,salt) VALUES(?,?,?,?,?)',(uid,name,handle,digest,salt))
+     salt=secrets.token_hex(16);uid=secrets.token_hex(16);digest=password_digest(pw,salt);c.execute('INSERT INTO users(id,name,username,password,salt,created) VALUES(?,?,?,?,?,?)',(uid,name,handle,digest,salt,time.time()))
     if p=='/api/login':
      typed=str(data.get('username',data.get('name',''))).strip();pw=str(data.get('password',''))
      r=c.execute('SELECT * FROM users WHERE username=?',(clean_username(typed),)).fetchone()
@@ -793,6 +860,7 @@ class Handler(BaseHTTPRequestHandler):
       same=c.execute('SELECT * FROM users WHERE lower(name)=lower(?) LIMIT 2',(typed,)).fetchall()
       r=same[0] if len(same)==1 else None
      if not r or not password_matches(pw,r['password'],r['salt']):return self.reply(401,{'error':'Username or password is incorrect.'})
+     if r['banned']:return self.reply(403,{'error':'This account has been suspended for breaking the community guidelines.'})
      uid=r['id']
     if p in ['/api/register','/api/login']:
      token=secrets.token_urlsafe(32);c.execute('INSERT INTO sessions VALUES(?,?,?)',(token,uid,time.time()+86400*7));c.commit();self.send_response(200);self.send_header('Set-Cookie',f'session={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800'+('; Secure' if hosted() else ''));self.send_header('Content-Type','application/json');self.end_headers();self.wfile.write(b'{}');return
@@ -902,7 +970,9 @@ class Handler(BaseHTTPRequestHandler):
      scope=str(data.get('scope',''));title=str(data.get('title','')).strip();body=str(data.get('body','')).strip()
      if not self.allowed(c,u,scope):return self.reply(403,{'error':'Join or unlock this chat before starting a thread.'})
      if not 3<=len(title)<=120 or not 1<=len(body)<=5000:return self.reply(400,{'error':'Use a title of 3–120 characters and a post of 1–5,000 characters.'})
-     tid=secrets.token_hex(16);c.execute('INSERT INTO threads VALUES(?,?,?,?,?,?)',(tid,scope,u['id'],title,body,time.time()));return self.reply(200,{'id':tid})
+     limit=posting_limit(c,u['id'],title+' '+body)
+     if limit:return self.reply(429,{'error':limit})
+     tid=secrets.token_hex(16);c.execute('INSERT INTO threads(id,scope,user,title,body,created) VALUES(?,?,?,?,?,?)',(tid,scope,u['id'],title,body,time.time()));return self.reply(200,{'id':tid})
     if p=='/api/thread-reply':
      tid=data.get('thread');body=str(data.get('body','')).strip()
      if not isinstance(tid,str):return self.reply(400,{'error':'Choose a thread.'})
@@ -910,7 +980,9 @@ class Handler(BaseHTTPRequestHandler):
      if not thread:return self.reply(404,{'error':'Thread not found.'})
      if not self.allowed(c,u,thread['scope']):return self.reply(403,{'error':'Join or unlock this chat before commenting.'})
      if not 1<=len(body)<=2000:return self.reply(400,{'error':'Write a comment of 1–2,000 characters.'})
-     c.execute('INSERT INTO thread_replies VALUES(?,?,?,?,?)',(secrets.token_hex(16),tid,u['id'],body,time.time()));return self.reply(200,{'ok':True})
+     limit=posting_limit(c,u['id'],body)
+     if limit:return self.reply(429,{'error':limit})
+     c.execute('INSERT INTO thread_replies(id,thread,user,body,created) VALUES(?,?,?,?,?)',(secrets.token_hex(16),tid,u['id'],body,time.time()));return self.reply(200,{'ok':True})
     if p=='/api/leaderboard-preference':
      enabled=data.get('enabled')
      if not isinstance(enabled,bool):return self.reply(400,{'error':'Choose whether to appear on leaderboards.'})
@@ -923,6 +995,7 @@ class Handler(BaseHTTPRequestHandler):
      target=data.get('user');action=data.get('action')
      if not isinstance(target,str) or target==u['id'] or not c.execute('SELECT 1 FROM users WHERE id=?',(target,)).fetchone():return self.reply(400,{'error':'Choose another member.'})
      low,high=sorted([u['id'],target]);rel=c.execute('SELECT * FROM friendships WHERE low=? AND high=?',(low,high)).fetchone()
+     if action=='request' and blocked_between(c,u['id'],target):return self.reply(403,{'error':'You can’t send a friend request to this member.'})
      if action=='request':
       if not rel:c.execute('INSERT INTO friendships VALUES(?,?,?,?,?)',(low,high,u['id'],'pending',time.time()))
      elif action=='accept':
@@ -951,7 +1024,9 @@ class Handler(BaseHTTPRequestHandler):
      if not c.execute('SELECT 1 FROM community_members WHERE community=? AND user=?',(cid,u['id'])).fetchone():return self.reply(403,{'error':'Join the community before posting.'})
      body=str(data.get('body','')).strip()
      if not 1<=len(body)<=2000:return self.reply(400,{'error':'Write 1–2,000 characters.'})
-     c.execute('INSERT INTO community_messages VALUES(?,?,?,?,?)',(secrets.token_hex(16),cid,u['id'],body,time.time()));return self.reply(200,{'ok':True})
+     limit=posting_limit(c,u['id'],body)
+     if limit:return self.reply(429,{'error':limit})
+     c.execute('INSERT INTO community_messages(id,community,user,body,created) VALUES(?,?,?,?,?)',(secrets.token_hex(16),cid,u['id'],body,time.time()));return self.reply(200,{'ok':True})
     if p=='/api/feed-post':
      body=str(data.get('body','')).strip();photo=str(data.get('photo',''));event=data.get('event_id') or None;category=data.get('category','general')
      photos=data.get('photos',[photo])
@@ -967,6 +1042,8 @@ class Handler(BaseHTTPRequestHandler):
      postid=secrets.token_hex(16);featured=1 if data.get('featured') is True else 0
      backdrop=data.get('backdrop') or ''
      if not valid_backdrop(backdrop):return self.reply(400,{'error':'Choose one of the backgrounds.'})
+     limit=posting_limit(c,u['id'],body)
+     if limit:return self.reply(429,{'error':limit})
      c.execute('INSERT INTO feed_posts(id,user,body,photo,event_id,category,created,extra_photos,featured,backdrop) VALUES(?,?,?,?,?,?,?,?,?,?)',(postid,u['id'],body,photo,event,category,time.time(),json.dumps(photos[1:]),featured,backdrop))
      return self.reply(200,{'id':postid})
     if p=='/api/feed-post-feature':
@@ -986,7 +1063,48 @@ class Handler(BaseHTTPRequestHandler):
      if not isinstance(tags,list) or len(tags)>len(POST_TAGS) or any(not isinstance(tag,str) or tag not in POST_TAGS for tag in tags):return self.reply(400,{'error':'Choose tags from the available show topics.'})
      if tags and not scope.startswith(('show:','chat:')):return self.reply(400,{'error':'Tags belong to show-night discussions.'})
      tags=list(dict.fromkeys(tags))
+     limit=posting_limit(c,u['id'],body)
+     if limit:return self.reply(429,{'error':limit})
      c.execute('INSERT INTO posts(id,user,scope,body,photo,created,category,tags) VALUES(?,?,?,?,?,?,?,?)',(secrets.token_hex(16),u['id'],scope,body,strip_photo_metadata(photo),time.time(),category,json.dumps(tags)));return self.reply(200,{'ok':True})
+    if p=='/api/report':
+     kind=data.get('target_type');target=data.get('target_id');reason=data.get('reason');note=str(data.get('note') or '').strip()
+     if kind not in REPORT_TARGETS or not isinstance(target,str):return self.reply(400,{'error':'Choose something to report.'})
+     if reason not in REPORT_REASONS:return self.reply(400,{'error':'Choose a reason for the report.'})
+     if len(note)>500:return self.reply(400,{'error':'Keep the note under 500 characters.'})
+     table,_=REPORT_TARGETS[kind]
+     row=c.execute(f"SELECT {'id' if kind=='user' else 'user'} AS owner FROM {table} WHERE id=?",(target,)).fetchone()
+     if not row:return self.reply(404,{'error':'That item was already removed.'})
+     if row['owner']==u['id']:return self.reply(400,{'error':'You can’t report yourself.'})
+     if c.execute('SELECT COUNT(*) FROM reports WHERE reporter=? AND created>?',(u['id'],time.time()-3600)).fetchone()[0]>=20:return self.reply(429,{'error':'You’ve sent a lot of reports this hour. Try again later.'})
+     c.execute('INSERT OR IGNORE INTO reports(id,reporter,target_type,target_id,target_user,reason,note,created,status) VALUES(?,?,?,?,?,?,?,?,?)',(secrets.token_hex(16),u['id'],kind,target,row['owner'],reason,note,time.time(),'open'))
+     return self.reply(200,{'ok':True})
+    if p=='/api/block':
+     target=data.get('user');on=data.get('blocked')
+     if not isinstance(target,str) or not isinstance(on,bool) or target==u['id'] or not c.execute('SELECT 1 FROM users WHERE id=?',(target,)).fetchone():return self.reply(400,{'error':'Choose another member.'})
+     if on:
+      c.execute('INSERT OR IGNORE INTO blocks(blocker,blocked,created) VALUES(?,?,?)',(u['id'],target,time.time()))
+      low,high=sorted([u['id'],target]);c.execute('DELETE FROM friendships WHERE low=? AND high=?',(low,high))   # blocking also ends a friendship or request
+     else:c.execute('DELETE FROM blocks WHERE blocker=? AND blocked=?',(u['id'],target))
+     return self.reply(200,{'ok':True,'blocked':on})
+    if p=='/api/admin/action':
+     if not u.get('is_admin'):return self.reply(403,{'error':'Only moderators can do that.'})
+     action=data.get('action');kind=data.get('target_type');target=data.get('target_id');reason=str(data.get('reason') or '').strip()[:300]
+     if kind not in REPORT_TARGETS or not isinstance(target,str):return self.reply(400,{'error':'Choose something to moderate.'})
+     table,_=REPORT_TARGETS[kind]
+     row=c.execute(f"SELECT {'id' if kind=='user' else 'user'} AS owner FROM {table} WHERE id=?",(target,)).fetchone()
+     if not row:return self.reply(404,{'error':'That item no longer exists.'})
+     if action in ('hide','unhide'):
+      if kind=='user':return self.reply(400,{'error':'Ban an account instead of hiding it.'})
+      c.execute(f'UPDATE {table} SET hidden=? WHERE id=?',(1 if action=='hide' else 0,target))
+     elif action in ('ban','unban'):
+      if row['owner']==u['id']:return self.reply(400,{'error':'You can’t ban your own account.'})
+      c.execute('UPDATE users SET banned=? WHERE id=?',(1 if action=='ban' else 0,row['owner']))
+      if action=='ban':c.execute('DELETE FROM sessions WHERE user=?',(row['owner'],))
+     elif action!='dismiss':return self.reply(400,{'error':'Unknown moderation action.'})
+     if action in ('hide','ban','dismiss'):
+      c.execute("UPDATE reports SET status=?,resolved_by=?,resolved_at=? WHERE target_type=? AND target_id=? AND status='open'",('dismissed' if action=='dismiss' else 'resolved',u['id'],time.time(),kind,target))
+     c.execute('INSERT INTO mod_actions(id,moderator,action,target_type,target_id,reason,created) VALUES(?,?,?,?,?,?,?)',(secrets.token_hex(16),u['id'],action,kind,target,reason,time.time()))
+     return self.reply(200,{'ok':True})
     if p=='/api/event':
      if hosted():return self.reply(403,{'error':'The local event editor is disabled on hosted deployments.'})
      # Local founder tool only; production requires a separate administrator role.

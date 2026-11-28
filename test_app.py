@@ -347,7 +347,7 @@ class Flow(unittest.TestCase):
    self.assertEqual(Response('GET','/api/posts/show:noah-kahan').data,[])
    self.assertEqual(Response('GET','/api/state',cookie=alice).data['attendance'],[])
    self.assertEqual(Response('GET','/api/posts/chat:noah-kahan',cookie=alice).status,403)
-   self.assertEqual(set(Response('GET','/api/profile/'+alice_id).data),{'id','name','username','visibility','can_view','relationship'})
+   self.assertEqual(set(Response('GET','/api/profile/'+alice_id).data),{'id','name','username','visibility','can_view','relationship','blocked'})
    self.assertEqual(Response('GET','/api/profile/unknown').status,404)
    self.assertEqual(Response('POST','/api/feed-post',{**payload,'event_id':'unknown'},alice).status,400)
    self.assertEqual(Response('POST','/api/feed-post',{**payload,'photo':''},alice).status,400)
@@ -604,4 +604,82 @@ class Flow(unittest.TestCase):
     self.assertEqual(next(x for x in Response('GET','/api/feed').data if x['id']==log['photo_post'])['backdrop'],'disco-balls')
     self.assertEqual(Response('POST','/api/feed-post',{'photos':[pix],'backdrop':'disco-balls'},bob).status,200)
     self.assertEqual(Response('POST','/api/feed-post',{'photos':[pix],'backdrop':'../etc'},bob).status,400)
+ def test_moderation(self):
+  from unittest.mock import patch
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'mod.sqlite3';server.initialize()
+   def account(name):
+    response=Response('POST','/api/register',{'name':name,'password':'password-test-123'})
+    cookie=response.headers['Set-Cookie'].split(';')[0]
+    return cookie,Response('GET','/api/state',cookie=cookie).data['user']['id']
+   alice,aid=account('Alice');troll,tid=account('Troll');mod,mid=account('Mod')
+   # accounts made before this feature (created is NULL) count as established
+   with server.db() as c:c.execute('UPDATE users SET created=NULL')
+   with patch.dict(server.os.environ,{'ADMIN_USERNAMES':'@Mod_fan, nobody'}):server.initialize()
+   self.assertEqual(Response('GET','/api/state',cookie=mod).data['user']['is_admin'],1)
+   self.assertEqual(Response('GET','/api/state',cookie=alice).data['user']['is_admin'],0)
+   cid=Response('GET','/api/communities').data[0]['id']
+   for who in (alice,troll):Response('POST','/api/community-join',{'community':cid},who)
+   self.assertEqual(Response('POST','/api/community-message',{'community':cid,'body':'you are awful'},troll).status,200)
+   msg=Response('GET','/api/community/'+cid,cookie=alice).data['messages'][0]['id']
+   # reports: validated, one per person per item, never your own
+   self.assertEqual(Response('POST','/api/report',{'target_type':'message','target_id':msg,'reason':'harassment'}).status,401)
+   self.assertEqual(Response('POST','/api/report',{'target_type':'message','target_id':msg,'reason':'meh'},alice).status,400)
+   self.assertEqual(Response('POST','/api/report',{'target_type':'nope','target_id':msg,'reason':'spam'},alice).status,400)
+   self.assertEqual(Response('POST','/api/report',{'target_type':'message','target_id':'missing','reason':'spam'},alice).status,404)
+   self.assertEqual(Response('POST','/api/report',{'target_type':'message','target_id':msg,'reason':'spam'},troll).status,400)
+   for _ in range(2):self.assertEqual(Response('POST','/api/report',{'target_type':'message','target_id':msg,'reason':'harassment','note':'rude'},alice).status,200)
+   self.assertEqual(Response('POST','/api/report',{'target_type':'user','target_id':tid,'reason':'harassment'},alice).status,200)
+   # only admins see the queue
+   self.assertEqual(Response('GET','/api/admin/reports',cookie=alice).status,403)
+   self.assertEqual(Response('GET','/api/admin/reports').status,403)
+   queue=Response('GET','/api/admin/reports',cookie=mod).data['items']
+   item=next(g for g in queue if g['target_type']=='message');self.assertEqual(item['reports'],1);self.assertEqual(item['text'],'you are awful');self.assertEqual(item['author']['id'],tid);self.assertEqual(item['reasons'][0]['note'],'rude')
+   self.assertEqual(Response('POST','/api/admin/action',{'action':'hide','target_type':'message','target_id':msg},alice).status,403)
+   # hiding removes it for everyone and closes its reports; unhiding brings it back
+   self.assertEqual(Response('POST','/api/admin/action',{'action':'hide','target_type':'message','target_id':msg},mod).status,200)
+   self.assertEqual(Response('GET','/api/community/'+cid,cookie=alice).data['messages'],[])
+   self.assertFalse(any(g['target_type']=='message' for g in Response('GET','/api/admin/reports',cookie=mod).data['items']))
+   self.assertTrue(any(g['target_id']==msg and g['hidden'] for g in Response('GET','/api/admin/reports?status=closed',cookie=mod).data['items']))
+   self.assertEqual(Response('POST','/api/admin/action',{'action':'unhide','target_type':'message','target_id':msg},mod).status,200)
+   self.assertEqual(len(Response('GET','/api/community/'+cid,cookie=alice).data['messages']),1)
+   # blocking hides each other's messages and profiles, ends friendships, stops requests
+   Response('POST','/api/friend',{'user':tid,'action':'request'},alice)
+   self.assertEqual(Response('POST','/api/block',{'user':aid,'blocked':True},alice).status,400)
+   self.assertEqual(Response('POST','/api/block',{'user':tid,'blocked':True},alice).status,200)
+   self.assertEqual(Response('GET','/api/community/'+cid,cookie=alice).data['messages'],[])
+   self.assertEqual(len(Response('GET','/api/community/'+cid,cookie=mod).data['messages']),1)
+   self.assertTrue(Response('GET','/api/profile/'+tid,cookie=alice).data['blocked'])
+   self.assertFalse(Response('GET','/api/profile/'+aid,cookie=troll).data['can_view'])
+   self.assertFalse(Response('GET','/api/profile/'+aid,cookie=troll).data['blocked'])   # they aren't told they were blocked
+   self.assertEqual(Response('POST','/api/friend',{'user':aid,'action':'request'},troll).status,403)
+   self.assertNotIn(tid,[p['id'] for p in Response('GET','/api/people',cookie=alice).data])
+   self.assertEqual(Response('GET','/api/profile/'+tid,cookie=alice).data['relationship'],'none')   # the pending request was cleared
+   self.assertEqual(Response('POST','/api/block',{'user':tid,'blocked':False},alice).status,200)
+   self.assertEqual(len(Response('GET','/api/community/'+cid,cookie=alice).data['messages']),1)
+   # banning signs them out, blocks sign-in, hides their posts, and can be undone
+   self.assertEqual(Response('POST','/api/admin/action',{'action':'ban','target_type':'user','target_id':mid},mod).status,400)
+   self.assertEqual(Response('POST','/api/admin/action',{'action':'ban','target_type':'message','target_id':msg},mod).status,200)
+   self.assertIsNone(Response('GET','/api/state',cookie=troll).data['user'])
+   self.assertEqual(Response('POST','/api/login',{'username':'troll_fan','password':'password-test-123'}).status,403)
+   self.assertEqual(Response('GET','/api/community/'+cid,cookie=alice).data['messages'],[])
+   self.assertEqual(Response('GET','/api/profile/'+tid,cookie=alice).status,404)
+   self.assertFalse(any(g['target_type']=='message' for g in Response('GET','/api/admin/reports',cookie=mod).data['items']))
+   self.assertEqual(Response('POST','/api/admin/action',{'action':'unban','target_type':'user','target_id':tid},mod).status,200)
+   self.assertEqual(Response('POST','/api/login',{'username':'troll_fan','password':'password-test-123'}).status,200)
+   with server.db() as c:
+    self.assertEqual([r['action'] for r in c.execute('SELECT action FROM mod_actions ORDER BY created')],['hide','unhide','ban','unban'])
+ def test_posting_limits(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'limits.sqlite3';server.initialize()
+   cookie=Response('POST','/api/register',{'name':'Newbie','password':'password-test-123'}).headers['Set-Cookie'].split(';')[0]
+   cid=Response('GET','/api/communities').data[0]['id'];Response('POST','/api/community-join',{'community':cid},cookie)
+   # brand-new accounts can't post links on day one
+   self.assertEqual(Response('POST','/api/community-message',{'community':cid,'body':'cheap tix at scam.com'},cookie).status,429)
+   self.assertEqual(Response('POST','/api/community-message',{'community':cid,'body':'see https://x.io'},cookie).status,429)
+   # and they can send 8 messages a minute
+   for i in range(8):self.assertEqual(Response('POST','/api/community-message',{'community':cid,'body':f'hi {i}'},cookie).status,200)
+   self.assertEqual(Response('POST','/api/community-message',{'community':cid,'body':'one more'},cookie).status,429)
+   with server.db() as c:c.execute('UPDATE users SET created=?',(server.time.time()-2*86400,))
+   self.assertEqual(Response('POST','/api/community-message',{'community':cid,'body':'tickets at https://example.com'},cookie).status,200)
 if __name__=='__main__':unittest.main()
