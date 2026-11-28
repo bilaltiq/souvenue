@@ -806,8 +806,8 @@ class Handler(BaseHTTPRequestHandler):
    b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','image/jpeg');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
   if p.startswith('/marks/'):
    file=ROOT/'public'/'marks'/Path(p).name
-   if not file.is_file() or file.suffix!='.svg':return self.reply(404,{'error':'Mark not found.'})
-   b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','image/svg+xml');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
+   if not file.is_file() or file.suffix not in ('.svg','.webp'):return self.reply(404,{'error':'Mark not found.'})
+   b=file.read_bytes();self.send_response(200);self.send_header('Content-Type','image/webp' if file.suffix=='.webp' else 'image/svg+xml');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b);return
   if p.startswith('/stamps/'):
    file=ROOT/'public'/'stamps'/Path(p).name
    if not file.is_file() or file.suffix!='.png':return self.reply(404,{'error':'Stamp not found.'})
