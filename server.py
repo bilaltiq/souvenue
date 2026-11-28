@@ -1,6 +1,6 @@
 import os,json,sqlite3,secrets,hashlib,hmac,time,re,unicodedata,math,base64
 from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
-from urllib.parse import urlparse,unquote,parse_qs,quote
+from urllib.parse import urlparse,urlsplit,unquote,parse_qs,quote
 import urllib.request,urllib.error
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -236,7 +236,11 @@ def open_get(url,musicbrainz=False,tries=3):
  return None
 def _plain(text):return re.sub(r'\s+',' ',re.sub(r'<[^>]+>','',str(text or ''))).strip()
 def _norm_name(value):return re.sub(r'[^a-z0-9]','',unicodedata.normalize('NFKD',str(value)).encode('ascii','ignore').decode().lower())
-LINK_LABELS=[('instagram.com','Instagram'),('tiktok.com','TikTok'),('youtube.com','YouTube'),('open.spotify.com','Spotify'),('music.apple.com','Apple Music'),('bandcamp.com','Bandcamp'),('soundcloud.com','SoundCloud'),('twitter.com','X'),('x.com','X'),('facebook.com','Facebook')]
+LINK_LABELS=[('instagram.com','Instagram'),('tiktok.com','TikTok'),('youtube.com','YouTube'),('open.spotify.com','Spotify'),('music.apple.com','Apple Music'),('soundcloud.com','SoundCloud'),('twitter.com','X'),('x.com','X'),('facebook.com','Facebook')]
+def _link_label(url):
+ host=(urlsplit(url).hostname or '').lower()
+ return next((l for d,l in LINK_LABELS if host==d or host.endswith('.'+d)),None)
+LINK_ORDER=['Official site','Spotify','Apple Music','YouTube','SoundCloud','Instagram','TikTok','X','Facebook']
 def fetch_artist_profile(name,mbid=None,photo=True):
  if not mbid:
   found=open_get('https://musicbrainz.org/ws/2/artist/?query='+quote(f'artist:"{name}"')+'&fmt=json&limit=5',musicbrainz=True) or {}
@@ -254,14 +258,14 @@ def fetch_artist_profile(name,mbid=None,photo=True):
   url=(rel.get('url') or {}).get('resource','')
   if not url or rel.get('ended'):continue
   if rel.get('type')=='wikidata':wikidata=url.rstrip('/').rsplit('/',1)[-1];continue
-  label='Official site' if rel.get('type')=='official homepage' else next((l for d,l in LINK_LABELS if d in url),None)
+  label='Official site' if rel.get('type')=='official homepage' else _link_label(url)
   if label and label not in seen:seen.add(label);links.append({'label':label,'url':url})
  members=[rel['artist']['name'] for rel in relations if rel.get('type')=='member of band' and rel.get('direction')=='backward' and not rel.get('ended') and rel.get('artist')]
  genres=[g['name'] for g in sorted(artist.get('genres',[]),key=lambda g:-g.get('count',0))][:4]
  profile={'found':True,'mbid':mbid,'name':artist.get('name',name),'type':artist.get('type'),
   'origin':(artist.get('begin-area') or artist.get('area') or {}).get('name'),'country':artist.get('country'),
   'active_since':((artist.get('life-span') or {}).get('begin') or '')[:4] or None if artist.get('type')=='Group' else None,
-  'members':list(dict.fromkeys(members))[:8],'genres':genres,'links':links[:8],'photo':None,
+  'members':list(dict.fromkeys(members))[:8],'genres':genres,'links':sorted(links,key=lambda l:LINK_ORDER.index(l['label']) if l['label'] in LINK_ORDER else len(LINK_ORDER))[:8],'photo':None,
   'sources':{'musicbrainz':f'https://musicbrainz.org/artist/{mbid}'}}
  if wikidata:
   entity=((open_get(f'https://www.wikidata.org/wiki/Special:EntityData/{wikidata}.json') or {}).get('entities') or {}).get(wikidata) or {}
