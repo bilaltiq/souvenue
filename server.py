@@ -134,6 +134,30 @@ def remove_requested_accounts(c):
    c.execute('DELETE FROM friendships WHERE low=? OR high=?',(uid,uid))
    c.execute('DELETE FROM users WHERE id=?',(uid,))
   c.execute('INSERT INTO maintenance(name) VALUES(?)',(marker,))
+USERNAME_RE=re.compile(r'[a-z0-9._]{3,20}')
+def clean_username(value):return str(value or '').strip().lstrip('@').lower()
+def add_usernames(c):
+ """Give every account a unique @username, and let display names repeat."""
+ if 'username' not in [r[1] for r in c.execute('PRAGMA table_info(users)')]:c.execute('ALTER TABLE users ADD COLUMN username TEXT')
+ taken={r['username'] for r in c.execute('SELECT username FROM users WHERE username IS NOT NULL')}
+ for r in c.execute('SELECT id,name FROM users WHERE username IS NULL ORDER BY id').fetchall():
+  base=re.sub(r'[^a-z0-9._]','',unicodedata.normalize('NFKD',str(r['name'] or '')).encode('ascii','ignore').decode().lower().replace(' ','_'))[:16] or 'member'
+  if len(base)<3:base=(base+'_fan')[:16]
+  handle,n=base,1
+  while handle in taken:n+=1;handle=f'{base}{n}'
+  taken.add(handle);c.execute('UPDATE users SET username=? WHERE id=?',(handle,r['id']))
+ c.execute('CREATE UNIQUE INDEX IF NOT EXISTS users_username ON users(username)')
+ # Display names used to be unique (they were the sign-in name). Drop that rule.
+ c.execute('CREATE TABLE IF NOT EXISTS maintenance(name TEXT PRIMARY KEY)')
+ if c.execute("SELECT 1 FROM maintenance WHERE name='display-names-not-unique-v1'").fetchone():return
+ if os.environ.get('DATABASE_URL'):c.execute('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_name_key')
+ else:
+  sql=c.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='users'").fetchone()[0]
+  if re.search(r'name TEXT UNIQUE',sql):
+   c.execute(re.sub(r'name TEXT UNIQUE','name TEXT',sql).replace('CREATE TABLE users','CREATE TABLE users_rebuild',1))
+   c.execute('INSERT INTO users_rebuild SELECT * FROM users');c.execute('DROP TABLE users');c.execute('ALTER TABLE users_rebuild RENAME TO users')
+   c.execute('CREATE UNIQUE INDEX IF NOT EXISTS users_username ON users(username)')
+ c.execute("INSERT INTO maintenance(name) VALUES('display-names-not-unique-v1')")
 def initialize():
  with db() as c:
   if os.environ.get('DATABASE_URL'):
@@ -143,6 +167,7 @@ def initialize():
   if 'method' not in [r[1] for r in c.execute('PRAGMA table_info(attendance)')]:c.execute("ALTER TABLE attendance ADD COLUMN method TEXT NOT NULL DEFAULT 'demo'")
   if 'visibility' not in [r[1] for r in c.execute('PRAGMA table_info(users)')]:c.execute("ALTER TABLE users ADD COLUMN visibility TEXT NOT NULL DEFAULT 'public'")
   if 'leaderboard_opt_in' not in [r[1] for r in c.execute('PRAGMA table_info(users)')]:c.execute("ALTER TABLE users ADD COLUMN leaderboard_opt_in INTEGER NOT NULL DEFAULT 0")
+  add_usernames(c)
   c.execute("CREATE TABLE IF NOT EXISTS concert_logs(id TEXT PRIMARY KEY,user TEXT,identity TEXT,event_id TEXT,artist TEXT,venue TEXT,city TEXT,date TEXT,created REAL,artists_seen TEXT DEFAULT 'null',UNIQUE(user,identity))")
   if 'artists_seen' not in [r[1] for r in c.execute('PRAGMA table_info(concert_logs)')]:c.execute("ALTER TABLE concert_logs ADD COLUMN artists_seen TEXT DEFAULT 'null'")
   if 'rating' not in [r[1] for r in c.execute('PRAGMA table_info(concert_logs)')]:c.execute("ALTER TABLE concert_logs ADD COLUMN rating REAL")
@@ -579,7 +604,7 @@ class Handler(BaseHTTPRequestHandler):
   b=json.dumps(data).encode();self.send_response(status);self.send_header('Content-Type','application/json');self.send_header('Cache-Control','no-store');self.send_header('Content-Length',str(len(b)));self.end_headers();self.wfile.write(b)
  def user(self,c):
   token=next((v.strip()[8:] for v in self.headers.get('Cookie','').split(';') if v.strip().startswith('session=')), '')
-  r=c.execute('SELECT users.id,users.name,users.visibility,users.leaderboard_opt_in FROM sessions JOIN users ON users.id=sessions.user WHERE token=? AND expires>?',(token,time.time())).fetchone();return dict(r) if r else None
+  r=c.execute('SELECT users.id,users.name,users.username,users.visibility,users.leaderboard_opt_in FROM sessions JOIN users ON users.id=sessions.user WHERE token=? AND expires>?',(token,time.time())).fetchone();return dict(r) if r else None
  def do_GET(self):
   p=urlparse(self.path).path
   if hosted() and p=='/studio':return self.reply(404,{'error':'Not found'})
@@ -634,7 +659,7 @@ class Handler(BaseHTTPRequestHandler):
      return self.reply(200,{'thread':dict(thread),'replies':rows(c,'SELECT thread_replies.*,users.name FROM thread_replies JOIN users ON users.id=thread_replies.user WHERE thread=? ORDER BY created,id',(tid,))})
     if p=='/api/people':
      if not u:return self.reply(401,{'error':'Sign in to find friends.'})
-     people=rows(c,'SELECT id,name FROM users WHERE id!=? ORDER BY name COLLATE NOCASE',(u['id'],))
+     people=rows(c,'SELECT id,name,username FROM users WHERE id!=? ORDER BY name COLLATE NOCASE',(u['id'],))
      relations=rows(c,'SELECT * FROM friendships WHERE low=? OR high=?',(u['id'],u['id']))
      for person in people:
       rel=next((r for r in relations if person['id'] in (r['low'],r['high'])),None)
@@ -684,7 +709,7 @@ class Handler(BaseHTTPRequestHandler):
      uid=p[len('/api/feed/'):]
      return self.reply(200,feed_records(c,'WHERE feed_posts.user=?',(uid,),viewer=u['id'] if u else ''))
     if p.startswith('/api/profile/'):
-     uid=p[len('/api/profile/'):];person=c.execute('SELECT id,name,visibility FROM users WHERE id=?',(uid,)).fetchone()
+     uid=p[len('/api/profile/'):];person=c.execute('SELECT id,name,username,visibility FROM users WHERE id=?',(uid,)).fetchone()
      if not person:return self.reply(404,{'error':'Profile not found.'})
      result=dict(person);result['can_view']=can_view_profile(c,uid,u['id'] if u else '')
      rel=c.execute('SELECT sender,status FROM friendships WHERE (low=? AND high=?) OR (low=? AND high=?)',(uid,u['id'],u['id'],uid)).fetchone() if u else None
@@ -750,18 +775,22 @@ class Handler(BaseHTTPRequestHandler):
    data=json.loads(self.rfile.read(int(self.headers.get('Content-Length',0))) or '{}');p=urlparse(self.path).path
    with db() as c:
     u=self.user(c)
+    if p=='/api/register':
+     name=str(data.get('name','')).strip();handle=clean_username(data.get('username'));pw=str(data.get('password',''))
+     if not 2<=len(name)<=40:return self.reply(400,{'error':'Use a display name of 2–40 characters.'})
+     if not USERNAME_RE.fullmatch(handle):return self.reply(400,{'error':'Usernames are 3–20 characters: letters, numbers, dots and underscores.'})
+     if len(pw)<8:return self.reply(400,{'error':'Use a password of at least 8 characters.'})
+     if c.execute('SELECT 1 FROM users WHERE username=?',(handle,)).fetchone():return self.reply(409,{'error':'That username is taken. Try another.'})
+     salt=secrets.token_hex(16);uid=secrets.token_hex(16);digest=password_digest(pw,salt);c.execute('INSERT INTO users(id,name,username,password,salt) VALUES(?,?,?,?,?)',(uid,name,handle,digest,salt))
+    if p=='/api/login':
+     typed=str(data.get('username',data.get('name',''))).strip();pw=str(data.get('password',''))
+     r=c.execute('SELECT * FROM users WHERE username=?',(clean_username(typed),)).fetchone()
+     if not r:  # accounts from before usernames can still sign in with their display name
+      same=c.execute('SELECT * FROM users WHERE lower(name)=lower(?) LIMIT 2',(typed,)).fetchall()
+      r=same[0] if len(same)==1 else None
+     if not r or not password_matches(pw,r['password'],r['salt']):return self.reply(401,{'error':'Username or password is incorrect.'})
+     uid=r['id']
     if p in ['/api/register','/api/login']:
-     name=str(data.get('name','')).strip();pw=str(data.get('password',''))
-     if not 2<=len(name)<=40 or len(pw)<8:return self.reply(400,{'error':'Use a name of 2–40 characters and a password of at least 8 characters.'})
-     # Names are case-insensitive: "Gob" and "gob" are the same name. An exact match wins
-     # where older accounts already differ only by case.
-     r=c.execute('SELECT * FROM users WHERE lower(name)=lower(?) ORDER BY CASE WHEN name=? THEN 0 ELSE 1 END LIMIT 1',(name,name)).fetchone()
-     if p=='/api/register':
-      if r:return self.reply(409,{'error':'Name already in use. Sign in or choose another name.'})
-      salt=secrets.token_hex(16);uid=secrets.token_hex(16);digest=password_digest(pw,salt);c.execute('INSERT INTO users(id,name,password,salt) VALUES(?,?,?,?)',(uid,name,digest,salt))
-     else:
-      if not r or not password_matches(pw,r['password'],r['salt']):return self.reply(401,{'error':'Name or password is incorrect.'})
-      uid=r['id']
      token=secrets.token_urlsafe(32);c.execute('INSERT INTO sessions VALUES(?,?,?)',(token,uid,time.time()+86400*7));c.commit();self.send_response(200);self.send_header('Set-Cookie',f'session={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800'+('; Secure' if hosted() else ''));self.send_header('Content-Type','application/json');self.end_headers();self.wfile.write(b'{}');return
     if p=='/api/logout':
      token=next((v.strip()[8:] for v in self.headers.get('Cookie','').split(';') if v.strip().startswith('session=')), '');c.execute('DELETE FROM sessions WHERE token=?',(token,));return self.reply(200,{})

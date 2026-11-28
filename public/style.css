@@ -1899,3 +1899,12 @@ html body.souvenue-home .how:not(#_) a{display:inline-block}
 /* Desktop: text and link stack together at the top of the right column instead of being spread over the heading's height */
 @media (min-width:761px){html body.souvenue-home .how:not(#_)>div{grid-template-rows:auto 1fr !important;row-gap:0 !important;align-items:start !important}html body.souvenue-home .how:not(#_) p{grid-column:2;grid-row:1;padding-top:6px}html body.souvenue-home .how:not(#_) a{grid-column:2;grid-row:2;align-self:start;justify-self:start}}
 @media (max-width:760px){html body.souvenue-home .how:not(#_)>div{gap:0 !important}}
+
+/* Sign-in dialog: sign in / create account modes, and @usernames on Find friends */
+html body dialog#auth [hidden]{display:none !important}
+html body dialog#auth .meta-line{margin:-6px 0 0;font-size:12px;color:var(--muted)}
+html body dialog#auth .auth-switch{margin:4px 0 0;font-size:14px;color:var(--muted);text-align:center}
+html body dialog#auth#auth .auth-switch button{display:inline;height:auto !important;min-height:0 !important;padding:0 !important;background:none !important;border:0 !important;color:var(--accent) !important;font:inherit;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+html body #app .person-card .person-names{display:flex;flex-direction:column;gap:1px;min-width:0}
+html body #app .person-card .person-handle{font-size:14px;font-weight:400;line-height:1.3;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #app .profile-handle{margin:-8px 0 8px;font-size:14px;color:var(--muted)}

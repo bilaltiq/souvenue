@@ -5,6 +5,8 @@ from pathlib import Path
 import server
 class Response:
  def __init__(self,method,path,data=None,cookie=''):
+  if path=='/api/register' and data and 'username' not in data:  # most tests only care about the display name
+   import re;data={**data,'username':(re.sub(r'[^a-z0-9]+','_',str(data.get('name','')).lower()).strip('_')+'_fan')[:20]}
   h=object.__new__(server.Handler);raw=json.dumps(data or {}).encode();h.path=path;h.headers={'Content-Length':str(len(raw)),'Cookie':cookie};h.rfile=io.BytesIO(raw);h.wfile=io.BytesIO();self.status=None;self.headers={}
   h.send_response=lambda status:setattr(self,'status',status)
   h.send_header=lambda k,v:self.headers.update({k:v})
@@ -105,18 +107,34 @@ class Flow(unittest.TestCase):
    server.initialize()
    with server.db() as c:stored=c.execute('SELECT photo FROM feed_posts WHERE id=?',(pid,)).fetchone()[0]
    self.assertNotIn(b'GPSLatitude',base64.b64decode(stored.split(',',1)[1]))
- def test_names_are_case_insensitive(self):
+ def test_usernames(self):
   with tempfile.TemporaryDirectory() as tmp:
    server.DB=Path(tmp)/'test.sqlite3';server.initialize()
-   self.assertEqual(Response('POST','/api/register',{'name':'gob','password':'demo-pass-123'}).status,200)
-   self.assertEqual(Response('POST','/api/register',{'name':'Gob','password':'demo-pass-456'}).status,409)
-   self.assertEqual(Response('POST','/api/register',{'name':'GOB ','password':'demo-pass-456'}).status,409)
-   for typed in ('gob','Gob','GOB'):self.assertEqual(Response('POST','/api/login',{'name':typed,'password':'demo-pass-123'}).status,200)
-   self.assertEqual(Response('POST','/api/login',{'name':'GOB','password':'wrong-pass-1'}).status,401)
-   # Older data with two accounts differing only by case: exact match wins.
-   with server.db() as c:c.execute("INSERT INTO users(id,name,password,salt) SELECT 'legacy','Gob',password,salt FROM users WHERE name='gob'")
-   cookie=Response('POST','/api/login',{'name':'Gob','password':'demo-pass-123'}).headers['Set-Cookie'].split(';')[0]
-   self.assertEqual(Response('GET','/api/state',cookie=cookie).data['user']['id'],'legacy')
+   reg=lambda name,user,pw='demo-pass-123':Response('POST','/api/register',{'name':name,'username':user,'password':pw})
+   self.assertEqual(reg('Gob Bluth','@Gob.Bluth').status,200)  # stored lowercase, @ dropped
+   self.assertEqual(reg('Someone','gob.bluth').status,409)
+   self.assertEqual(reg('Someone','GOB.BLUTH').status,409)
+   for bad in ('ab','has space','way_too_long_for_a_username','émile'):self.assertEqual(reg('Someone',bad).status,400)
+   self.assertEqual(reg('Gob Bluth','gob_two').status,200)  # display names can repeat
+   for typed in ('gob.bluth','@Gob.Bluth','GOB.BLUTH'):self.assertEqual(Response('POST','/api/login',{'username':typed,'password':'demo-pass-123'}).status,200)
+   self.assertEqual(Response('POST','/api/login',{'username':'gob.bluth','password':'wrong-pass-1'}).status,401)
+   self.assertEqual(Response('POST','/api/login',{'username':'Gob Bluth','password':'demo-pass-123'}).status,401)  # shared display name is ambiguous
+   cookie=Response('POST','/api/login',{'username':'gob_two','password':'demo-pass-123'}).headers['Set-Cookie'].split(';')[0]
+   self.assertEqual(Response('GET','/api/state',cookie=cookie).data['user']['username'],'gob_two')
+   people=Response('GET','/api/people',cookie=cookie).data
+   self.assertEqual([(x['name'],x['username']) for x in people],[('Gob Bluth','gob.bluth')])
+ def test_existing_accounts_get_usernames(self):
+  import sqlite3
+  with tempfile.TemporaryDirectory() as tmp:
+   server.DB=Path(tmp)/'test.sqlite3'
+   old=sqlite3.connect(server.DB);old.execute('CREATE TABLE users(id TEXT PRIMARY KEY,name TEXT UNIQUE,password TEXT,salt TEXT)')
+   salt='abc';digest=server.password_digest('demo-pass-123',salt)
+   old.executemany('INSERT INTO users VALUES(?,?,?,?)',[('a','Sofía S',digest,salt),('b','sofia s!',digest,salt),('c','Jo',digest,salt)]);old.commit();old.close()
+   server.initialize();server.initialize()  # runs twice safely
+   with server.db() as c:handles=dict(c.execute('SELECT id,username FROM users').fetchall())
+   self.assertEqual(handles,{'a':'sofia_s','b':'sofia_s2','c':'jo_fan'})
+   self.assertEqual(Response('POST','/api/login',{'username':'Jo','password':'demo-pass-123'}).status,200)  # old display-name sign-in still works
+   self.assertEqual(Response('POST','/api/register',{'name':'Jo','username':'jo2','password':'demo-pass-123'}).status,200)  # no longer unique
  def test_requested_account_removal(self):
   with tempfile.TemporaryDirectory() as tmp:
    server.DB=Path(tmp)/'test.sqlite3';server.initialize()
@@ -329,7 +347,7 @@ class Flow(unittest.TestCase):
    self.assertEqual(Response('GET','/api/posts/show:noah-kahan').data,[])
    self.assertEqual(Response('GET','/api/state',cookie=alice).data['attendance'],[])
    self.assertEqual(Response('GET','/api/posts/chat:noah-kahan',cookie=alice).status,403)
-   self.assertEqual(set(Response('GET','/api/profile/'+alice_id).data),{'id','name','visibility','can_view','relationship'})
+   self.assertEqual(set(Response('GET','/api/profile/'+alice_id).data),{'id','name','username','visibility','can_view','relationship'})
    self.assertEqual(Response('GET','/api/profile/unknown').status,404)
    self.assertEqual(Response('POST','/api/feed-post',{**payload,'event_id':'unknown'},alice).status,400)
    self.assertEqual(Response('POST','/api/feed-post',{**payload,'photo':''},alice).status,400)
