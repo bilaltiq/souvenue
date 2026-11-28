@@ -1917,3 +1917,8 @@ html body #app #people-search{font-family:"Souvenue At",var(--font-text) !import
 html body #app .search-field{position:relative;display:block}
 html body #app .search-hint{position:absolute;left:21px;top:calc(8px + 24px);transform:translateY(-50%);font-size:14px;line-height:20px;color:rgb(142,152,188);pointer-events:none;white-space:nowrap}
 html body #app #people-search:not(:placeholder-shown)+.search-hint{display:none}
+/* Checkboxes: softer rounded box, closer to their label */
+html body :is(#app, dialog) label:has(> input[type="checkbox"]){gap:8px !important}
+html body :is(#app, dialog) input[type="checkbox"]{appearance:none;-webkit-appearance:none;flex:none;box-sizing:border-box;width:20px !important;height:20px !important;padding:0 !important;margin:0 !important;border:0 !important;border-radius:6px !important;background:#1a1e3d !important;cursor:pointer}
+html body :is(#app, dialog) input[type="checkbox"]:checked{background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='%23080b18' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat !important}
+html body :is(#app, dialog) input[type="checkbox"]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
