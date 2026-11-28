@@ -1908,3 +1908,5 @@ html body dialog#auth#auth .auth-switch button{display:inline;height:auto !impor
 html body #app .person-card .person-names{display:flex;flex-direction:column;gap:1px;min-width:0}
 html body #app .person-card .person-handle{font-size:14px;font-weight:400;line-height:1.3;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html body #app .profile-handle{margin:-8px 0 8px;font-size:14px;color:var(--muted)}
+/* Bricolage's @ looks like a circled "a" (reads as ®/©); draw the @ in the system face */
+html body #app .at{font-family:system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;font-weight:400;margin-right:1px}
