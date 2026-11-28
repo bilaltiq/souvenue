@@ -1888,3 +1888,14 @@ html body #app .polaroid[data-frame="dark"] a.polaroid-caption:hover{color:#f2f1
 
 /* Homepage carousel: no 06 / 11 counter (2026-11-27) */
 html body .home-carousel-caption span{display:none !important}
+
+/* Homepage "Talk about the night" block: even space above and below, steady rhythm inside (2026-11-27) */
+html body.souvenue-home .how:not(#_){margin:0 !important;padding:48px 0 !important}
+html body.souvenue-home .how:not(#_) h2{margin:0 0 16px !important}
+html body.souvenue-home .how:not(#_) p{margin:0 0 20px !important}
+html body.souvenue-home .how:not(#_) a{display:inline-block}
+@media (min-width:761px){html body.souvenue-home .how:not(#_) h2{margin:0 !important}html body.souvenue-home .how:not(#_) p{margin:0 0 16px !important}}
+@media (max-width:760px){html body.souvenue-home .how:not(#_){padding:36px 0 !important}}
+/* Desktop: text and link stack together at the top of the right column instead of being spread over the heading's height */
+@media (min-width:761px){html body.souvenue-home .how:not(#_)>div{grid-template-rows:auto 1fr !important;row-gap:0 !important;align-items:start !important}html body.souvenue-home .how:not(#_) p{grid-column:2;grid-row:1;padding-top:6px}html body.souvenue-home .how:not(#_) a{grid-column:2;grid-row:2;align-self:start;justify-self:start}}
+@media (max-width:760px){html body.souvenue-home .how:not(#_)>div{gap:0 !important}}
