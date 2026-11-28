@@ -415,6 +415,25 @@ export default function mountFlexCarousel({ container, items, config = {}, contr
   const focus = { index: -1, pending: -1, t: 0, v: 0, target: 0 };
   let instances = [];
 
+  // Photos arrive at full size (often 2000px). Handing several of those to the GPU in one frame
+  // froze the page for ~0.2s on a laptop (longer on phones), so each photo is scaled down to what
+  // a card can show and uploaded one per frame. The saved photo itself is untouched.
+  const MAX_TEXTURE_SIDE = 1280;
+  const textureSource = img => {
+    const w = img.naturalWidth || 1, h = img.naturalHeight || 1, scale = Math.min(1, MAX_TEXTURE_SIDE / Math.max(w, h));
+    if (scale === 1) return img;
+    const c = document.createElement('canvas');
+    c.width = Math.round(w * scale);
+    c.height = Math.round(h * scale);
+    const g = c.getContext('2d');
+    if (!g) return img;
+    g.imageSmoothingQuality = 'high';
+    g.drawImage(img, 0, 0, c.width, c.height);
+    return c;
+  };
+  let uploadTurn = Promise.resolve();
+  const nextUploadTurn = () => (uploadTurn = uploadTurn.then(() => new Promise(r => requestAnimationFrame(() => r()))));
+
   const loadSlot = (item, index) => {
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -424,12 +443,16 @@ export default function mountFlexCarousel({ container, items, config = {}, contr
     const image = new Image();
     image.crossOrigin = 'anonymous';
     image.decoding = 'async';
-    image.onload = () => {
+    image.onload = async () => {
       if (!alive || !slots.includes(slot)) return;
+      try { await image.decode(); } catch {}
+      await nextUploadTurn();
+      if (!alive || !slots.includes(slot)) return;
+      const source = textureSource(image);
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
       gl.generateMipmap(gl.TEXTURE_2D);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
@@ -445,7 +468,7 @@ export default function mountFlexCarousel({ container, items, config = {}, contr
         probe.height = 8;
         const ctx = probe.getContext('2d', { willReadFrequently: true });
         if (ctx) {
-          ctx.drawImage(image, 0, 0, 8, 8);
+          ctx.drawImage(source, 0, 0, 8, 8);
           const data = ctx.getImageData(0, 0, 8, 8).data;
           const avg = [0, 0, 0];
           for (let i = 0; i < data.length; i += 4) {
