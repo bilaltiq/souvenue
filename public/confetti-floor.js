@@ -73,7 +73,7 @@ function makeSprites(dpr) {
   return sprites;
 }
 
-export default function mountConfettiFloor(canvas, { focus, avoid, blockedBy } = {}) {
+export default function mountConfettiFloor(canvas, { focus, avoid, blockedBy, scale = 1 } = {}) {
   const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   const ctx = canvas.getContext('2d');
   let dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -83,7 +83,7 @@ export default function mountConfettiFloor(canvas, { focus, avoid, blockedBy } =
   const pointer = { x: 0, y: 0, t: 0, active: false };
 
   // Mostly small-to-medium pieces with the odd oversized one, like real cannon confetti.
-  const sizeFor = kind => (Math.random() < 0.06 ? rand(86, 124) : kind === 'star' ? rand(34, 74) : rand(32, 68));
+  const sizeFor = kind => scale * (Math.random() < 0.06 ? rand(86, 124) : kind === 'star' ? rand(34, 74) : rand(32, 68));
   const aspectFor = kind => (kind === 'star' ? 1 : Math.random() < 0.55 ? rand(0.2, 0.42) : rand(0.55, 1));
 
   function layout() {
